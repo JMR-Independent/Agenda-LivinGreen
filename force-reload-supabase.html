@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Recargar desde Supabase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .status {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .status.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+            color: #856404;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        .data-table {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Recargar Datos desde Supabase</h1>
+        <p class="subtitle">Herramienta de sincronización y diagnóstico</p>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="checkSupabaseConnection()">
+                <span>🔍</span> Verificar Conexión
+            </button>
+            <button class="btn btn-success" onclick="forceReloadFromSupabase()">
+                <span>⚡</span> Forzar Recarga
+            </button>
+            <button class="btn btn-danger" onclick="clearLocalData()">
+                <span>🗑️</span> Limpiar Cache
+            </button>
+            <button class="btn btn-secondary" onclick="openMainApp()">
+                <span>🚀</span> Abrir App
+            </button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://stodvmbmvtxljfsdzghc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2R2bWJtdnR4bGpmc2R6Z2hjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyODMyMTYsImV4cCI6MjA3Mjg1OTIxNn0.7y3RPDV_xYFzXSTUM7oCt_WgSSRLm2HoGsCq5-5Jm5M';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const output = document.getElementById('output');
+
+        function showStatus(message, type = 'status') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function checkSupabaseConnection() {
+            output.innerHTML = '';
+            showStatus('🔍 Verificando conexión con Supabase...', 'status');
+
+            try {
+                // Verificar conexión
+                const { data, error } = await supabaseClient
+                    .from('appointments')
+                    .select('*')
+                    .order('date', { ascending: true });
+
+                if (error) {
+                    showStatus(`❌ ERROR: ${error.message}`, 'error');
+                    return;
+                }
+
+                showStatus(`✅ Conexión exitosa con Supabase`, 'success');
+                showStatus(`📊 Encontradas ${data.length} citas en la base de datos`, 'success');
+
+                if (data.length > 0) {
+                    // Buscar cita del 15 de noviembre
+                    const nov15 = data.filter(apt => apt.date === '2025-11-15');
+
+                    if (nov15.length > 0) {
+                        showStatus(`🎯 <strong>CITA DEL 15 DE NOVIEMBRE ENCONTRADA:</strong><br><br>` +
+                            nov15.map(apt => `
+                                👤 <strong>Cliente:</strong> ${apt.clientname || apt.client_name || 'Sin nombre'}<br>
+                                📞 <strong>Teléfono:</strong> ${apt.phone || 'No disponible'}<br>
+                                📧 <strong>Email:</strong> ${apt.email || 'No disponible'}<br>
+                                📍 <strong>Dirección:</strong> ${apt.address || 'No disponible'}<br>
+                                ⏰ <strong>Hora:</strong> ${apt.time || 'No especificada'}<br>
+                                🛠️ <strong>Servicio:</strong> ${apt.service || 'No especificado'}<br>
+                                💵 <strong>Precio:</strong> $${apt.price || '0'}
+                            `).join('<br><br>'), 'success');
+                    } else {
+                        showStatus(`⚠️ No hay citas para el 15 de noviembre 2025`, 'warning');
+                    }
+
+                    // Mostrar tabla de todas las citas
+                    displayAppointmentsTable(data);
+                } else {
+                    showStatus('⚠️ No hay citas en la base de datos', 'warning');
+                }
+
+                // Verificar localStorage
+                const localData = localStorage.getItem('appointments');
+                if (localData) {
+                    const local = JSON.parse(localData);
+                    showStatus(`💾 Cache local: ${local.length} citas`, 'status');
+                }
+
+            } catch (error) {
+                showStatus(`❌ ERROR DE CONEXIÓN: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function forceReloadFromSupabase() {
+            output.innerHTML = '';
+            showStatus('⚡ Forzando recarga desde Supabase...', 'status');
+
+            try {
+                // 1. Cargar desde Supabase
+                const { data, error } = await supabaseClient
+                    .from('appointments')
+                    .select('*')
+                    .order('date', { ascending: true });
+
+                if (error) throw error;
+
+                showStatus(`✅ ${data.length} citas cargadas desde Supabase`, 'success');
+
+                // 2. Limpiar cache local
+                localStorage.removeItem('appointments');
+                localStorage.removeItem('clientRegistry');
+                showStatus('🗑️ Cache local limpiado', 'success');
+
+                // 3. Guardar datos frescos en localStorage
+                localStorage.setItem('appointments', JSON.stringify(data));
+                showStatus('💾 Datos guardados en cache local', 'success');
+
+                // 4. Limpiar IndexedDB
+                try {
+                    const dbRequest = indexedDB.deleteDatabase('AppointmentDB');
+                    dbRequest.onsuccess = () => {
+                        showStatus('🗄️ IndexedDB limpiado', 'success');
+                    };
+                } catch (e) {
+                    console.log('IndexedDB no disponible');
+                }
+
+                showStatus('✅ <strong>RECARGA COMPLETADA</strong>', 'success');
+                showStatus('🚀 Puedes abrir la aplicación principal ahora', 'success');
+
+                // Mostrar datos
+                displayAppointmentsTable(data);
+
+            } catch (error) {
+                showStatus(`❌ ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        function clearLocalData() {
+            output.innerHTML = '';
+            showStatus('🗑️ Limpiando datos locales...', 'status');
+
+            // Limpiar localStorage
+            const keys = ['appointments', 'clientRegistry', 'client_phones'];
+            keys.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    localStorage.removeItem(key);
+                    showStatus(`✅ ${key} eliminado`, 'success');
+                }
+            });
+
+            // Limpiar IndexedDB
+            try {
+                const dbRequest = indexedDB.deleteDatabase('AppointmentDB');
+                dbRequest.onsuccess = () => {
+                    showStatus('✅ IndexedDB eliminado', 'success');
+                };
+                dbRequest.onerror = () => {
+                    showStatus('⚠️ No se pudo eliminar IndexedDB', 'warning');
+                };
+            } catch (e) {
+                showStatus('⚠️ IndexedDB no disponible', 'warning');
+            }
+
+            showStatus('✅ <strong>LIMPIEZA COMPLETADA</strong>', 'success');
+            showStatus('💡 Ahora haz clic en "Forzar Recarga" para cargar datos desde Supabase', 'status');
+        }
+
+        function displayAppointmentsTable(appointments) {
+            if (!appointments || appointments.length === 0) return;
+
+            const tableHTML = `
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Servicio</th>
+                                <th>Hora</th>
+                                <th>Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${appointments.map(apt => {
+                                const isNov15 = apt.date === '2025-11-15';
+                                return `
+                                    <tr style="${isNov15 ? 'background: #fff3cd; font-weight: 600;' : ''}">
+                                        <td>${apt.date}${isNov15 ? ' ⭐' : ''}</td>
+                                        <td>${apt.clientname || apt.client_name || 'Sin nombre'}</td>
+                                        <td>${apt.phone || '-'}</td>
+                                        <td>${apt.service || '-'}</td>
+                                        <td>${apt.time || '-'}</td>
+                                        <td>$${apt.price || '0'}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            const div = document.createElement('div');
+            div.innerHTML = tableHTML;
+            output.appendChild(div);
+        }
+
+        function openMainApp() {
+            window.open('index.html', '_blank');
+        }
+
+        // Auto-verificar al cargar
+        window.onload = () => {
+            showStatus('👋 Herramienta lista. Haz clic en "Verificar Conexión" para empezar', 'status');
+        };
+    </script>
+</body>
+</html>
