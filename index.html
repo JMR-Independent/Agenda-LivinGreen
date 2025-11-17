@@ -6836,6 +6836,93 @@ Incluye:
             }
         }
 
+        // Preprocess image for better OCR accuracy
+        async function preprocessImageForOCR(base64Data) {
+            return new Promise((resolve, reject) => {
+                try {
+                    console.log('🎨 Preprocessing image for better OCR...');
+
+                    const img = new Image();
+                    img.onload = function() {
+                        // Create canvas
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Scale up small images for better recognition
+                        const scale = Math.max(1, 2000 / Math.max(img.width, img.height));
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+
+                        // Draw image
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        // Get image data
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+
+                        // Calculate average brightness to detect dark mode
+                        let totalBrightness = 0;
+                        for (let i = 0; i < data.length; i += 4) {
+                            totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        }
+                        const avgBrightness = totalBrightness / (data.length / 4);
+                        const isDarkMode = avgBrightness < 100;
+
+                        console.log(`📊 Image brightness: ${avgBrightness.toFixed(1)} (${isDarkMode ? 'Dark mode detected' : 'Light mode'})`);
+
+                        // Process each pixel
+                        for (let i = 0; i < data.length; i += 4) {
+                            let r = data[i];
+                            let g = data[i + 1];
+                            let b = data[i + 2];
+
+                            // Convert to grayscale
+                            let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                            // If dark mode, invert colors (white text on black -> black text on white)
+                            if (isDarkMode) {
+                                gray = 255 - gray;
+                            }
+
+                            // Increase contrast
+                            gray = ((gray - 128) * 1.5) + 128;
+
+                            // Clamp values
+                            gray = Math.max(0, Math.min(255, gray));
+
+                            // Apply threshold for sharper text
+                            gray = gray > 140 ? 255 : 0;
+
+                            // Set RGB to same grayscale value
+                            data[i] = gray;
+                            data[i + 1] = gray;
+                            data[i + 2] = gray;
+                        }
+
+                        // Put processed image data back
+                        ctx.putImageData(imageData, 0, 0);
+
+                        // Convert to base64
+                        const processedBase64 = canvas.toDataURL('image/png').split(',')[1];
+
+                        console.log('✅ Image preprocessed successfully');
+                        resolve(processedBase64);
+                    };
+
+                    img.onerror = function(error) {
+                        console.error('❌ Error loading image for preprocessing:', error);
+                        reject(error);
+                    };
+
+                    img.src = `data:image/jpeg;base64,${base64Data}`;
+
+                } catch (error) {
+                    console.error('❌ Preprocessing error:', error);
+                    reject(error);
+                }
+            });
+        }
+
         // Tesseract.js - Free OCR that runs in the browser
         async function extractDataWithTesseract(imagesData) {
             try {
@@ -6858,9 +6945,10 @@ Incluye:
                             }
                         }
 
-                        // Convert base64 to blob URL for Tesseract
+                        // Preprocess image for better OCR accuracy
                         const base64Data = imageData.base64;
-                        const imageUrl = `data:image/jpeg;base64,${base64Data}`;
+                        const processedBase64 = await preprocessImageForOCR(base64Data);
+                        const imageUrl = `data:image/png;base64,${processedBase64}`;
 
                         // Run Tesseract OCR with progress tracking
                         const result = await Tesseract.recognize(
@@ -7029,35 +7117,62 @@ Incluye:
                 day: ''
             };
 
+            console.log('🔍 Parsing extracted text:', text);
+
             // Normalize text
             const normalizedText = text.toLowerCase();
             const lines = text.split('\n').map(line => line.trim()).filter(line => line);
 
-            // Extract name (usually at the top or after "nombre:", "name:", "cliente:")
+            // Extract name - improved for WhatsApp messages
             const namePatterns = [
-                /(?:nombre|name|cliente):\s*(.+)/i,
-                /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)+)/m // Capitalized name
+                /(?:nombre|name|cliente):\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)/i,
+                // Look for capitalized names in their own line (common in WhatsApp)
+                /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)$/m,
+                // Look for single capitalized words that might be names
+                /\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{3,})\b/
             ];
             for (const pattern of namePatterns) {
                 const match = text.match(pattern);
-                if (match && match[1] && match[1].length > 3) {
-                    data.name = match[1].trim();
-                    break;
+                if (match && match[1]) {
+                    const potentialName = match[1].trim();
+                    // Avoid common false positives
+                    const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible'];
+                    if (!blacklist.includes(potentialName)) {
+                        data.name = potentialName;
+                        console.log('✅ Found name:', data.name);
+                        break;
+                    }
                 }
             }
 
-            // Extract time (various formats: 10:30, 10.30, 2 PM, 14:00, etc.)
+            // Extract time - improved for natural language
             const timePatterns = [
                 /(?:hora|time):\s*(\d{1,2}[:.]?\d{0,2}\s*(?:am|pm|a\.m\.|p\.m\.)?)/i,
-                /\b(\d{1,2}[:.]?\d{2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
+                // Match times with AM/PM
+                /\b(\d{1,2}:\d{2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
+                /\b(\d{1,2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
+                // Match "a las 3:30" or "como a las 3:30"
+                /(?:a\s+las|como\s+a\s+las)\s+(\d{1,2}:\d{2})/i,
+                // Match standalone times
                 /\b(\d{1,2}:\d{2})\b/,
-                /\b(\d{1,2}\s*(?:am|pm))\b/i
+                // Match "11 am" or "3 pm"
+                /\b(\d{1,2})\s*(am|pm)\b/i,
+                // Match "mañana" context
+                /(?:ma[ñn]ana|morning).*?(\d{1,2})\s*(am|pm)?/i
             ];
             for (const pattern of timePatterns) {
                 const match = text.match(pattern);
-                if (match && match[1]) {
-                    data.time = match[1].trim();
-                    break;
+                if (match) {
+                    if (match[2] && match[1]) {
+                        // Has hours and am/pm separately
+                        data.time = `${match[1]} ${match[2]}`;
+                    } else if (match[1]) {
+                        data.time = match[1].trim();
+                    }
+                    if (data.time) {
+                        console.log('✅ Found time:', data.time);
+                        break;
+                    }
                 }
             }
 
@@ -7087,28 +7202,40 @@ Incluye:
                 }
             }
 
-            // Extract address
+            // Extract address - improved for Utah addresses
             const addressPatterns = [
                 /(?:direcci[oó]n|address):\s*(.+)/i,
-                /\b(\d+\s+[A-Z][a-z]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard)\.?)/i
+                // Utah format: "115 s 950 e" or "1234 N 500 W"
+                /\b(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew](?:\s+[A-Z][a-z]+)?)\b/i,
+                // Standard format: "123 Main St"
+                /\b(\d+\s+[A-Z][a-z]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Lane|Way|Circle|Court)\.?(?:\s*,?\s*(?:Apt|Unit|#)?\s*[A-Z]?\d+)?)/i,
+                // Look for "En" or "Estoy en" followed by address
+                /(?:En|Estoy\s+en)\s+(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew])/i
             ];
             for (const pattern of addressPatterns) {
                 const match = text.match(pattern);
                 if (match && match[1]) {
                     data.address = match[1].trim();
+                    console.log('✅ Found address:', data.address);
                     break;
                 }
             }
 
-            // Extract job/service
+            // Extract job/service - improved for natural language
             const jobPatterns = [
                 /(?:trabajo|job|servicio|service):\s*(.+)/i,
-                /\b(limpieza|cleaning|deep clean|office clean|house clean|carpet clean)\b/i
+                // "limpiar 3 cuartos" or "limpiar X cuartos"
+                /(limpiar\s+\d+\s+cuartos?)/i,
+                // "deep clean", "office clean", etc.
+                /\b(deep\s+clean(?:ing)?|office\s+clean(?:ing)?|house\s+clean(?:ing)?|carpet\s+clean(?:ing)?)\b/i,
+                // Just "limpieza" or "cleaning"
+                /\b(limpieza|cleaning)\b/i
             ];
             for (const pattern of jobPatterns) {
                 const match = text.match(pattern);
                 if (match && match[1]) {
                     data.job = match[1].trim();
+                    console.log('✅ Found job:', data.job);
                     break;
                 }
             }
