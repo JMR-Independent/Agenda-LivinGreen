@@ -67,10 +67,25 @@ export default async function handler(req, res) {
             const errorData = await visionResponse.json();
             console.error('Google Vision API error:', errorData);
 
+            // Mensaje de error más específico según el código de estado
+            let userMessage = 'Failed to process image';
+            if (visionResponse.status === 403) {
+                userMessage = 'API Key rechazada. Verifica que la API key tenga permisos y que Cloud Vision API esté habilitada.';
+            } else if (visionResponse.status === 429) {
+                userMessage = 'Límite de requests excedido. Has superado el límite gratuito de Google Vision.';
+            } else if (visionResponse.status === 400) {
+                userMessage = 'Imagen inválida o malformada.';
+            }
+
             return res.status(visionResponse.status).json({
                 error: 'Vision API error',
-                message: errorData.error?.message || 'Failed to process image',
-                details: errorData
+                message: errorData.error?.message || userMessage,
+                userMessage: userMessage,
+                statusCode: visionResponse.status,
+                details: errorData,
+                help: visionResponse.status === 403
+                    ? 'Ve a https://console.cloud.google.com/apis/api/vision.googleapis.com y asegúrate de que la API esté habilitada'
+                    : null
             });
         }
 

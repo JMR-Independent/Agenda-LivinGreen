@@ -40,6 +40,17 @@ npx http-server
 
 Ver `INSTRUCCIONES-GOOGLE-VISION.md` para configurar Google Cloud Vision API.
 
+### 🔧 ¿Google Vision no funciona en Vercel?
+
+Si la extracción de texto no funciona después de deployar a Vercel, ve a:
+**→ [`SOLUCION-GOOGLE-VISION-VERCEL.md`](SOLUCION-GOOGLE-VISION-VERCEL.md)**
+
+Este documento incluye:
+- ✅ Verificación paso a paso de la configuración
+- 🔍 Endpoint de health check (`/api/health`)
+- 🐛 Solución de problemas comunes
+- 📊 Explicación de la arquitectura
+
 ## Deploy en Vercel
 
 ### Opción 1: Deploy Automático

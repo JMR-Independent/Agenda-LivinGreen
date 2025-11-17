@@ -37,6 +37,51 @@ Después de agregar variables:
 
 ## Endpoints Disponibles
 
+### `/api/health`
+
+Verifica que la configuración de Google Vision API esté correcta.
+
+**Method:** `GET` o `POST`
+
+**Response (exitoso):**
+```json
+{
+  "overallStatus": "healthy",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "environment": "production",
+  "checks": {
+    "visionApiKeyConfigured": {
+      "status": true,
+      "message": "✅ API key configurada (AIzaSyC-xx...)"
+    },
+    "visionApiWorking": {
+      "status": true,
+      "message": "✅ Google Vision API responde correctamente"
+    }
+  }
+}
+```
+
+**Response (con errores):**
+```json
+{
+  "overallStatus": "unhealthy",
+  "checks": {
+    "visionApiKeyConfigured": {
+      "status": false,
+      "message": "❌ GOOGLE_VISION_API_KEY no está configurada"
+    }
+  }
+}
+```
+
+**Uso:**
+- Abre `https://tu-proyecto.vercel.app/api/health` en el navegador
+- Verifica que `overallStatus` sea `"healthy"`
+- Si no, sigue las instrucciones en [`SOLUCION-GOOGLE-VISION-VERCEL.md`](../SOLUCION-GOOGLE-VISION-VERCEL.md)
+
+---
+
 ### `/api/vision`
 
 Proxy seguro para Google Cloud Vision API.
@@ -110,14 +155,27 @@ vercel dev
 
 ## Troubleshooting
 
-### Error: "API key not configured"
-→ Verifica que `GOOGLE_VISION_API_KEY` esté configurada en Vercel Settings
+### 🔧 Guía completa de solución de problemas
 
-### Error: "CORS blocked"
-→ Vercel maneja CORS automáticamente, verifica el dominio desde donde llamas
+**→ Ve a [`SOLUCION-GOOGLE-VISION-VERCEL.md`](../SOLUCION-GOOGLE-VISION-VERCEL.md)** para solucionar problemas con Google Vision en Vercel.
 
-### Error: "Vision API quota exceeded"
-→ Revisa tu uso en Google Cloud Console y aumenta el límite si es necesario
+Este documento incluye:
+- ✅ Verificación paso a paso de la configuración
+- 🔍 Cómo usar el endpoint `/api/health`
+- 🐛 Solución de errores comunes (403, 500, etc.)
+- 📊 Explicación de cómo funciona la arquitectura
+- 🆘 Qué hacer si nada funciona
+
+### Errores comunes rápidos:
+
+**Error: "API key not configured"**
+→ Agrega `GOOGLE_VISION_API_KEY` en Vercel Settings → Environment Variables → Redeploy
+
+**Error: "API Key rechazada" (403)**
+→ Revisa las restricciones de la API key en Google Cloud Console
+
+**Error: "Cloud Vision API not enabled" (403)**
+→ Ve a https://console.cloud.google.com/apis/api/vision.googleapis.com y habilita la API
 
 ---
 

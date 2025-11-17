@@ -6855,9 +6855,33 @@ Incluye:
                     });
 
                     if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error(`❌ Google Vision API Error (image ${i + 1}):`, errorText);
-                        continue;
+                        let errorData;
+                        try {
+                            errorData = await response.json();
+                        } catch (e) {
+                            errorData = { message: await response.text() };
+                        }
+
+                        console.error(`❌ Google Vision API Error (image ${i + 1}):`, errorData);
+
+                        // Mostrar error más específico al usuario
+                        if (response.status === 403 || response.status === 401) {
+                            console.error('🔑 API Key Error: La API key no es válida o no tiene permisos.');
+                            console.error('📖 Solución: Verifica la configuración en Vercel → Settings → Environment Variables');
+                            console.error('🔗 Más info: https://console.cloud.google.com/apis/api/vision.googleapis.com');
+                        } else if (response.status === 500) {
+                            console.error('⚠️ Server Error: La variable GOOGLE_VISION_API_KEY puede no estar configurada en Vercel');
+                            console.error('📖 Solución: Ve a tu proyecto en Vercel → Settings → Environment Variables');
+                        }
+
+                        // Mostrar alerta al usuario en el primer error
+                        if (i === 0) {
+                            const errorMsg = errorData.userMessage || errorData.message || 'Error al procesar la imagen';
+                            showError(`Google Vision Error: ${errorMsg}. La app intentará otros métodos de extracción.`);
+                        }
+
+                        // Retornar null para que intente con los métodos de fallback
+                        return null;
                     }
 
                     const data = await response.json();
