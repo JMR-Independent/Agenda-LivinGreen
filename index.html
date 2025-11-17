@@ -7123,41 +7123,68 @@ Incluye:
             const normalizedText = text.toLowerCase();
             const lines = text.split('\n').map(line => line.trim()).filter(line => line);
 
-            // Extract name - improved for WhatsApp messages
-            const namePatterns = [
-                /(?:nombre|name|cliente):\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)/i,
-                // Look for capitalized names in their own line (common in WhatsApp)
-                /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)$/m,
-                // Look for single capitalized words that might be names
-                /\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{3,})\b/
-            ];
-            for (const pattern of namePatterns) {
-                const match = text.match(pattern);
-                if (match && match[1]) {
-                    const potentialName = match[1].trim();
-                    // Avoid common false positives
-                    const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible'];
-                    if (!blacklist.includes(potentialName)) {
-                        data.name = potentialName;
-                        console.log('✅ Found name:', data.name);
-                        break;
+            console.log('📋 Extracted lines:', lines);
+
+            // Extract name - PRIORIZAR PRIMERA LÍNEA (nombre del contacto en WhatsApp)
+            // En WhatsApp, la primera línea casi siempre es el nombre del contacto
+            if (lines.length > 0) {
+                const firstLine = lines[0].trim();
+                console.log('🔍 Checking first line for name:', firstLine);
+
+                // Verificar que la primera línea parece un nombre
+                const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible', 'Noches', 'Disculpa'];
+                const isBlacklisted = blacklist.some(word => firstLine.toLowerCase().includes(word.toLowerCase()));
+
+                // Si la primera línea tiene capitalización y no está en blacklist, es probablemente el nombre
+                if (!isBlacklisted && firstLine.length > 0 && firstLine.length < 50) {
+                    // Verificar que tiene al menos una letra mayúscula
+                    if (/[A-ZÁÉÍÓÚÑ]/.test(firstLine)) {
+                        data.name = firstLine;
+                        console.log('✅ Found name in first line:', data.name);
                     }
                 }
             }
 
-            // Extract time - improved for natural language
+            // Si no encontramos nombre en primera línea, buscar con patterns
+            if (!data.name) {
+                const namePatterns = [
+                    /(?:nombre|name|cliente):\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)/i,
+                    // Look for capitalized names in their own line (common in WhatsApp)
+                    /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)$/m,
+                    // Look for single capitalized words that might be names
+                    /\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{3,})\b/
+                ];
+                for (const pattern of namePatterns) {
+                    const match = text.match(pattern);
+                    if (match && match[1]) {
+                        const potentialName = match[1].trim();
+                        // Avoid common false positives
+                        const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible', 'Noches', 'Disculpa'];
+                        if (!blacklist.includes(potentialName)) {
+                            data.name = potentialName;
+                            console.log('✅ Found name with pattern:', data.name);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Extract time - improved for natural language and formats like 3:30 or 3.30
             const timePatterns = [
-                /(?:hora|time):\s*(\d{1,2}[:.]?\d{0,2}\s*(?:am|pm|a\.m\.|p\.m\.)?)/i,
-                // Match times with AM/PM
+                // Match "hora: 3:30" or "time: 3:30"
+                /(?:hora|time):\s*(\d{1,2}[:.]?\d{2}\s*(?:am|pm|a\.m\.|p\.m\.)?)/i,
+                // Match times with AM/PM explicitly
                 /\b(\d{1,2}:\d{2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
                 /\b(\d{1,2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
-                // Match "a las 3:30" or "como a las 3:30"
-                /(?:a\s+las|como\s+a\s+las)\s+(\d{1,2}:\d{2})/i,
-                // Match standalone times
-                /\b(\d{1,2}:\d{2})\b/,
-                // Match "11 am" or "3 pm"
+                // Match "a las 3:30" or "como a las 3:30" (with : or .)
+                /(?:a\s+las|como\s+a\s+las)\s+(\d{1,2}[:\.]\d{2})/i,
+                // Match "en la mañana 3:30" or "mañana tengo tiempo 3:30"
+                /(?:ma[ñn]ana|morning).*?(\d{1,2}[:\.]\d{2})/i,
+                // Match "11 am" or "3 pm" (hours without minutes)
                 /\b(\d{1,2})\s*(am|pm)\b/i,
-                // Match "mañana" context
+                // Match standalone times with : or . (like "3:30" or "3.30")
+                /\b(\d{1,2}[:\.]\d{2})\b/,
+                // Match just hours in "mañana" context
                 /(?:ma[ñn]ana|morning).*?(\d{1,2})\s*(am|pm)?/i
             ];
             for (const pattern of timePatterns) {
@@ -7167,7 +7194,8 @@ Incluye:
                         // Has hours and am/pm separately
                         data.time = `${match[1]} ${match[2]}`;
                     } else if (match[1]) {
-                        data.time = match[1].trim();
+                        // Normalize time format (convert . to :)
+                        data.time = match[1].trim().replace('.', ':');
                     }
                     if (data.time) {
                         console.log('✅ Found time:', data.time);
