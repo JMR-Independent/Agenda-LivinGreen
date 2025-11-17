@@ -7160,6 +7160,22 @@ Incluye:
                     console.log(`✅ Found name in line ${i + 1}:`, data.name);
                     break;
                 }
+
+                // Si la línea completa no es válida, intentar extraer un nombre de ella
+                // Ej: "< (>. Alexa x v" → extraer "Alexa"
+                if (!data.name) {
+                    const nameMatch = line.match(/\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)\b/);
+                    if (nameMatch && nameMatch[1]) {
+                        const extractedName = nameMatch[1].trim();
+                        // Validar que el nombre extraído sea válido
+                        const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible', 'Noches', 'Disculpa', 'Buenos', 'Dias', 'Estamos', 'Contacto'];
+                        if (!blacklist.includes(extractedName) && extractedName.length >= 3) {
+                            data.name = extractedName;
+                            console.log(`✅ Found name extracted from line ${i + 1}:`, data.name);
+                            break;
+                        }
+                    }
+                }
             }
 
             // Si no encontramos nombre en primeras líneas, buscar con patterns en todo el texto
@@ -7204,20 +7220,39 @@ Incluye:
                 console.log(`  Trying pattern "${patternName}":`, match ? `Found "${match[0]}"` : 'No match');
 
                 if (match) {
+                    let timeCandidate = '';
+
                     if (match[2] && match[1]) {
-                        // Has hours and am/pm separately
-                        data.time = `${match[1]} ${match[2]}`;
+                        // Has hours and am/pm separately (e.g., "11" and "am")
+                        const hours = parseInt(match[1]);
+
+                        // Validate: hours for 12h format should be 1-12
+                        if (hours >= 1 && hours <= 12) {
+                            timeCandidate = `${match[1]} ${match[2]}`;
+                        } else {
+                            console.log(`  ⚠️ Invalid hour: ${hours} (must be 1-12 for 12h format)`);
+                        }
                     } else if (match[1]) {
                         // Normalize time format (convert . to :)
                         let time = match[1].trim().replace('.', ':');
 
-                        // If it's a valid time format (not a number that looks like a date)
-                        if (/^\d{1,2}[:\.]\d{2}$/.test(match[1]) || /^\d{1,2}\s*(am|pm)/i.test(match[0])) {
-                            data.time = time;
+                        // If it's a valid time format
+                        if (/^\d{1,2}[:\.]\d{2}$/.test(match[1])) {
+                            // Validate hours and minutes
+                            const parts = time.split(':');
+                            const hours = parseInt(parts[0]);
+                            const minutes = parseInt(parts[1]);
+
+                            if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+                                timeCandidate = time;
+                            } else {
+                                console.log(`  ⚠️ Invalid time: ${hours}:${minutes}`);
+                            }
                         }
                     }
 
-                    if (data.time) {
+                    if (timeCandidate) {
+                        data.time = timeCandidate;
                         console.log('✅ Found time:', data.time, `(using pattern: ${patternName})`);
                         break;
                     }
