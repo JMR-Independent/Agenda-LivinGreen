@@ -7125,42 +7125,56 @@ Incluye:
 
             console.log('📋 Extracted lines:', lines);
 
-            // Extract name - PRIORIZAR PRIMERA LÍNEA (nombre del contacto en WhatsApp)
-            // En WhatsApp, la primera línea casi siempre es el nombre del contacto
-            if (lines.length > 0) {
-                const firstLine = lines[0].trim();
-                console.log('🔍 Checking first line for name:', firstLine);
+            // Helper function: Check if a string looks like a name
+            function looksLikeName(str) {
+                if (!str || str.length < 2 || str.length > 50) return false;
 
-                // Verificar que la primera línea parece un nombre
-                const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible', 'Noches', 'Disculpa'];
-                const isBlacklisted = blacklist.some(word => firstLine.toLowerCase().includes(word.toLowerCase()));
+                // Not a name if it contains numbers (except at end for "Jr", "III", etc)
+                if (/^\d/.test(str) || /\d{2,}/.test(str)) return false;
 
-                // Si la primera línea tiene capitalización y no está en blacklist, es probablemente el nombre
-                if (!isBlacklisted && firstLine.length > 0 && firstLine.length < 50) {
-                    // Verificar que tiene al menos una letra mayúscula
-                    if (/[A-ZÁÉÍÓÚÑ]/.test(firstLine)) {
-                        data.name = firstLine;
-                        console.log('✅ Found name in first line:', data.name);
-                    }
+                // Not a name if it looks like a time (3:30, 11am, etc)
+                if (/\d+[:\.]\d+/.test(str) || /\d+\s*(am|pm)/i.test(str)) return false;
+
+                // Not a name if it starts with common greeting words
+                const blacklist = ['hola', 'buenas', 'gracias', 'perfecto', 'bien', 'estoy', 'tengo', 'para', 'tarde', 'disponible', 'noches', 'disculpa', 'buenos', 'dias'];
+                if (blacklist.some(word => str.toLowerCase().startsWith(word))) return false;
+
+                // Should have at least one uppercase letter (proper name)
+                if (!/[A-ZÁÉÍÓÚÑ]/.test(str)) return false;
+
+                // Should be mostly letters (allow spaces and basic punctuation)
+                if (!/^[A-ZÁÉÍÓÚÑa-záéíóúñ\s\.\-\']+$/.test(str)) return false;
+
+                return true;
+            }
+
+            // Extract name - BUSCAR EN PRIMERAS 5 LÍNEAS
+            // El nombre puede estar en la 1ra, 2da o 3ra línea (después de hora, fecha, etc)
+            console.log('🔍 Searching for name in first 5 lines...');
+            for (let i = 0; i < Math.min(5, lines.length); i++) {
+                const line = lines[i].trim();
+                console.log(`  Line ${i + 1}: "${line}" - looks like name? ${looksLikeName(line)}`);
+
+                if (looksLikeName(line)) {
+                    data.name = line;
+                    console.log(`✅ Found name in line ${i + 1}:`, data.name);
+                    break;
                 }
             }
 
-            // Si no encontramos nombre en primera línea, buscar con patterns
+            // Si no encontramos nombre en primeras líneas, buscar con patterns en todo el texto
             if (!data.name) {
+                console.log('⚠️ Name not found in first lines, trying patterns...');
                 const namePatterns = [
-                    /(?:nombre|name|cliente):\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)/i,
-                    // Look for capitalized names in their own line (common in WhatsApp)
+                    /(?:nombre|name|cliente):\s*([A-ZÁÉÍÓÚÑa-záéíóúñ\s]+?)(?:\n|$)/i,
+                    // Look for capitalized names in their own line
                     /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)$/m,
-                    // Look for single capitalized words that might be names
-                    /\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{3,})\b/
                 ];
                 for (const pattern of namePatterns) {
                     const match = text.match(pattern);
                     if (match && match[1]) {
                         const potentialName = match[1].trim();
-                        // Avoid common false positives
-                        const blacklist = ['Hola', 'Buenas', 'Gracias', 'Perfecto', 'Bien', 'Estoy', 'Tengo', 'Para', 'Tarde', 'Disponible', 'Noches', 'Disculpa'];
-                        if (!blacklist.includes(potentialName)) {
+                        if (looksLikeName(potentialName)) {
                             data.name = potentialName;
                             console.log('✅ Found name with pattern:', data.name);
                             break;
@@ -7169,39 +7183,49 @@ Incluye:
                 }
             }
 
+            if (!data.name) {
+                console.log('❌ Name not found');
+            }
+
             // Extract time - improved for natural language and formats like 3:30 or 3.30
+            console.log('🔍 Searching for time...');
             const timePatterns = [
-                // Match "hora: 3:30" or "time: 3:30"
-                /(?:hora|time):\s*(\d{1,2}[:.]?\d{2}\s*(?:am|pm|a\.m\.|p\.m\.)?)/i,
-                // Match times with AM/PM explicitly
-                /\b(\d{1,2}:\d{2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
-                /\b(\d{1,2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i,
-                // Match "a las 3:30" or "como a las 3:30" (with : or .)
-                /(?:a\s+las|como\s+a\s+las)\s+(\d{1,2}[:\.]\d{2})/i,
-                // Match "en la mañana 3:30" or "mañana tengo tiempo 3:30"
-                /(?:ma[ñn]ana|morning).*?(\d{1,2}[:\.]\d{2})/i,
-                // Match "11 am" or "3 pm" (hours without minutes)
-                /\b(\d{1,2})\s*(am|pm)\b/i,
-                // Match standalone times with : or . (like "3:30" or "3.30")
-                /\b(\d{1,2}[:\.]\d{2})\b/,
-                // Match just hours in "mañana" context
-                /(?:ma[ñn]ana|morning).*?(\d{1,2})\s*(am|pm)?/i
+                { name: 'hora: X', pattern: /(?:hora|time):\s*(\d{1,2}[:.]?\d{2}\s*(?:am|pm|a\.m\.|p\.m\.)?)/i },
+                { name: 'X:XX am/pm', pattern: /\b(\d{1,2}:\d{2}\s*(?:am|pm|a\.m\.|p\.m\.))\b/i },
+                { name: 'X am/pm', pattern: /\b(\d{1,2})\s*(am|pm|a\.m\.|p\.m\.)\b/i },
+                { name: 'a las X:XX', pattern: /(?:a\s+las|como\s+a\s+las)\s+(\d{1,2}[:\.]\d{2})/i },
+                { name: 'mañana X:XX', pattern: /(?:ma[ñn]ana|morning).*?(\d{1,2}[:\.]\d{2})/i },
+                { name: 'standalone X:XX', pattern: /\b(\d{1,2}[:\.]\d{2})\b/ },
+                { name: 'mañana X am', pattern: /(?:ma[ñn]ana|morning).*?(\d{1,2})\s*(am|pm)?/i }
             ];
-            for (const pattern of timePatterns) {
+
+            for (const { name: patternName, pattern } of timePatterns) {
                 const match = text.match(pattern);
+                console.log(`  Trying pattern "${patternName}":`, match ? `Found "${match[0]}"` : 'No match');
+
                 if (match) {
                     if (match[2] && match[1]) {
                         // Has hours and am/pm separately
                         data.time = `${match[1]} ${match[2]}`;
                     } else if (match[1]) {
                         // Normalize time format (convert . to :)
-                        data.time = match[1].trim().replace('.', ':');
+                        let time = match[1].trim().replace('.', ':');
+
+                        // If it's a valid time format (not a number that looks like a date)
+                        if (/^\d{1,2}[:\.]\d{2}$/.test(match[1]) || /^\d{1,2}\s*(am|pm)/i.test(match[0])) {
+                            data.time = time;
+                        }
                     }
+
                     if (data.time) {
-                        console.log('✅ Found time:', data.time);
+                        console.log('✅ Found time:', data.time, `(using pattern: ${patternName})`);
                         break;
                     }
                 }
+            }
+
+            if (!data.time) {
+                console.log('❌ Time not found');
             }
 
             // Extract day of week
@@ -7231,41 +7255,45 @@ Incluye:
             }
 
             // Extract address - improved for Utah addresses
+            console.log('🔍 Searching for address...');
             const addressPatterns = [
-                /(?:direcci[oó]n|address):\s*(.+)/i,
-                // Utah format: "115 s 950 e" or "1234 N 500 W"
-                /\b(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew](?:\s+[A-Z][a-z]+)?)\b/i,
-                // Standard format: "123 Main St"
-                /\b(\d+\s+[A-Z][a-z]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Lane|Way|Circle|Court)\.?(?:\s*,?\s*(?:Apt|Unit|#)?\s*[A-Z]?\d+)?)/i,
-                // Look for "En" or "Estoy en" followed by address
-                /(?:En|Estoy\s+en)\s+(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew])/i
+                { name: 'dirección:', pattern: /(?:direcci[oó]n|address):\s*(.+)/i },
+                { name: 'Utah format', pattern: /\b(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew](?:\s+[A-Z][a-z]+)?)\b/i },
+                { name: 'Standard', pattern: /\b(\d+\s+[A-Z][a-z]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Lane|Way|Circle|Court)\.?(?:\s*,?\s*(?:Apt|Unit|#)?\s*[A-Z]?\d+)?)/i },
+                { name: 'Estoy en', pattern: /(?:En|Estoy\s+en)\s+(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew])/i }
             ];
-            for (const pattern of addressPatterns) {
+            for (const { name: patternName, pattern } of addressPatterns) {
                 const match = text.match(pattern);
+                console.log(`  Trying pattern "${patternName}":`, match ? `Found "${match[0]}"` : 'No match');
                 if (match && match[1]) {
                     data.address = match[1].trim();
-                    console.log('✅ Found address:', data.address);
+                    console.log('✅ Found address:', data.address, `(using pattern: ${patternName})`);
                     break;
                 }
             }
+            if (!data.address) {
+                console.log('❌ Address not found');
+            }
 
             // Extract job/service - improved for natural language
+            console.log('🔍 Searching for job/service...');
             const jobPatterns = [
-                /(?:trabajo|job|servicio|service):\s*(.+)/i,
-                // "limpiar 3 cuartos" or "limpiar X cuartos"
-                /(limpiar\s+\d+\s+cuartos?)/i,
-                // "deep clean", "office clean", etc.
-                /\b(deep\s+clean(?:ing)?|office\s+clean(?:ing)?|house\s+clean(?:ing)?|carpet\s+clean(?:ing)?)\b/i,
-                // Just "limpieza" or "cleaning"
-                /\b(limpieza|cleaning)\b/i
+                { name: 'trabajo:', pattern: /(?:trabajo|job|servicio|service):\s*(.+)/i },
+                { name: 'limpiar X cuartos', pattern: /(limpiar\s+\d+\s+cuartos?)/i },
+                { name: 'deep clean', pattern: /\b(deep\s+clean(?:ing)?|office\s+clean(?:ing)?|house\s+clean(?:ing)?|carpet\s+clean(?:ing)?)\b/i },
+                { name: 'limpieza', pattern: /\b(limpieza|cleaning)\b/i }
             ];
-            for (const pattern of jobPatterns) {
+            for (const { name: patternName, pattern } of jobPatterns) {
                 const match = text.match(pattern);
+                console.log(`  Trying pattern "${patternName}":`, match ? `Found "${match[0]}"` : 'No match');
                 if (match && match[1]) {
                     data.job = match[1].trim();
-                    console.log('✅ Found job:', data.job);
+                    console.log('✅ Found job:', data.job, `(using pattern: ${patternName})`);
                     break;
                 }
+            }
+            if (!data.job) {
+                console.log('❌ Job not found');
             }
 
             // Extract price
@@ -7281,6 +7309,16 @@ Incluye:
                     break;
                 }
             }
+
+            // Log final summary
+            console.log('📊 Extraction Summary:');
+            console.log('  Name:', data.name || '❌ Not found');
+            console.log('  Time:', data.time || '❌ Not found');
+            console.log('  Day:', data.day || '❌ Not found');
+            console.log('  Address:', data.address || '❌ Not found');
+            console.log('  City:', data.city || '❌ Not found');
+            console.log('  Job:', data.job || '❌ Not found');
+            console.log('  Price:', data.price || '❌ Not found');
 
             return data;
         }
