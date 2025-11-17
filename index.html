@@ -7114,7 +7114,8 @@ Incluye:
                 address: '',
                 job: '',
                 price: '',
-                day: ''
+                day: '',
+                fullText: text  // Store full text for context-based time detection
             };
 
             console.log('🔍 Parsing extracted text:', text);
@@ -7893,8 +7894,8 @@ IMPORTANTE:
             }
             
             if (data.time) {
-                // Convert time to 24h format if needed
-                const normalizedTime = normalizeTime(data.time);
+                // Convert time to 24h format if needed, using context to detect AM/PM
+                const normalizedTime = normalizeTime(data.time, data.fullText || '');
                 // Try to set the select option
                 const timeSelect = document.getElementById('time');
                 const timeOption = Array.from(timeSelect.options).find(option => option.value === normalizedTime);
@@ -7994,47 +7995,87 @@ IMPORTANTE:
             console.log('🏁 Form filling completed');
         }
 
-        function normalizeTime(timeStr) {
+        function normalizeTime(timeStr, contextText = '') {
             if (!timeStr) return '';
-            
+
+            console.log('🕐 Normalizing time:', timeStr);
+            if (contextText) {
+                console.log('📝 Context text available for AM/PM detection');
+            }
+
             // Remove spaces and convert to lowercase
             let time = timeStr.trim().toLowerCase();
-            
-            // Handle PM times
+            const contextLower = contextText.toLowerCase();
+
+            // Handle PM times (explicit in time string)
             if (time.includes('pm') || time.includes('p.m.')) {
                 let hour = parseInt(time.match(/\d+/)[0]);
                 let minute = time.match(/:(\d+)/) ? time.match(/:(\d+)/)[1] : '00';
                 if (hour !== 12) hour += 12;
+                console.log(`✅ Explicit PM detected: ${timeStr} → ${hour}:${minute}`);
                 return `${hour.toString().padStart(2, '0')}:${minute.padStart(2, '0')}`;
             }
-            
-            // Handle AM times
+
+            // Handle AM times (explicit in time string)
             if (time.includes('am') || time.includes('a.m.')) {
                 let hour = parseInt(time.match(/\d+/)[0]);
                 let minute = time.match(/:(\d+)/) ? time.match(/:(\d+)/)[1] : '00';
                 if (hour === 12) hour = 0;
+                console.log(`✅ Explicit AM detected: ${timeStr} → ${hour}:${minute}`);
                 return `${hour.toString().padStart(2, '0')}:${minute.padStart(2, '0')}`;
             }
-            
+
             // Handle dot format (10.30 -> 10:30)
             if (time.includes('.')) {
                 time = time.replace('.', ':');
             }
-            
+
             // Add :00 if only hour is provided
             if (/^\d{1,2}$/.test(time)) {
                 time = time + ':00';
             }
-            
-            // Ensure proper HH:MM format
+
+            // Parse time components
             const timeMatch = time.match(/(\d{1,2}):?(\d{0,2})/);
-            if (timeMatch) {
-                const hour = timeMatch[1].padStart(2, '0');
-                const minute = (timeMatch[2] || '00').padStart(2, '0');
-                return `${hour}:${minute}`;
+            if (!timeMatch) {
+                return timeStr; // Return original if can't parse
             }
-            
-            return timeStr; // Return original if can't parse
+
+            let hour = parseInt(timeMatch[1]);
+            const minute = (timeMatch[2] || '00').padStart(2, '0');
+
+            // Detect AM/PM from context if not explicit in time string
+            if (contextText && hour >= 1 && hour <= 12) {
+                // Spanish context detection
+                const isPM = contextLower.includes('tarde') || // afternoon
+                             contextLower.includes('noche') || // night
+                             contextLower.includes('afternoon') ||
+                             contextLower.includes('evening') ||
+                             contextLower.includes('night');
+
+                const isAM = contextLower.includes('mañana') || // morning
+                             contextLower.includes('madrugada') || // early morning
+                             contextLower.includes('morning');
+
+                if (isPM && hour !== 12) {
+                    console.log(`🌙 Context indicates PM (found "tarde/noche"): ${hour}:${minute} → ${hour + 12}:${minute}`);
+                    hour += 12;
+                } else if (isAM && hour === 12) {
+                    console.log(`🌅 Context indicates AM with 12: ${hour}:${minute} → 00:${minute}`);
+                    hour = 0;
+                } else if (isPM) {
+                    console.log(`🌙 Context indicates PM but hour is 12, keeping as is: ${hour}:${minute}`);
+                } else if (isAM) {
+                    console.log(`🌅 Context indicates AM: ${hour}:${minute} (no change needed)`);
+                } else {
+                    console.log(`⚠️ No clear AM/PM context found, assuming as-is: ${hour}:${minute}`);
+                }
+            }
+
+            // Ensure proper HH:MM format
+            const normalizedTime = `${hour.toString().padStart(2, '0')}:${minute}`;
+            console.log(`✅ Normalized time result: ${normalizedTime}`);
+            return normalizedTime;
         }
 
         function getNextDayDate(dayName) {
