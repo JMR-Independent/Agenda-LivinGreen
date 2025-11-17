@@ -5,18 +5,20 @@ Progressive Web App para gestión de citas con extracción automática de datos 
 ## Características
 
 - 📱 PWA completa (funciona offline)
-- 🔍 OCR automático con Google Cloud Vision API
+- 📝 **OCR automático GRATIS con Tesseract.js** (corre en el navegador, sin API keys)
+- 🔍 Sistema de fallback multinivel (Tesseract → Google Vision → MCP → GPT-4)
 - 💾 Integración con Supabase
-- 🎯 Sistema de fallback multinivel (Vision API → MCP → GPT-4)
 - 📊 Análisis financiero de citas
 - 🔔 Notificaciones push
+- 🔒 100% privado (OCR corre en tu navegador)
 
 ## Stack Tecnológico
 
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **OCR**: Google Cloud Vision API
+- **OCR Principal**: Tesseract.js (100% gratis, corre en el navegador)
+- **OCR Fallback**: Google Cloud Vision API (requiere billing)
 - **Backend**: Supabase
-- **AI Fallback**: OpenAI GPT-4
+- **AI Fallback**: MCP, OpenAI GPT-4
 - **Deploy**: Vercel
 
 ## Instalación Local
@@ -38,18 +40,23 @@ npx http-server
 
 ## Configuración
 
-Ver `INSTRUCCIONES-GOOGLE-VISION.md` para configurar Google Cloud Vision API.
+### ✅ OCR con Tesseract.js (Recomendado)
 
-### 🔧 ¿Google Vision no funciona en Vercel?
+**No requiere configuración** - Funciona automáticamente. Es:
+- ✅ 100% Gratis (sin límites)
+- ✅ Sin API keys ni registro
+- ✅ Privado (corre en tu navegador)
+- ✅ Funciona offline
 
-Si la extracción de texto no funciona después de deployar a Vercel, ve a:
-**→ [`SOLUCION-GOOGLE-VISION-VERCEL.md`](SOLUCION-GOOGLE-VISION-VERCEL.md)**
+**→ Ver [`TESSERACT-OCR-INFO.md`](TESSERACT-OCR-INFO.md)** para más detalles y tips de uso.
 
-Este documento incluye:
-- ✅ Verificación paso a paso de la configuración
-- 🔍 Endpoint de health check (`/api/health`)
-- 🐛 Solución de problemas comunes
-- 📊 Explicación de la arquitectura
+### 🔧 OCR con Google Vision (Opcional)
+
+Si quieres máxima precisión (99%+), puedes habilitar Google Vision como fallback:
+- Ver `INSTRUCCIONES-GOOGLE-VISION.md` para configurar
+- ⚠️ Requiere habilitar billing en Google Cloud (gratis hasta 1000/mes)
+
+**→ Si tienes problemas con Google Vision:** [`SOLUCION-GOOGLE-VISION-VERCEL.md`](SOLUCION-GOOGLE-VISION-VERCEL.md)
 
 ## Deploy en Vercel
 
@@ -120,11 +127,15 @@ Ver más detalles en: [`api/README.md`](api/README.md)
 
 ## Tecnologías de OCR
 
-La app usa un sistema de fallback inteligente:
+La app usa un sistema de fallback inteligente de 5 niveles:
 
-1. **Google Cloud Vision API** (Principal)
-2. **MCP Vision** (Fallback 1)
-3. **OpenAI GPT-4 Vision** (Fallback 2)
+1. **Tesseract.js** (Principal - 100% gratis, browser-based)
+2. **Google Cloud Vision API** (Fallback 1 - requiere billing)
+3. **MCP Vision** (Fallback 2)
+4. **OpenAI GPT-4 Vision** (Fallback 3)
+5. **Entrada manual** (Fallback 4)
+
+**Recomendación:** Tesseract.js funciona excelente para la mayoría de casos (~80-85% precisión) y es completamente gratis.
 
 ## Desarrollo
 

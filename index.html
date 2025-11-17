@@ -4189,6 +4189,8 @@ Incluye:
     <script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
     <!-- IndexedDB library for offline-first functionality -->
     <script src="https://unpkg.com/idb@8/build/umd.js"></script>
+    <!-- Tesseract.js for free OCR in the browser -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <script>
         // ================================================================
         // RIZE PROFESSIONAL CLEANING - PWA
@@ -6794,9 +6796,18 @@ Incluye:
             console.log(`🔄 Processing ${imagesData.length} images for data extraction...`);
 
             try {
-                // Try Google Cloud Vision first (best OCR accuracy)
+                // Try Tesseract.js first (free, no API key needed, runs in browser)
+                console.log('📝 Attempting Tesseract.js OCR (free, browser-based)...');
+                const tesseractResult = await extractDataWithTesseract(imagesData);
+                if (tesseractResult && Object.keys(tesseractResult).length > 0) {
+                    console.log('✅ Tesseract extraction successful:', tesseractResult);
+                    return tesseractResult;
+                }
+                console.log('⚠️ Tesseract extraction failed, trying next method...');
+
+                // Try Google Cloud Vision as fallback (requires billing enabled)
                 if (API_BASE_URL) {
-                    console.log('📸 Attempting Google Cloud Vision (best OCR)...');
+                    console.log('📸 Attempting Google Cloud Vision (requires billing)...');
                     const visionResult = await extractDataWithGoogleVision(imagesData);
                     if (visionResult && Object.keys(visionResult).length > 0) {
                         console.log('✅ Google Vision extraction successful:', visionResult);
@@ -6807,7 +6818,7 @@ Incluye:
                     console.log('⚠️ API not available (file:// protocol detected), skipping Google Vision...');
                 }
 
-                // Try MCP-based extraction as second option
+                // Try MCP-based extraction as third option
                 console.log('🔍 Attempting MCP-based image analysis...');
                 const mcpResult = await extractDataWithMCP(imagesData);
                 if (mcpResult && Object.keys(mcpResult).length > 0) {
@@ -6815,7 +6826,7 @@ Incluye:
                     return mcpResult;
                 }
 
-                // Fallback to OpenAI API if both Google Vision and MCP fail
+                // Fallback to OpenAI API if all methods fail
                 console.log('⚠️ MCP extraction failed, trying OpenAI API as fallback...');
                 return await extractDataWithOpenAI(imagesData);
 
@@ -6825,7 +6836,99 @@ Incluye:
             }
         }
 
-        // Google Cloud Vision API - Best OCR accuracy
+        // Tesseract.js - Free OCR that runs in the browser
+        async function extractDataWithTesseract(imagesData) {
+            try {
+                console.log('📝 Starting Tesseract.js OCR (free, browser-based)...');
+
+                // Combine text from all images
+                let allText = '';
+
+                for (let i = 0; i < imagesData.length; i++) {
+                    const imageData = imagesData[i];
+                    console.log(`📷 Processing image ${i + 1}/${imagesData.length} with Tesseract...`);
+
+                    try {
+                        // Show progress to user
+                        const loadingEl = document.getElementById('loading');
+                        if (loadingEl) {
+                            const progressText = loadingEl.querySelector('p');
+                            if (progressText) {
+                                progressText.textContent = `Procesando imagen ${i + 1}/${imagesData.length} con OCR...`;
+                            }
+                        }
+
+                        // Convert base64 to blob URL for Tesseract
+                        const base64Data = imageData.base64;
+                        const imageUrl = `data:image/jpeg;base64,${base64Data}`;
+
+                        // Run Tesseract OCR with progress tracking
+                        const result = await Tesseract.recognize(
+                            imageUrl,
+                            'eng+spa', // English and Spanish
+                            {
+                                logger: info => {
+                                    if (info.status === 'recognizing text') {
+                                        const percent = Math.round(info.progress * 100);
+                                        console.log(`📊 OCR Progress: ${percent}%`);
+                                        const loadingEl = document.getElementById('loading');
+                                        if (loadingEl) {
+                                            const progressText = loadingEl.querySelector('p');
+                                            if (progressText) {
+                                                progressText.textContent = `Extrayendo texto ${i + 1}/${imagesData.length}: ${percent}%`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        );
+
+                        const text = result.data.text;
+
+                        if (text && text.trim()) {
+                            allText += text + '\n\n';
+                            console.log(`✅ Image ${i + 1} processed successfully`);
+                            console.log(`📝 Extracted text from image ${i + 1}:`, text.substring(0, 200) + '...');
+                        } else {
+                            console.warn(`⚠️ No text extracted from image ${i + 1}`);
+                        }
+
+                    } catch (imageError) {
+                        console.error(`❌ Error processing image ${i + 1} with Tesseract:`, imageError);
+                        // Continue with next image
+                        continue;
+                    }
+                }
+
+                // Reset loading text
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    const progressText = loadingEl.querySelector('p');
+                    if (progressText) {
+                        progressText.textContent = 'Procesando...';
+                    }
+                }
+
+                if (!allText.trim()) {
+                    console.warn('⚠️ No text extracted from any image with Tesseract');
+                    return null;
+                }
+
+                console.log('📋 Combined text from all images:', allText);
+
+                // Parse the extracted text to find the required fields
+                const extractedData = parseExtractedText(allText);
+
+                console.log('✅ Parsed data from Tesseract:', extractedData);
+                return extractedData;
+
+            } catch (error) {
+                console.error('❌ Tesseract extraction failed:', error);
+                return null;
+            }
+        }
+
+        // Google Cloud Vision API - Best OCR accuracy (requires billing enabled)
         async function extractDataWithGoogleVision(imagesData) {
             try {
                 console.log('📸 Starting Google Cloud Vision OCR...');
