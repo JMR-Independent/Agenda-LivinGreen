@@ -119,7 +119,7 @@ def main():
     print("=" * 50)
 
     # Ruta del logo original
-    logo_path = "livingreen-logo.png"
+    logo_path = "logo-hojas.jpg"
 
     if not os.path.exists(logo_path):
         print(f"Error: No se encuentra {logo_path}")
