@@ -59,9 +59,9 @@ def crear_icono_con_bordes_redondeados(img_logo, size, radius):
     # Crear imagen base blanca
     icono = Image.new('RGBA', (size, size), (255, 255, 255, 255))
 
-    # Calcular tamaño del logo - MUCHO MÁS GRANDE para compensar espacio blanco
-    # Usamos 2.4x para que el logo real (sin espacio) ocupe ~90% del icono
-    logo_size = int(size * 2.4)
+    # Calcular tamaño del logo - ajustado para este logo de alta calidad
+    # Usamos 1.1x ya que el logo ya viene bien recortado
+    logo_size = int(size * 1.1)
 
     # Redimensionar logo manteniendo aspecto
     img_logo_resized = img_logo.copy()
@@ -94,9 +94,9 @@ def crear_icono_cuadrado(img_logo, size):
     # Crear imagen base blanca
     icono = Image.new('RGB', (size, size), (255, 255, 255))
 
-    # Calcular tamaño del logo - MUCHO MÁS GRANDE para compensar espacio blanco
-    # Usamos 2.4x para que el logo real (sin espacio) ocupe ~90% del icono
-    logo_size = int(size * 2.4)
+    # Calcular tamaño del logo - ajustado para este logo de alta calidad
+    # Usamos 1.1x ya que el logo ya viene bien recortado
+    logo_size = int(size * 1.1)
 
     # Redimensionar logo manteniendo aspecto
     img_logo_resized = img_logo.copy()
@@ -119,7 +119,7 @@ def main():
     print("=" * 50)
 
     # Ruta del logo original
-    logo_path = "logo-hojas.jpg"
+    logo_path = "logo-2.jpg"
 
     if not os.path.exists(logo_path):
         print(f"Error: No se encuentra {logo_path}")
