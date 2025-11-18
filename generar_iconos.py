@@ -59,9 +59,9 @@ def crear_icono_con_bordes_redondeados(img_logo, size, radius):
     # Crear imagen base blanca
     icono = Image.new('RGBA', (size, size), (255, 255, 255, 255))
 
-    # Calcular tamaño del logo - sin recorte, con espacio blanco incluido
-    # Usamos 0.92x para respetar el espacio blanco original
-    logo_size = int(size * 0.92)
+    # Calcular tamaño del logo - un poco más grande para mejor visibilidad
+    # Usamos 1.05x para que las hojas se vean más grandes pero sin cortar
+    logo_size = int(size * 1.05)
 
     # Redimensionar logo manteniendo aspecto
     img_logo_resized = img_logo.copy()
@@ -97,9 +97,9 @@ def crear_icono_cuadrado(img_logo, size):
     # Crear imagen base blanca
     icono = Image.new('RGB', (size, size), (255, 255, 255))
 
-    # Calcular tamaño del logo - sin recorte, con espacio blanco incluido
-    # Usamos 0.92x para respetar el espacio blanco original
-    logo_size = int(size * 0.92)
+    # Calcular tamaño del logo - un poco más grande para mejor visibilidad
+    # Usamos 1.05x para que las hojas se vean más grandes pero sin cortar
+    logo_size = int(size * 1.05)
 
     # Redimensionar logo manteniendo aspecto
     img_logo_resized = img_logo.copy()
