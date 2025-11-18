@@ -59,9 +59,9 @@ def crear_icono_con_bordes_redondeados(img_logo, size, radius):
     # Crear imagen base blanca
     icono = Image.new('RGBA', (size, size), (255, 255, 255, 255))
 
-    # Calcular tamaño del logo - ajustado para este logo de alta calidad
-    # Usamos 1.1x ya que el logo ya viene bien recortado
-    logo_size = int(size * 1.1)
+    # Calcular tamaño del logo - sin recorte, con espacio blanco incluido
+    # Usamos 0.92x para respetar el espacio blanco original
+    logo_size = int(size * 0.92)
 
     # Redimensionar logo manteniendo aspecto
     img_logo_resized = img_logo.copy()
@@ -76,8 +76,11 @@ def crear_icono_con_bordes_redondeados(img_logo, size, radius):
     draw = ImageDraw.Draw(mask)
     draw.rounded_rectangle([(0, 0), (size, size)], radius=radius, fill=255)
 
-    # Pegar logo en el centro
-    icono.paste(img_logo_resized, (x, y), img_logo_resized)
+    # Pegar logo en el centro (manejar transparencia correctamente)
+    if img_logo_resized.mode == 'RGBA':
+        icono.paste(img_logo_resized, (x, y), img_logo_resized.split()[3])
+    else:
+        icono.paste(img_logo_resized, (x, y))
 
     # Aplicar bordes redondeados
     output = Image.new('RGBA', (size, size), (255, 255, 255, 0))
@@ -94,9 +97,9 @@ def crear_icono_cuadrado(img_logo, size):
     # Crear imagen base blanca
     icono = Image.new('RGB', (size, size), (255, 255, 255))
 
-    # Calcular tamaño del logo - ajustado para este logo de alta calidad
-    # Usamos 1.1x ya que el logo ya viene bien recortado
-    logo_size = int(size * 1.1)
+    # Calcular tamaño del logo - sin recorte, con espacio blanco incluido
+    # Usamos 0.92x para respetar el espacio blanco original
+    logo_size = int(size * 0.92)
 
     # Redimensionar logo manteniendo aspecto
     img_logo_resized = img_logo.copy()
@@ -119,7 +122,7 @@ def main():
     print("=" * 50)
 
     # Ruta del logo original
-    logo_path = "logo-2.jpg"
+    logo_path = "logo-gemini.png"
 
     if not os.path.exists(logo_path):
         print(f"Error: No se encuentra {logo_path}")
@@ -129,9 +132,9 @@ def main():
     img_original = Image.open(logo_path)
     print(f"Tamanio original: {img_original.size}")
 
-    # Recortar espacio blanco
-    print("\nRecortando espacio blanco...")
-    img_recortada = recortar_espacio_blanco(img_original)
+    # NO recortar - usar imagen tal cual con su espacio blanco
+    print("\nUsando logo sin recorte (manteniendo espacio blanco original)...")
+    img_recortada = img_original
 
     # Configuración de iconos
     iconos = [
