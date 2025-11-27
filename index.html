@@ -252,9 +252,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
-                        url('./images/background.webp') center center / cover no-repeat;
-            background-attachment: fixed;
+            background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
             /* iOS Safari specific optimizations */
@@ -2979,7 +2977,9 @@
 
         .landing-view {
             min-height: 100vh;
-            background: transparent;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                        url('./images/background.webp') center center / cover no-repeat;
+            background-attachment: fixed;
             padding: 48px 24px;
             display: flex;
             flex-direction: column;
@@ -3411,6 +3411,23 @@
             .bento-description {
                 font-size: 12px;
             }
+
+            /* Mini calendar mobile styles */
+            .mini-calendar-days div {
+                font-size: 8px;
+            }
+
+            .mini-calendar-dates div {
+                font-size: 9px;
+            }
+
+            .calendar-slide h3 {
+                font-size: 12px !important;
+            }
+
+            .bento-item-small .bento-item-content {
+                padding: 12px !important;
+            }
         }
 
         @media (max-width: 480px) {
@@ -3427,6 +3444,24 @@
             .bento-grid {
                 grid-auto-rows: 150px;
                 margin-bottom: 40px;
+            }
+
+            /* Smaller calendar for very small screens */
+            .mini-calendar-days div {
+                font-size: 7px;
+            }
+
+            .mini-calendar-dates div {
+                font-size: 8px;
+            }
+
+            .calendar-slide h3 {
+                font-size: 10px !important;
+                margin-bottom: 4px !important;
+            }
+
+            .bento-item-small .bento-item-content {
+                padding: 10px !important;
             }
         }
 
