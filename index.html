@@ -2977,7 +2977,8 @@
 
         .landing-view {
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                        url('./images/background.webp') center/cover no-repeat fixed;
             padding: 48px 24px;
             display: flex;
             flex-direction: column;
@@ -3033,13 +3034,17 @@
         }
 
         .bento-item {
-            border-radius: 48px;
+            border-radius: 32px;
             overflow: hidden;
             cursor: pointer;
             position: relative;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeInScale 0.5s ease-out backwards;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.1);
+            background: rgba(40, 40, 40, 0.4);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
         .bento-item::before {
@@ -3049,19 +3054,21 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0) 100%);
+            background: rgba(0, 0, 0, 0);
             transition: all 0.3s ease;
             z-index: 1;
             pointer-events: none;
         }
 
         .bento-item:hover::before {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .bento-item:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-4px) scale(1.01);
+            background: rgba(50, 50, 50, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
         }
 
         .bento-item-large {
@@ -3090,60 +3097,209 @@
             position: relative;
             overflow: hidden;
             z-index: 2;
+            background: transparent;
         }
 
         .bento-item-image {
-            background: linear-gradient(135deg, #10a37f 0%, #0d8c6d 100%);
+            background: transparent;
         }
 
         .bento-item-text {
-            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            background: transparent;
         }
 
         .bento-item-accent {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            background: transparent;
         }
 
         .bento-icon {
             width: 64px;
             height: 64px;
             margin-bottom: 16px;
-            fill: white;
-            opacity: 0.85;
+            fill: rgba(180, 180, 180, 0.9);
+            opacity: 0.9;
             transition: all 0.3s ease;
-            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .bento-item:hover .bento-icon {
-            transform: scale(1.15) rotate(5deg);
+            transform: scale(1.05);
+            fill: rgba(200, 200, 200, 1);
             opacity: 1;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
         }
 
         .bento-title {
             font-size: 24px;
-            font-weight: 700;
-            color: white;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
             margin-bottom: 8px;
             transition: all 0.3s ease;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
         .bento-item:hover .bento-title {
-            transform: translateY(-4px);
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
         .bento-description {
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(200, 200, 200, 0.8);
             line-height: 1.5;
             transition: all 0.3s ease;
         }
 
         .bento-item:hover .bento-description {
+            color: rgba(220, 220, 220, 1);
+            transform: translateY(-1px);
+        }
+
+        /* Mini Calendar Styles */
+        .mini-calendar {
+            width: 100%;
+            font-size: 5px;
+        }
+
+        .mini-calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5px;
+            margin-bottom: 1px;
+        }
+
+        .mini-calendar-days div {
+            text-align: center;
+            color: rgba(160, 160, 160, 0.6);
+            font-size: 5px;
+            font-weight: 500;
+            padding: 0.5px 0;
+        }
+
+        .mini-calendar-dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5px;
+        }
+
+        .mini-calendar-dates div {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(200, 200, 200, 0.75);
+            font-size: 5px;
+            border-radius: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .mini-calendar-dates div:hover {
+            background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 1);
-            transform: translateY(-2px);
+        }
+
+        .mini-calendar-dates div.today {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 1);
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Today Amount Circle Styles */
+        .today-amount-circle {
+            width: 140px;
+            height: 140px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 12;
+        }
+
+        .progress-ring-fill {
+            fill: none;
+            stroke: #00d4ff;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .circle-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-content .amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .circle-content .today-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(200, 200, 200, 0.8);
+        }
+
+        /* Appointments List Styles */
+        .appointments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .appointment-item {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+            padding: 6px 0;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .appointment-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Calendar Slider Styles */
+        .calendar-slider {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .calendar-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .calendar-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .calendar-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
         }
 
         /* Updated: 2025-11-26 - Enhanced visual effects */
@@ -3871,20 +4027,30 @@
 
     <!-- Landing Page with Bento Grid -->
     <div class="landing-view" id="landing-view">
-        <div class="landing-header">
-            <h1 class="landing-title">LivinGreen Agenda</h1>
-            <p class="landing-subtitle">Plataforma de agendamiento inteligente para gestionar tus citas y clientes</p>
-        </div>
-
         <div class="bento-grid">
             <!-- Agendar Citas - LARGE -->
             <div class="bento-item bento-item-large" onclick="navigateToView('schedule')" style="animation-delay: 0.1s">
-                <div class="bento-item-content bento-item-image">
-                    <svg class="bento-icon" viewBox="0 0 24 24">
-                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                    </svg>
-                    <h2 class="bento-title">Agendar Citas</h2>
-                    <p class="bento-description">Programa nuevas citas con extracción automática de datos</p>
+                <div class="bento-item-content bento-item-image" style="padding: 24px; justify-content: flex-start; align-items: flex-start;">
+                    <h3 style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 16px; width: 100%; text-align: left;">Citas de hoy - Nov 27</h3>
+                    <div style="display: flex; gap: 20px; width: 100%; align-items: center;">
+                        <!-- Círculo con monto y progreso -->
+                        <div class="today-amount-circle">
+                            <svg class="progress-ring" width="140" height="140">
+                                <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                <circle class="progress-ring-fill" cx="70" cy="70" r="60" style="stroke-dasharray: 377; stroke-dashoffset: 136;" />
+                            </svg>
+                            <div class="circle-content">
+                                <div class="amount">$320</div>
+                                <div class="today-label">Today</div>
+                            </div>
+                        </div>
+                        <!-- Lista de citas -->
+                        <div class="appointments-list">
+                            <div class="appointment-item">1. Dr. García - CDMX (Polanco)</div>
+                            <div class="appointment-item">2. Sra. López - Guadalajara (Zapopan)</div>
+                            <div class="appointment-item">3. Lic. Rodríguez - Monterrey (San Pedro)</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -3900,13 +4066,35 @@
             </div>
 
             <!-- Calendario - SMALL -->
-            <div class="bento-item bento-item-small" onclick="navigateToView('calendar')" style="animation-delay: 0.3s">
-                <div class="bento-item-content bento-item-accent">
-                    <svg class="bento-icon" viewBox="0 0 24 24">
-                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2-7h-3V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
-                    </svg>
-                    <h2 class="bento-title">Calendario</h2>
-                    <p class="bento-description">Vista semanal</p>
+            <div class="bento-item bento-item-small calendar-slider" onclick="navigateToView('calendar')" style="animation-delay: 0.3s">
+                <div class="calendar-slides">
+                    <!-- Slide 1: Calendar con números -->
+                    <div class="calendar-slide active">
+                        <div class="bento-item-content bento-item-accent" style="padding: 10px; justify-content: flex-start; align-items: flex-start;">
+                            <h3 style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 2px; width: 100%; text-align: left;">November 2025</h3>
+                            <div class="mini-calendar">
+                                <div class="mini-calendar-days">
+                                    <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+                                </div>
+                                <div class="mini-calendar-dates">
+                                    <div></div><div></div><div></div><div></div><div></div><div>1</div><div>2</div>
+                                    <div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div>
+                                    <div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div>
+                                    <div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div>23</div>
+                                    <div>24</div><div>25</div><div>26</div><div class="today">27</div><div>28</div><div>29</div><div>30</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Icono de calendario -->
+                    <div class="calendar-slide">
+                        <div class="bento-item-content" style="padding: 24px; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
+                            <svg class="calendar-icon-large" viewBox="0 0 24 24" style="width: 80px; height: 80px; fill: rgba(60, 60, 60, 0.85);">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                            </svg>
+                            <h2 style="font-size: 18px; font-weight: 600; color: rgba(60, 60, 60, 0.95); margin-top: 12px;">Calendar</h2>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -13623,6 +13811,43 @@ END:VCARD`;
                 console.error('Error copying to clipboard:', err);
                 alert('Error al copiar el mensaje');
             });
+        }
+
+        // Calendar Auto Slider
+        function initCalendarSlider() {
+            const slidesContainer = document.querySelector('.calendar-slides');
+            if (!slidesContainer) return;
+
+            let isSecondSlide = false;
+
+            function getRandomInterval() {
+                return Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000; // 3-5 segundos
+            }
+
+            function toggleSlide() {
+                if (isSecondSlide) {
+                    // Volver al primer slide
+                    slidesContainer.classList.remove('show-second');
+                } else {
+                    // Ir al segundo slide
+                    slidesContainer.classList.add('show-second');
+                }
+
+                isSecondSlide = !isSecondSlide;
+
+                // Schedule next transition with random interval
+                setTimeout(toggleSlide, getRandomInterval());
+            }
+
+            // Start the slider after a random initial delay
+            setTimeout(toggleSlide, getRandomInterval());
+        }
+
+        // Initialize calendar slider when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCalendarSlider);
+        } else {
+            initCalendarSlider();
         }
     </script>
 </body>
