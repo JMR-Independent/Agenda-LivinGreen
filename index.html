@@ -313,7 +313,7 @@
             position: fixed;
             top: max(20px, calc(env(safe-area-inset-top) + 20px));
             left: max(20px, calc(env(safe-area-inset-left) + 20px));
-            z-index: 1001;
+            z-index: 10000;
             background: #000000;
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2970,6 +2970,711 @@
                 font-size: 14px !important;
             }
         }
+
+        /* ================================
+           BENTO GRID LANDING PAGE STYLES
+           ================================ */
+
+        .landing-view {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 48px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10001;
+            overflow-y: auto;
+        }
+
+        /* Hide header when landing view is visible */
+        .landing-view ~ .container .header {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .landing-header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .landing-title {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #10a37f, #60efff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .landing-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            grid-auto-rows: 200px;
+        }
+
+        .bento-item {
+            border-radius: 48px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInScale 0.5s ease-out backwards;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .bento-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0) 100%);
+            transition: all 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .bento-item:hover::before {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%);
+        }
+
+        .bento-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .bento-item-large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .bento-item-medium {
+            grid-column: span 1;
+            grid-row: span 2;
+        }
+
+        .bento-item-small {
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+
+        .bento-item-content {
+            height: 100%;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .bento-item-image {
+            background: linear-gradient(135deg, #10a37f 0%, #0d8c6d 100%);
+        }
+
+        .bento-item-text {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        }
+
+        .bento-item-accent {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
+
+        .bento-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            fill: white;
+            opacity: 0.85;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .bento-item:hover .bento-icon {
+            transform: scale(1.15) rotate(5deg);
+            opacity: 1;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+        }
+
+        .bento-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .bento-item:hover .bento-title {
+            transform: translateY(-4px);
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .bento-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        .bento-item:hover .bento-description {
+            color: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        /* Updated: 2025-11-26 - Enhanced visual effects */
+
+        .bento-item-large .bento-icon {
+            width: 96px;
+            height: 96px;
+        }
+
+        .bento-item-large .bento-title {
+            font-size: 36px;
+        }
+
+        .bento-item-large .bento-description {
+            font-size: 16px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .bento-item-large {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .landing-view {
+                padding: max(48px, calc(env(safe-area-inset-top) + 32px)) 20px max(48px, calc(env(safe-area-inset-bottom) + 32px));
+                justify-content: flex-start;
+            }
+
+            .landing-title {
+                font-size: 36px;
+            }
+
+            .landing-subtitle {
+                font-size: 16px;
+            }
+
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+                grid-auto-rows: 180px;
+            }
+
+            .bento-item-large {
+                grid-column: span 2;
+                grid-row: span 2;
+            }
+
+            .bento-item-medium {
+                grid-column: span 1;
+                grid-row: span 2;
+            }
+
+            .bento-item-small {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+
+            .bento-item-content {
+                padding: 20px;
+            }
+
+            .bento-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .bento-item-large .bento-icon {
+                width: 72px;
+                height: 72px;
+            }
+
+            .bento-title {
+                font-size: 18px;
+            }
+
+            .bento-item-large .bento-title {
+                font-size: 28px;
+            }
+
+            .bento-description {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .landing-view {
+                padding: max(40px, calc(env(safe-area-inset-top) + 20px)) 16px max(40px, calc(env(safe-area-inset-bottom) + 20px));
+                justify-content: flex-start;
+            }
+
+            .landing-header {
+                margin-bottom: 32px;
+                margin-top: 20px;
+            }
+
+            .bento-grid {
+                grid-auto-rows: 150px;
+                margin-bottom: 40px;
+            }
+        }
+
+        /* ================================
+           2025 MODERN REDESIGN - NO SIDEBAR
+           ================================ */
+
+        /* Hide sidebar completely - Bento Grid is the only navigation */
+        .sidebar {
+            display: none !important;
+        }
+
+        /* Mobile overlay not needed without sidebar */
+        .mobile-overlay {
+            display: none !important;
+        }
+
+        /* Container takes full width without sidebar */
+        .container {
+            display: block !important;
+            width: 100%;
+        }
+
+        /* Main content takes full width */
+        .main-content {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* ================================
+           NOTION-STYLE MINIMALIST HEADER
+           ================================ */
+
+        .header {
+            padding: 12px 24px !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            min-height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        [data-theme="dark"] .header {
+            background: rgba(0, 0, 0, 0.8) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* Hide the old title */
+        .header h1 {
+            display: none !important;
+        }
+
+        /* Hide status indicators (datetime, sync, backup) */
+        .current-datetime,
+        .sync-status,
+        .backup-status {
+            display: none !important;
+        }
+
+        /* Keep only dark mode toggle, style it minimal */
+        .dark-mode-toggle {
+            background: transparent !important;
+            border: none !important;
+            padding: 8px !important;
+            border-radius: 8px !important;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dark-mode-toggle:hover {
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        [data-theme="dark"] .dark-mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Add minimal logo/brand area */
+        .header::before {
+            content: "LivinGreen";
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        /* ================================
+           2025 MODERN FORM INPUTS
+           ================================ */
+
+        /* Modern input styling - no borders, subtle background */
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            background: rgba(0, 0, 0, 0.03) !important;
+            border: none !important;
+            border-bottom: 2px solid transparent !important;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 20px 12px 8px 12px !important;
+            font-size: 15px !important;
+            color: var(--text-primary) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        [data-theme="dark"] input[type="text"],
+        [data-theme="dark"] input[type="email"],
+        [data-theme="dark"] input[type="tel"],
+        [data-theme="dark"] input[type="number"],
+        [data-theme="dark"] input[type="date"],
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] select {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Focus state - minimal accent */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none !important;
+            background: rgba(16, 163, 127, 0.05) !important;
+            border-bottom-color: var(--brand-primary) !important;
+        }
+
+        [data-theme="dark"] input:focus,
+        [data-theme="dark"] textarea:focus,
+        [data-theme="dark"] select:focus {
+            background: rgba(16, 163, 127, 0.1) !important;
+        }
+
+        /* Modern labels - smaller, subtle */
+        label {
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            color: var(--text-secondary) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 8px !important;
+        }
+
+        /* Upload section modern style */
+        .upload-section {
+            background: rgba(16, 163, 127, 0.03) !important;
+            border: 2px dashed rgba(16, 163, 127, 0.2) !important;
+            border-radius: 16px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .upload-section:hover {
+            background: rgba(16, 163, 127, 0.05) !important;
+            border-color: rgba(16, 163, 127, 0.4) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Modern buttons */
+        button:not(.mobile-menu-btn):not(.dark-mode-toggle) {
+            border-radius: 10px !important;
+            font-weight: 500 !important;
+            font-size: 14px !important;
+            padding: 12px 24px !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:not(.mobile-menu-btn):not(.dark-mode-toggle):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        button:not(.mobile-menu-btn):not(.dark-mode-toggle):active {
+            transform: translateY(0);
+        }
+
+        /* Primary button (green) */
+        button[style*="background: var(--brand-primary)"],
+        button[style*="background:#10a37f"] {
+            box-shadow: 0 2px 8px rgba(16, 163, 127, 0.2) !important;
+        }
+
+        /* ================================
+           2025 MODERN CARDS - GLASS-MORPHISM
+           ================================ */
+
+        /* Finance Cards - Gradient backgrounds */
+        .finance-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+            border-radius: 20px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        [data-theme="dark"] .finance-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .finance-card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        /* Finance amount - bigger, bolder */
+        .finance-amount {
+            font-size: 42px !important;
+            font-weight: 800 !important;
+            letter-spacing: -1px !important;
+            background: linear-gradient(135deg, var(--brand-primary), #60efff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .finance-amount.expense {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Tithe card special styling */
+        .tithe-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%) !important;
+            border: 1px solid rgba(139, 92, 246, 0.2) !important;
+            backdrop-filter: blur(20px) !important;
+        }
+
+        [data-theme="dark"] .tithe-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%) !important;
+        }
+
+        .tithe-amount {
+            font-size: 36px !important;
+            font-weight: 700 !important;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Client cards modern style */
+        .client-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(0, 0, 0, 0.06) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        [data-theme="dark"] .client-card {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .client-card:hover {
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* Search container glass effect */
+        .search-container {
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            border-radius: 16px !important;
+            padding: 24px !important;
+            margin-bottom: 24px;
+        }
+
+        [data-theme="dark"] .search-container {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Search button modern */
+        .search-btn {
+            background: linear-gradient(135deg, var(--brand-primary), #0d8c6d) !important;
+            box-shadow: 0 4px 16px rgba(16, 163, 127, 0.3) !important;
+        }
+
+        .search-btn:hover {
+            box-shadow: 0 6px 24px rgba(16, 163, 127, 0.4) !important;
+        }
+
+        /* Modals glass-morphism */
+        #edit-appointment-modal > div,
+        #client-details-modal > div {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(40px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        [data-theme="dark"] #edit-appointment-modal > div,
+        [data-theme="dark"] #client-details-modal > div {
+            background: rgba(0, 0, 0, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Content area modern background */
+        .content-area {
+            background: transparent !important;
+        }
+
+        .main-content {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+        }
+
+        [data-theme="dark"] .main-content {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%) !important;
+        }
+
+        /* ================================
+           2025 MODERN PAGE TRANSITIONS
+           ================================ */
+
+        .view-enter {
+            animation: viewEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes viewEnter {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+                filter: blur(8px);
+            }
+            50% {
+                opacity: 0.5;
+                filter: blur(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .container {
+            transition: opacity 0.3s ease-out;
+        }
+
+        /* Smooth exit for landing page */
+        .landing-exit {
+            animation: landingExit 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        @keyframes landingExit {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.95);
+                filter: blur(4px);
+            }
+        }
+
+        /* Back to grid entrance */
+        .landing-enter {
+            animation: landingEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes landingEnter {
+            0% {
+                opacity: 0;
+                transform: scale(1.05);
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .view-enter,
+            .landing-exit,
+            .landing-enter {
+                animation: none;
+            }
+
+            @keyframes viewEnter {
+                0% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+        }
     </style>
 </head>
 <body>
@@ -3164,10 +3869,99 @@
         </div>
     </div>
 
-    <!-- Mobile menu button -->
-    <button class="mobile-menu-btn" id="mobile-menu-btn">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+    <!-- Landing Page with Bento Grid -->
+    <div class="landing-view" id="landing-view">
+        <div class="landing-header">
+            <h1 class="landing-title">LivinGreen Agenda</h1>
+            <p class="landing-subtitle">Plataforma de agendamiento inteligente para gestionar tus citas y clientes</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Agendar Citas - LARGE -->
+            <div class="bento-item bento-item-large" onclick="navigateToView('schedule')" style="animation-delay: 0.1s">
+                <div class="bento-item-content bento-item-image">
+                    <svg class="bento-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                    <h2 class="bento-title">Agendar Citas</h2>
+                    <p class="bento-description">Programa nuevas citas con extracción automática de datos</p>
+                </div>
+            </div>
+
+            <!-- Datos - MEDIUM -->
+            <div class="bento-item bento-item-medium" onclick="navigateToView('datos')" style="animation-delay: 0.2s">
+                <div class="bento-item-content bento-item-text">
+                    <svg class="bento-icon" viewBox="0 0 24 24">
+                        <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h2v2H7V7zm4 0h6v2h-6V7zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z"></path>
+                    </svg>
+                    <h2 class="bento-title">Datos</h2>
+                    <p class="bento-description">Analytics y estadísticas de tus citas</p>
+                </div>
+            </div>
+
+            <!-- Calendario - SMALL -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('calendar')" style="animation-delay: 0.3s">
+                <div class="bento-item-content bento-item-accent">
+                    <svg class="bento-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2-7h-3V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                    </svg>
+                    <h2 class="bento-title">Calendario</h2>
+                    <p class="bento-description">Vista semanal</p>
+                </div>
+            </div>
+
+            <!-- Finanzas - MEDIUM -->
+            <div class="bento-item bento-item-medium" onclick="navigateToView('finance')" style="animation-delay: 0.4s">
+                <div class="bento-item-content bento-item-image">
+                    <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <h2 class="bento-title">Finanzas</h2>
+                    <p class="bento-description">Control de ingresos y gastos</p>
+                </div>
+            </div>
+
+            <!-- Registro - SMALL -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('history')" style="animation-delay: 0.5s">
+                <div class="bento-item-content bento-item-text">
+                    <svg class="bento-icon" viewBox="0 0 24 24">
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V7h10v2z"/>
+                    </svg>
+                    <h2 class="bento-title">Registro</h2>
+                    <p class="bento-description">Historial completo</p>
+                </div>
+            </div>
+
+            <!-- Mensajes - SMALL -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('messages')" style="animation-delay: 0.6s">
+                <div class="bento-item-content bento-item-accent">
+                    <svg class="bento-icon" viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                    </svg>
+                    <h2 class="bento-title">Mensajes</h2>
+                    <p class="bento-description">Templates listos</p>
+                </div>
+            </div>
+
+            <!-- Configuración - SMALL -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('settings')" style="animation-delay: 0.7s">
+                <div class="bento-item-content bento-item-text">
+                    <svg class="bento-icon" viewBox="0 0 24 24">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                    <h2 class="bento-title">Configuración</h2>
+                    <p class="bento-description">Ajustes de la app</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Bento Grid button (replaces mobile menu button when in a section) -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="returnToBentoGrid()">
+        <svg id="menu-icon" viewBox="0 0 24 24" fill="currentColor">
+            <!-- Back arrow icon -->
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
         </svg>
     </button>
 
@@ -4225,6 +5019,30 @@ Incluye:
             const loader = document.getElementById('hex-loader');
             if (loader) {
                 loader.style.display = 'none';
+            }
+
+            // Show landing page with Bento Grid
+            const landingView = document.getElementById('landing-view');
+            if (landingView) {
+                landingView.style.display = 'flex';
+            }
+
+            // Hide main container initially (will show when navigating from Bento Grid)
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'none';
+            }
+
+            // Hide mobile menu button initially
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.style.display = 'none';
+            }
+
+            // Hide header initially (will show when navigating to a section)
+            const header = document.querySelector('.header');
+            if (header) {
+                header.style.display = 'none';
             }
         }
 
@@ -9628,6 +10446,144 @@ IMPORTANTE:
                     }
                 });
             });
+        }
+
+        // Return to Bento Grid from any view
+        function returnToBentoGrid() {
+            // Close mobile menu if it's open
+            closeMobileMenu();
+
+            // Hide and ensure mobile overlay is completely removed
+            const overlay = document.querySelector('.mobile-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.style.display = 'none';
+            }
+
+            // Hide main container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.classList.remove('view-enter');
+                container.style.display = 'none';
+            }
+
+            // Hide back button
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.style.display = 'none';
+            }
+
+            // Hide header when returning to Bento Grid
+            const header = document.querySelector('.header');
+            if (header) {
+                header.style.display = 'none';
+            }
+
+            // Show landing page with entrance animation
+            const landingView = document.getElementById('landing-view');
+            if (landingView) {
+                landingView.classList.remove('landing-exit');
+                landingView.classList.add('landing-enter');
+                landingView.style.display = 'flex';
+
+                // Remove animation class after it completes
+                setTimeout(() => {
+                    landingView.classList.remove('landing-enter');
+                }, 400);
+            }
+
+            // Remove any body classes that might affect display
+            document.body.classList.remove('mobile-menu-open');
+        }
+
+        // Navigate from Bento Grid to specific view
+        function navigateToView(viewName) {
+            const landingView = document.getElementById('landing-view');
+            const container = document.querySelector('.container');
+
+            // Add exit animation to landing page
+            if (landingView) {
+                landingView.classList.add('landing-exit');
+
+                // After exit animation completes, hide landing and show view
+                setTimeout(() => {
+                    landingView.style.display = 'none';
+                    landingView.classList.remove('landing-exit');
+
+                    // Show and animate in the container
+                    if (container) {
+                        container.style.display = 'flex';
+                        container.classList.remove('view-enter'); // Remove if exists
+                        // Force reflow to restart animation
+                        void container.offsetWidth;
+                        container.classList.add('view-enter');
+
+                        // Clean up animation class after it completes
+                        setTimeout(() => {
+                            container.classList.remove('view-enter');
+                        }, 400);
+                    }
+
+                    // Activate corresponding menu item and show view
+                    const menuItems = document.querySelectorAll('.menu-item');
+                    const viewMapping = {
+                        'schedule': 0,
+                        'calendar': 1,
+                        'history': 2,
+                        'datos': 3,
+                        'finance': 4,
+                        'messages': 5,
+                        'settings': 6
+                    };
+
+                    const menuIndex = viewMapping[viewName];
+                    if (menuIndex !== undefined && menuItems[menuIndex]) {
+                        // Remove active from all and add to selected
+                        menuItems.forEach(item => item.classList.remove('active'));
+                        menuItems[menuIndex].classList.add('active');
+                    }
+
+                    // Show the selected view
+                    showView(viewName);
+
+                    // Load view-specific data
+                    if (viewName === 'history') {
+                        loadClientRegistry();
+                    } else if (viewName === 'datos') {
+                        loadDatosAnalytics();
+                    } else if (viewName === 'finance') {
+                        loadFinanceData();
+                    }
+
+                    // Show mobile menu button (back arrow)
+                    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                    if (mobileMenuBtn) {
+                        mobileMenuBtn.style.display = 'block';
+                    }
+
+                    // Show header when entering a section
+                    const header = document.querySelector('.header');
+                    if (header) {
+                        header.style.display = 'flex';
+                    }
+                }, 300); // Match landing-exit duration
+            }
+
+            // Ensure mobile menu is closed
+            const sidebar = document.getElementById('mobile-sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+
+            // Hide mobile overlay
+            const overlay = document.querySelector('.mobile-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.style.display = 'none';
+            }
+
+            // Remove body classes
+            document.body.classList.remove('mobile-menu-open');
         }
 
         async function showView(viewName) {
