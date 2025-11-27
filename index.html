@@ -252,7 +252,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-primary);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                        url('./images/background.webp') center center / cover no-repeat;
+            background-attachment: fixed;
             color: var(--text-primary);
             height: 100vh;
             /* iOS Safari specific optimizations */
@@ -2977,8 +2979,7 @@
 
         .landing-view {
             min-height: 100vh;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
-                        url('./images/background.webp') center/cover no-repeat fixed;
+            background: transparent;
             padding: 48px 24px;
             display: flex;
             flex-direction: column;
@@ -3159,28 +3160,28 @@
         /* Mini Calendar Styles */
         .mini-calendar {
             width: 100%;
-            font-size: 5px;
         }
 
         .mini-calendar-days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 0.5px;
+            gap: 0;
             margin-bottom: 1px;
         }
 
         .mini-calendar-days div {
             text-align: center;
             color: rgba(160, 160, 160, 0.6);
-            font-size: 5px;
-            font-weight: 500;
-            padding: 0.5px 0;
+            font-size: 6px;
+            font-weight: 600;
+            padding: 0;
+            line-height: 1;
         }
 
         .mini-calendar-dates {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 0.5px;
+            gap: 0;
         }
 
         .mini-calendar-dates div {
@@ -3189,21 +3190,22 @@
             align-items: center;
             justify-content: center;
             color: rgba(200, 200, 200, 0.75);
-            font-size: 5px;
-            border-radius: 1px;
+            font-size: 7px;
+            font-weight: 500;
+            border-radius: 2px;
             transition: all 0.2s ease;
         }
 
         .mini-calendar-dates div:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             color: rgba(255, 255, 255, 1);
         }
 
         .mini-calendar-dates div.today {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(100, 200, 255, 0.3);
             color: rgba(255, 255, 255, 1);
             font-weight: 700;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 1.5px rgba(100, 200, 255, 0.6);
         }
 
         /* Today Amount Circle Styles */
@@ -4051,6 +4053,13 @@
                             <div class="appointment-item">3. Lic. Rodríguez - Monterrey (San Pedro)</div>
                         </div>
                     </div>
+                    <!-- Tomorrow's locations -->
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.15); width: 100%;">
+                        <p style="font-size: 13px; color: rgba(200, 200, 200, 0.9); line-height: 1.5;">
+                            <span style="font-weight: 600; color: rgba(255, 255, 255, 0.95);">Mañana trabajas en:</span>
+                            <span style="display: block; margin-top: 4px; color: rgba(180, 220, 255, 0.9);">West Valley y Pleasant Grove</span>
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -4070,8 +4079,8 @@
                 <div class="calendar-slides">
                     <!-- Slide 1: Calendar con números -->
                     <div class="calendar-slide active">
-                        <div class="bento-item-content bento-item-accent" style="padding: 10px; justify-content: flex-start; align-items: flex-start;">
-                            <h3 style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 2px; width: 100%; text-align: left;">November 2025</h3>
+                        <div class="bento-item-content bento-item-accent" style="padding: 16px 16px 28px 16px; justify-content: flex-start; align-items: flex-start;">
+                            <h3 style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 6px; width: 100%; text-align: left; letter-spacing: 0.3px;">November 2025</h3>
                             <div class="mini-calendar">
                                 <div class="mini-calendar-days">
                                     <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
