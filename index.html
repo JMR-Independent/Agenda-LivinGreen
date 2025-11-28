@@ -1962,9 +1962,25 @@
             transition: all 0.3s ease;
         }
 
+        /* Calendar view glassmorphism override */
+        #calendar-view .day-column {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
         .day-column:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #calendar-view .day-column:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         .day-wrapper {
@@ -2058,9 +2074,31 @@
             box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.1);
         }
 
+        #calendar-view .day-column.today {
+            background: rgba(16, 163, 127, 0.15) !important;
+            border-color: rgba(16, 163, 127, 0.4) !important;
+            box-shadow: 0 0 0 1px rgba(16, 163, 127, 0.3), 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
         .day-column.today .day-name {
             color: var(--brand-primary);
             font-weight: 700;
+        }
+
+        #calendar-view .day-name,
+        #calendar-view .day-number,
+        #calendar-view .day-date,
+        #calendar-view .day-header {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #calendar-view .mobile-day-section {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
         }
 
         .appointment-slot {
@@ -2073,9 +2111,29 @@
             transition: all 0.2s;
         }
 
+        #calendar-view .appointment-slot {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        #calendar-view .appointment-slot * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
         .appointment-slot:hover {
             border-color: var(--brand-primary);
             box-shadow: 0 2px 8px rgba(16, 163, 127, 0.15);
+        }
+
+        #calendar-view .appointment-slot:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
         }
 
         .appointment-slot.available {
@@ -3246,7 +3304,7 @@
         }
 
         .circle-content .amount {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 700;
             color: rgba(255, 255, 255, 0.95);
             line-height: 1;
@@ -3302,6 +3360,244 @@
             width: 50%;
             flex-shrink: 0;
             height: 100%;
+        }
+
+        /* Finance Slider Styles */
+        .finance-slider {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .finance-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .finance-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .finance-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        /* Analytics Slider Styles */
+        .analytics-slider {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .analytics-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .analytics-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .analytics-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        /* Registry Slider Styles */
+        .registry-slider {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .registry-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .registry-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .registry-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        /* Mini Stats Styles for Datos Card */
+        .mini-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: rgba(200, 200, 200, 0.8);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Finance Progress Bars */
+        .finance-summary {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .finance-item {
+            margin-bottom: 12px;
+        }
+
+        .finance-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .finance-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .finance-label-text {
+            color: rgba(200, 200, 200, 0.9);
+            font-weight: 500;
+        }
+
+        .finance-amount {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+        }
+
+        .finance-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .finance-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10a37f 0%, #0d8c6d 100%);
+            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .finance-bar-fill.expense {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        /* Activity List for Registro */
+        .activity-list {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 11px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10a37f;
+            flex-shrink: 0;
+        }
+
+        .activity-text {
+            flex: 1;
+            color: rgba(200, 200, 200, 0.9);
+            line-height: 1.4;
+        }
+
+        .activity-time {
+            color: rgba(160, 160, 160, 0.7);
+            font-size: 10px;
+        }
+
+        /* Status Indicators for Configuración */
+        .status-grid {
+            width: 100%;
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            font-size: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .status-label {
+            color: rgba(200, 200, 200, 0.9);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(16, 163, 127, 0.2);
+            color: rgba(16, 163, 127, 1);
+            border: 1px solid rgba(16, 163, 127, 0.3);
+        }
+
+        .status-badge.inactive {
+            background: rgba(160, 160, 160, 0.2);
+            color: rgba(200, 200, 200, 0.9);
+            border: 1px solid rgba(160, 160, 160, 0.3);
         }
 
         /* Updated: 2025-11-26 - Enhanced visual effects */
@@ -3413,20 +3709,48 @@
             }
 
             /* Mini calendar mobile styles */
+            .mini-calendar {
+                max-width: 90%;
+                margin: 0 auto;
+            }
+
             .mini-calendar-days div {
-                font-size: 8px;
+                font-size: 6px;
             }
 
             .mini-calendar-dates div {
-                font-size: 9px;
+                font-size: 7px;
             }
 
             .calendar-slide h3 {
-                font-size: 12px !important;
+                font-size: 9px !important;
+                margin-bottom: 4px !important;
             }
 
             .bento-item-small .bento-item-content {
-                padding: 12px !important;
+                padding: 14px 12px 18px 12px !important;
+            }
+
+            /* Widget mobile styles */
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-label {
+                font-size: 9px;
+            }
+
+            .finance-label {
+                font-size: 11px;
+            }
+
+            .activity-item {
+                font-size: 10px;
+            }
+
+            .status-item {
+                font-size: 10px;
+                padding: 6px 10px;
             }
         }
 
@@ -3442,26 +3766,125 @@
             }
 
             .bento-grid {
-                grid-auto-rows: 150px;
+                grid-auto-rows: 160px;
                 margin-bottom: 40px;
+                gap: 12px;
+            }
+
+            /* Reduce padding for all cards */
+            .bento-item-content {
+                padding: 12px !important;
+            }
+
+            .bento-item-large .bento-item-content {
+                padding: 16px !important;
             }
 
             /* Smaller calendar for very small screens */
+            .mini-calendar {
+                max-width: 85%;
+                margin: 0 auto;
+            }
+
             .mini-calendar-days div {
-                font-size: 7px;
+                font-size: 5px;
             }
 
             .mini-calendar-dates div {
-                font-size: 8px;
+                font-size: 6px;
             }
 
             .calendar-slide h3 {
-                font-size: 10px !important;
-                margin-bottom: 4px !important;
+                font-size: 8px !important;
+                margin-bottom: 3px !important;
             }
 
             .bento-item-small .bento-item-content {
-                padding: 10px !important;
+                padding: 12px 10px 16px 10px !important;
+            }
+
+            /* Smaller widgets for very small screens */
+            .stat-value {
+                font-size: 16px;
+            }
+
+            .stat-label {
+                font-size: 7px;
+                letter-spacing: 0.3px;
+            }
+
+            .stat-box {
+                padding: 8px;
+                border-radius: 8px;
+            }
+
+            .mini-stats-grid {
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            /* Finance adjustments */
+            .finance-summary {
+                margin-top: 10px;
+            }
+
+            .finance-item {
+                margin-bottom: 8px;
+            }
+
+            .finance-label {
+                font-size: 9px;
+                margin-bottom: 4px;
+            }
+
+            .finance-bar {
+                height: 4px;
+            }
+
+            /* Activity list adjustments */
+            .activity-list {
+                margin-top: 8px;
+            }
+
+            .activity-item {
+                font-size: 8px;
+                padding: 5px 0;
+                gap: 6px;
+            }
+
+            .activity-dot {
+                width: 5px;
+                height: 5px;
+            }
+
+            .activity-time {
+                font-size: 8px;
+            }
+
+            /* Status adjustments */
+            .status-grid {
+                margin-top: 8px;
+                gap: 6px;
+            }
+
+            .status-item {
+                font-size: 8px;
+                padding: 5px 6px;
+            }
+
+            .status-badge {
+                font-size: 7px;
+                padding: 2px 5px;
+            }
+
+            /* Card titles for small screens */
+            .bento-item-content h3 {
+                font-size: 12px !important;
+                margin-bottom: 2px !important;
+            }
+
+            .bento-item-content p {
+                font-size: 9px !important;
             }
         }
 
@@ -3778,6 +4201,124 @@
             background: transparent !important;
         }
 
+        /* Calendar View - Same background as landing page */
+        #calendar-view {
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                        url('./images/background.webp') center center / cover no-repeat !important;
+            background-attachment: fixed !important;
+            padding: 48px 24px !important;
+        }
+
+        /* Calendar glassmorphism effects */
+        #calendar-view .gas-price-header {
+            background: rgba(30, 41, 59, 0.3) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #calendar-view .gas-price-header .gas-price-display {
+            color: rgba(16, 163, 127, 1) !important;
+        }
+
+        #calendar-view .calendar-header {
+            background: rgba(30, 41, 59, 0.3) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        #calendar-view .week-range {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #calendar-view #weekly-calendar-container {
+            background: rgba(30, 41, 59, 0.25) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 24px !important;
+            padding: 24px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #calendar-view #weekly-calendar-grid {
+            background: transparent !important;
+        }
+
+        #calendar-view .day-column {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #calendar-view .day-column:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #calendar-view .day-column.today {
+            background: rgba(16, 163, 127, 0.15) !important;
+            border-color: rgba(16, 163, 127, 0.4) !important;
+            box-shadow: 0 0 0 1px rgba(16, 163, 127, 0.3), 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #calendar-view .day-name,
+        #calendar-view .day-number,
+        #calendar-view .day-date {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #calendar-view .appointment-slot {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        #calendar-view .appointment-slot:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #calendar-view .calendar-nav-btn {
+            background: rgba(16, 163, 127, 0.2) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(16, 163, 127, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #calendar-view .calendar-nav-btn:hover {
+            background: rgba(16, 163, 127, 0.3) !important;
+            border-color: rgba(16, 163, 127, 0.5) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        #calendar-view .gas-cost-outside {
+            background: rgba(255, 255, 255, 0.12) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
         .main-content {
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
         }
@@ -4074,38 +4615,104 @@
                         <div class="today-amount-circle">
                             <svg class="progress-ring" width="140" height="140">
                                 <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
-                                <circle class="progress-ring-fill" cx="70" cy="70" r="60" style="stroke-dasharray: 377; stroke-dashoffset: 136;" />
+                                <circle id="today-progress-ring" class="progress-ring-fill" cx="70" cy="70" r="60" style="stroke-dasharray: 377; stroke-dashoffset: 377;" />
                             </svg>
                             <div class="circle-content">
-                                <div class="amount">$320</div>
+                                <div class="amount" id="today-total-amount">$0</div>
                                 <div class="today-label">Today</div>
                             </div>
                         </div>
                         <!-- Lista de citas -->
-                        <div class="appointments-list">
-                            <div class="appointment-item">1. Dr. García - CDMX (Polanco)</div>
-                            <div class="appointment-item">2. Sra. López - Guadalajara (Zapopan)</div>
-                            <div class="appointment-item">3. Lic. Rodríguez - Monterrey (San Pedro)</div>
+                        <div class="appointments-list" id="today-appointments-list">
+                            <div class="appointment-item" style="color: rgba(200, 200, 200, 0.6);">Cargando citas...</div>
                         </div>
                     </div>
                     <!-- Tomorrow's locations -->
-                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.15); width: 100%;">
-                        <p style="font-size: 13px; color: rgba(200, 200, 200, 0.9); line-height: 1.5;">
-                            <span style="font-weight: 600; color: rgba(255, 255, 255, 0.95);">Mañana trabajas en:</span>
-                            <span style="display: block; margin-top: 4px; color: rgba(180, 220, 255, 0.9);">West Valley y Pleasant Grove</span>
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.15); width: 100%;">
+                        <p style="line-height: 1.5;">
+                            <span style="font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.95);">Mañana trabajas en:</span>
+                            <span id="tomorrow-cities" style="display: block; margin-top: 10px; font-size: 18px; font-weight: 600; color: rgba(180, 220, 255, 0.95);">Cargando...</span>
                         </p>
                     </div>
                 </div>
             </div>
 
             <!-- Datos - MEDIUM -->
-            <div class="bento-item bento-item-medium" onclick="navigateToView('datos')" style="animation-delay: 0.2s">
-                <div class="bento-item-content bento-item-text">
-                    <svg class="bento-icon" viewBox="0 0 24 24">
-                        <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h2v2H7V7zm4 0h6v2h-6V7zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z"></path>
-                    </svg>
-                    <h2 class="bento-title">Datos</h2>
-                    <p class="bento-description">Analytics y estadísticas de tus citas</p>
+            <div class="bento-item bento-item-medium analytics-slider" onclick="navigateToView('datos')" style="animation-delay: 0.2s">
+                <div class="analytics-slides">
+                    <!-- Slide 1: Stats minimalistas -->
+                    <div class="analytics-slide">
+                        <div class="bento-item-content bento-item-text" style="padding: 24px; justify-content: space-between; align-items: flex-start; height: 100%;">
+                            <div style="width: 100%;">
+                                <h3 style="font-size: 10px; font-weight: 600; color: rgba(200, 200, 200, 0.7); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1.2px;">Dashboard</h3>
+
+                                <div style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
+                                    <!-- Total Clientes -->
+                                    <div>
+                                        <div style="font-size: 8px; color: rgba(200, 200, 200, 0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Total Clientes</div>
+                                        <div id="bento-total-clients" style="font-size: 36px; font-weight: 700; color: rgba(255, 255, 255, 0.95); line-height: 1;">0</div>
+                                    </div>
+
+                                    <!-- Citas del Mes -->
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <span style="font-size: 9px; color: rgba(200, 200, 200, 0.7); text-transform: uppercase; letter-spacing: 0.8px;">Citas este mes</span>
+                                        <span id="bento-monthly-appts" style="font-size: 22px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">0</span>
+                                    </div>
+
+                                    <!-- Ciudades -->
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <span style="font-size: 9px; color: rgba(200, 200, 200, 0.7); text-transform: uppercase; letter-spacing: 0.8px;">Ciudades activas</span>
+                                        <span id="bento-active-cities" style="font-size: 22px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Servicios - Footer -->
+                            <div style="width: 100%; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <div style="font-size: 9px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Servicios Ofrecidos</div>
+                                <div id="bento-total-services" style="font-size: 24px; font-weight: 700; color: rgba(255, 255, 255, 0.95); line-height: 1;">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Logo moderno de datos -->
+                    <div class="analytics-slide">
+                        <div class="bento-item-content" style="padding: 24px; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.15); backdrop-filter: blur(10px); height: 100%;">
+                            <!-- Logo moderno de base de datos -->
+                            <div style="position: relative; width: 110px; height: 110px;">
+                                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                    <!-- Capas de base de datos (cilindros) -->
+                                    <!-- Capa 1 (arriba) -->
+                                    <ellipse cx="50" cy="25" rx="30" ry="8" fill="none" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+                                    <path d="M 20 25 L 20 35 Q 20 40, 50 40 Q 80 40, 80 35 L 80 25"
+                                          fill="rgba(255, 255, 255, 0.15)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+
+                                    <!-- Capa 2 (medio) -->
+                                    <ellipse cx="50" cy="45" rx="30" ry="8" fill="none" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+                                    <path d="M 20 45 L 20 55 Q 20 60, 50 60 Q 80 60, 80 55 L 80 45"
+                                          fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+
+                                    <!-- Capa 3 (abajo) -->
+                                    <ellipse cx="50" cy="65" rx="30" ry="8" fill="none" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2"/>
+                                    <path d="M 20 65 L 20 75 Q 20 80, 50 80 Q 80 80, 80 75 L 80 65"
+                                          fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2"/>
+
+                                    <!-- Puntos de datos (decorativos) -->
+                                    <circle cx="50" cy="30" r="2" fill="rgba(255, 255, 255, 0.8)">
+                                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <circle cx="45" cy="50" r="2" fill="rgba(255, 255, 255, 0.8)">
+                                        <animate attributeName="opacity" values="1;0.6;1" dur="2.5s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <circle cx="55" cy="70" r="2" fill="rgba(255, 255, 255, 0.8)">
+                                        <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+                                    </circle>
+                                </svg>
+                            </div>
+                            <h2 style="font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 16px; letter-spacing: 0.5px;">Datos</h2>
+                            <p style="font-size: 9px; color: rgba(255, 255, 255, 0.7); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">Dashboard</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -4144,46 +4751,132 @@
 
             <!-- Finanzas - MEDIUM -->
             <div class="bento-item bento-item-medium" onclick="navigateToView('finance')" style="animation-delay: 0.4s">
-                <div class="bento-item-content bento-item-image">
-                    <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
-                    <h2 class="bento-title">Finanzas</h2>
-                    <p class="bento-description">Control de ingresos y gastos</p>
+                <div class="bento-item-content bento-item-image" style="padding: 24px; justify-content: center; align-items: center;">
+                    <!-- Logo moderno -->
+                    <div style="position: relative; width: 100px; height: 100px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Círculo exterior -->
+                            <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(16, 163, 127, 0.2)" stroke-width="2"/>
+                            <!-- Círculo interior -->
+                            <circle cx="50" cy="50" r="40" fill="rgba(16, 163, 127, 0.15)"/>
+                            <!-- Gráfica de tendencia -->
+                            <path d="M 25 60 L 35 50 L 45 55 L 55 40 L 65 45 L 75 35"
+                                  fill="none"
+                                  stroke="rgba(16, 163, 127, 1)"
+                                  stroke-width="3"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                            <!-- Puntos en la gráfica -->
+                            <circle cx="35" cy="50" r="3" fill="rgba(16, 163, 127, 1)"/>
+                            <circle cx="55" cy="40" r="3" fill="rgba(16, 163, 127, 1)"/>
+                            <circle cx="75" cy="35" r="3" fill="rgba(16, 163, 127, 1)"/>
+                        </svg>
+                    </div>
+                    <h2 class="bento-title" style="color: rgba(16, 163, 127, 1);">Finanzas</h2>
+                    <p class="bento-description" style="color: rgba(16, 163, 127, 0.7);">Control financiero</p>
                 </div>
             </div>
 
             <!-- Registro - SMALL -->
-            <div class="bento-item bento-item-small" onclick="navigateToView('history')" style="animation-delay: 0.5s">
-                <div class="bento-item-content bento-item-text">
-                    <svg class="bento-icon" viewBox="0 0 24 24">
-                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V7h10v2z"/>
-                    </svg>
-                    <h2 class="bento-title">Registro</h2>
-                    <p class="bento-description">Historial completo</p>
+            <div class="bento-item bento-item-small registry-slider" onclick="navigateToView('history')" style="animation-delay: 0.5s">
+                <div class="registry-slides">
+                    <!-- Slide 1: Client Registry Stats -->
+                    <div class="registry-slide">
+                        <div class="bento-item-content bento-item-text" style="padding: 16px; justify-content: space-between; align-items: flex-start; height: 100%;">
+                            <div style="width: 100%;">
+                                <h3 style="font-size: 11px; font-weight: 600; color: rgba(200, 200, 200, 0.7); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Registro</h3>
+
+                                <div style="margin-bottom: 12px;">
+                                    <div style="font-size: 8px; color: rgba(200, 200, 200, 0.6); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Total Clientes</div>
+                                    <div id="registry-total-clients" style="font-size: 32px; font-weight: 700; color: rgba(255, 255, 255, 0.95); line-height: 1;">0</div>
+                                </div>
+                            </div>
+
+                            <div style="width: 100%; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                                    <span style="font-size: 8px; color: rgba(200, 200, 200, 0.7); text-transform: uppercase; letter-spacing: 0.8px;">Nuevos este mes</span>
+                                    <span id="registry-new-clients" style="font-size: 20px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Logo -->
+                    <div class="registry-slide">
+                        <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(139, 92, 246, 0.15); backdrop-filter: blur(10px); height: 100%;">
+                            <!-- Logo de registro/usuarios -->
+                            <div style="position: relative; width: 70px; height: 70px;">
+                                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                    <!-- Personas/usuarios en grupo -->
+                                    <!-- Usuario 1 (atrás izquierda) -->
+                                    <circle cx="35" cy="35" r="12" fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+                                    <path d="M 20 60 Q 20 45, 35 45 Q 50 45, 50 60" fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+
+                                    <!-- Usuario 2 (atrás derecha) -->
+                                    <circle cx="65" cy="35" r="12" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+                                    <path d="M 50 60 Q 50 45, 65 45 Q 80 45, 80 60" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+
+                                    <!-- Usuario principal (adelante centro) -->
+                                    <circle cx="50" cy="50" r="15" fill="rgba(255, 255, 255, 0.3)" stroke="rgba(255, 255, 255, 0.8)" stroke-width="2.5"/>
+                                    <path d="M 30 85 Q 30 65, 50 65 Q 70 65, 70 85" fill="rgba(255, 255, 255, 0.3)" stroke="rgba(255, 255, 255, 0.8)" stroke-width="2.5"/>
+                                </svg>
+                            </div>
+                            <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Registro</h2>
+                            <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Clientes</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Mensajes - SMALL -->
             <div class="bento-item bento-item-small" onclick="navigateToView('messages')" style="animation-delay: 0.6s">
-                <div class="bento-item-content bento-item-accent">
-                    <svg class="bento-icon" viewBox="0 0 24 24">
-                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
-                    </svg>
-                    <h2 class="bento-title">Mensajes</h2>
-                    <p class="bento-description">Templates listos</p>
+                <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(34, 197, 94, 0.12); backdrop-filter: blur(10px); height: 100%;">
+                    <!-- Logo de mensajes/chat -->
+                    <div style="position: relative; width: 70px; height: 70px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Burbuja principal de mensaje -->
+                            <rect x="15" y="25" width="60" height="40" rx="8" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2.5"/>
+                            <!-- Cola de la burbuja -->
+                            <path d="M 25 65 L 20 75 L 30 65" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2.5" stroke-linejoin="round"/>
+
+                            <!-- Líneas de texto dentro del mensaje -->
+                            <line x1="25" y1="35" x2="60" y2="35" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="25" y1="45" x2="55" y2="45" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="25" y1="55" x2="50" y2="55" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2" stroke-linecap="round"/>
+
+                            <!-- Burbuja secundaria (más pequeña, arriba derecha) -->
+                            <circle cx="70" cy="25" r="8" fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+                            <circle cx="68" cy="23" r="1.5" fill="rgba(255, 255, 255, 0.8)"/>
+                            <circle cx="72" cy="23" r="1.5" fill="rgba(255, 255, 255, 0.8)"/>
+                            <path d="M 67 27 Q 70 29, 73 27" stroke="rgba(255, 255, 255, 0.8)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Mensajes</h2>
+                    <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Templates</p>
                 </div>
             </div>
 
             <!-- Configuración - SMALL -->
             <div class="bento-item bento-item-small" onclick="navigateToView('settings')" style="animation-delay: 0.7s">
-                <div class="bento-item-content bento-item-text">
-                    <svg class="bento-icon" viewBox="0 0 24 24">
-                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-                    </svg>
-                    <h2 class="bento-title">Configuración</h2>
-                    <p class="bento-description">Ajustes de la app</p>
+                <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(99, 102, 241, 0.12); backdrop-filter: blur(10px); height: 100%;">
+                    <!-- Logo de configuración/settings -->
+                    <div style="position: relative; width: 70px; height: 70px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Slider 1 (arriba) -->
+                            <line x1="20" y1="30" x2="80" y2="30" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="60" cy="30" r="7" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(255, 255, 255, 1)" stroke-width="2"/>
+
+                            <!-- Slider 2 (medio) -->
+                            <line x1="20" y1="50" x2="80" y2="50" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="35" cy="50" r="7" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(255, 255, 255, 1)" stroke-width="2"/>
+
+                            <!-- Slider 3 (abajo) -->
+                            <line x1="20" y1="70" x2="80" y2="70" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="55" cy="70" r="7" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(255, 255, 255, 1)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Configuración</h2>
+                    <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Ajustes</p>
                 </div>
             </div>
         </div>
@@ -13893,6 +14586,306 @@ END:VCARD`;
         } else {
             initCalendarSlider();
         }
+
+        // Analytics Auto Slider
+        function initAnalyticsSlider() {
+            const slidesContainer = document.querySelector('.analytics-slides');
+            if (!slidesContainer) return;
+
+            let isSecondSlide = false;
+
+            function getRandomInterval() {
+                return Math.floor(Math.random() * (5500 - 3500 + 1)) + 3500; // 3.5-5.5 segundos
+            }
+
+            function toggleSlide() {
+                if (isSecondSlide) {
+                    // Volver al primer slide
+                    slidesContainer.classList.remove('show-second');
+                } else {
+                    // Ir al segundo slide
+                    slidesContainer.classList.add('show-second');
+                }
+
+                isSecondSlide = !isSecondSlide;
+
+                // Schedule next transition with random interval
+                setTimeout(toggleSlide, getRandomInterval());
+            }
+
+            // Start the slider after a random initial delay
+            setTimeout(toggleSlide, getRandomInterval());
+        }
+
+        // Load today's total amount
+        async function loadTodayTotal() {
+            try {
+                const appointments = await getAppointmentsFromSupabase();
+
+                // Get today's date in LOCAL timezone (YYYY-MM-DD format)
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+
+                console.log('📅 Today date (local):', todayStr);
+
+                // Filter appointments for today and calculate total
+                const todayAppointments = appointments.filter(apt => {
+                    if (!apt.date) return false;
+
+                    // Extract YYYY-MM-DD from appointment date
+                    let aptDate;
+                    if (apt.date.includes('T')) {
+                        aptDate = apt.date.split('T')[0];
+                    } else {
+                        aptDate = apt.date.split(' ')[0];
+                    }
+
+                    const isToday = aptDate === todayStr;
+                    if (isToday) {
+                        console.log('📌 Today appointment found:', apt.name, apt.price, apt.date);
+                    }
+                    return isToday;
+                });
+
+                const todayTotal = todayAppointments.reduce((sum, apt) => {
+                    return sum + (parseFloat(apt.price) || 0);
+                }, 0);
+
+                // Update the amount display
+                const todayAmountEl = document.getElementById('today-total-amount');
+                if (todayAmountEl) {
+                    todayAmountEl.textContent = `$${Math.round(todayTotal)}`;
+                }
+
+                // Update the progress ring (0-500 range)
+                const progressRing = document.getElementById('today-progress-ring');
+                if (progressRing) {
+                    const maxAmount = 500;
+                    const progress = Math.min(todayTotal / maxAmount, 1); // Cap at 100%
+                    const circumference = 377;
+                    const offset = circumference * (1 - progress);
+
+                    progressRing.style.strokeDashoffset = offset;
+
+                    console.log('🔵 Progress ring updated:', {
+                        todayTotal,
+                        progress: `${(progress * 100).toFixed(1)}%`,
+                        offset: offset.toFixed(1)
+                    });
+                }
+
+                // Update the appointments list
+                const appointmentsList = document.getElementById('today-appointments-list');
+                if (appointmentsList) {
+                    if (todayAppointments.length === 0) {
+                        appointmentsList.innerHTML = '<div class="appointment-item" style="color: rgba(200, 200, 200, 0.6);">No hay citas para hoy</div>';
+                    } else {
+                        // Show up to 3 appointments
+                        const displayAppointments = todayAppointments.slice(0, 3);
+                        appointmentsList.innerHTML = displayAppointments.map((apt, index) => {
+                            const name = apt.name || 'Cliente';
+                            const city = apt.city || 'Sin ciudad';
+                            return `<div class="appointment-item">${index + 1}. ${name} - ${city}</div>`;
+                        }).join('');
+
+                        // If there are more than 3, show a count
+                        if (todayAppointments.length > 3) {
+                            const remaining = todayAppointments.length - 3;
+                            appointmentsList.innerHTML += `<div class="appointment-item" style="color: rgba(200, 200, 200, 0.6); font-style: italic;">+${remaining} más...</div>`;
+                        }
+                    }
+                }
+
+                // Calculate and display tomorrow's cities
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowYear = tomorrow.getFullYear();
+                const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
+                const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+
+                const tomorrowAppointments = appointments.filter(apt => {
+                    if (!apt.date) return false;
+                    let aptDate;
+                    if (apt.date.includes('T')) {
+                        aptDate = apt.date.split('T')[0];
+                    } else {
+                        aptDate = apt.date.split(' ')[0];
+                    }
+                    return aptDate === tomorrowStr;
+                });
+
+                // Get unique cities for tomorrow
+                const tomorrowCities = new Set();
+                tomorrowAppointments.forEach(apt => {
+                    if (apt.city) {
+                        tomorrowCities.add(apt.city);
+                    }
+                });
+
+                const tomorrowCitiesEl = document.getElementById('tomorrow-cities');
+                if (tomorrowCitiesEl) {
+                    if (tomorrowCities.size === 0) {
+                        tomorrowCitiesEl.textContent = 'No hay citas programadas';
+                        tomorrowCitiesEl.style.color = 'rgba(200, 200, 200, 0.6)';
+                    } else {
+                        const citiesArray = Array.from(tomorrowCities);
+                        tomorrowCitiesEl.textContent = citiesArray.join(' y ');
+                        tomorrowCitiesEl.style.color = 'rgba(180, 220, 255, 0.95)';
+                    }
+                }
+
+                console.log('✅ Today total loaded:', {
+                    todayStr,
+                    todayTotal,
+                    appointmentsCount: todayAppointments.length,
+                    totalAppointments: appointments.length,
+                    tomorrowStr,
+                    tomorrowCities: Array.from(tomorrowCities)
+                });
+
+            } catch (error) {
+                console.error('❌ Error loading today total:', error);
+                // Keep default $0 on error
+            }
+        }
+
+        // Load real analytics data for bento card
+        async function loadBentoAnalytics() {
+            try {
+                const appointments = await getAppointmentsFromSupabase();
+
+                // Calculate UNIQUE clients (by name)
+                const uniqueClientNames = new Set();
+                const clientFirstAppointment = {}; // Track first appointment date for each client
+
+                appointments.forEach(apt => {
+                    if (apt.name) {
+                        const clientName = apt.name.toLowerCase().trim();
+                        uniqueClientNames.add(clientName);
+
+                        // Track first appointment date for this client
+                        const aptDate = new Date(apt.date);
+                        if (!clientFirstAppointment[clientName] || aptDate < clientFirstAppointment[clientName]) {
+                            clientFirstAppointment[clientName] = aptDate;
+                        }
+                    }
+                });
+
+                const totalUniqueClients = uniqueClientNames.size;
+
+                // Get current month's appointments
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                const appointmentsThisMonth = appointments.filter(apt => {
+                    const aptDate = new Date(apt.date);
+                    return aptDate.getMonth() === currentMonth && aptDate.getFullYear() === currentYear;
+                }).length;
+
+                // Calculate NEW clients this month (clients whose first appointment is this month)
+                let newClientsThisMonth = 0;
+                for (const [clientName, firstDate] of Object.entries(clientFirstAppointment)) {
+                    if (firstDate.getMonth() === currentMonth && firstDate.getFullYear() === currentYear) {
+                        newClientsThisMonth++;
+                    }
+                }
+
+                // Calculate unique cities
+                const uniqueCities = new Set();
+                appointments.forEach(apt => {
+                    if (apt.city) uniqueCities.add(apt.city);
+                });
+                const activeCities = uniqueCities.size;
+
+                // Calculate unique services/jobs
+                const uniqueJobs = new Set();
+                appointments.forEach(apt => {
+                    if (apt.job) {
+                        // Jobs are stored as comma-separated string
+                        const jobs = apt.job.split(',').map(j => j.trim());
+                        jobs.forEach(job => {
+                            if (job) uniqueJobs.add(job);
+                        });
+                    }
+                });
+                const totalServices = uniqueJobs.size;
+
+                // Update datos/analytics card
+                const totalClientsEl = document.getElementById('bento-total-clients');
+                const monthlyApptsEl = document.getElementById('bento-monthly-appts');
+                const activeCitiesEl = document.getElementById('bento-active-cities');
+                const totalServicesEl = document.getElementById('bento-total-services');
+
+                if (totalClientsEl) totalClientsEl.textContent = totalUniqueClients;
+                if (monthlyApptsEl) monthlyApptsEl.textContent = appointmentsThisMonth;
+                if (activeCitiesEl) activeCitiesEl.textContent = activeCities;
+                if (totalServicesEl) totalServicesEl.textContent = totalServices;
+
+                // Update registry card
+                const registryTotalEl = document.getElementById('registry-total-clients');
+                const registryNewEl = document.getElementById('registry-new-clients');
+
+                if (registryTotalEl) registryTotalEl.textContent = totalUniqueClients;
+                if (registryNewEl) registryNewEl.textContent = newClientsThisMonth;
+
+                console.log('✅ Bento analytics loaded:', {
+                    totalUniqueClients,
+                    newClientsThisMonth,
+                    appointmentsThisMonth,
+                    activeCities,
+                    totalServices
+                });
+
+            } catch (error) {
+                console.error('❌ Error loading bento analytics:', error);
+                // Keep default values on error
+            }
+        }
+
+        // Registry Auto Slider
+        function initRegistrySlider() {
+            const slidesContainer = document.querySelector('.registry-slides');
+            if (!slidesContainer) return;
+
+            let isSecondSlide = false;
+
+            function getRandomInterval() {
+                return Math.floor(Math.random() * (5500 - 3500 + 1)) + 3500; // 3.5-5.5 segundos
+            }
+
+            function toggleSlide() {
+                if (isSecondSlide) {
+                    slidesContainer.classList.remove('show-second');
+                } else {
+                    slidesContainer.classList.add('show-second');
+                }
+
+                isSecondSlide = !isSecondSlide;
+                setTimeout(toggleSlide, getRandomInterval());
+            }
+
+            setTimeout(toggleSlide, getRandomInterval());
+        }
+
+        // Initialize sliders and load data when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initAnalyticsSlider();
+                initRegistrySlider();
+                loadBentoAnalytics();
+                loadTodayTotal();
+            });
+        } else {
+            initAnalyticsSlider();
+            initRegistrySlider();
+            loadBentoAnalytics();
+            loadTodayTotal();
+        }
+
     </script>
 </body>
 </html>
