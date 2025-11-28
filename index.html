@@ -710,6 +710,38 @@
             scrollbar-color: var(--border-color) transparent;
         }
 
+        /* Remove content-area padding on mobile */
+        @media (max-width: 768px) {
+            .content-area {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content-area {
+                padding: 0;
+            }
+        }
+
+        /* Override content-area padding for calendar view - Mobile first approach */
+        #calendar-view.content-area {
+            padding: 0 !important; /* Mobile base: no padding */
+        }
+
+        /* Tablet: moderate padding */
+        @media (min-width: 481px) and (max-width: 768px) {
+            #calendar-view.content-area {
+                padding: 12px !important;
+            }
+        }
+
+        /* Desktop: more padding */
+        @media (min-width: 769px) {
+            #calendar-view.content-area {
+                padding: 24px !important;
+            }
+        }
+
         .content-area::-webkit-scrollbar {
             width: 6px;
         }
@@ -1907,22 +1939,32 @@
         }
 
         .calendar-nav-btn {
-            background: var(--brand-primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
             padding: 10px 16px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
         }
 
         .calendar-nav-btn:hover {
-            background: #0d9169;
+            background: rgba(59, 130, 246, 0.35);
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+        }
+
+        .calendar-nav-btn:active {
+            transform: translateY(0);
         }
 
         .week-range {
@@ -1936,6 +1978,13 @@
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Override for calendar view - Base styles without padding */
+        #calendar-view #weekly-calendar-container {
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
         }
 
         #weekly-calendar-grid {
@@ -2698,6 +2747,12 @@
                 margin-left: 0 !important;
             }
 
+            /* Remove top padding and background when calendar is visible */
+            .main-content:has(#calendar-view) {
+                padding-top: 0 !important;
+                background: transparent !important;
+            }
+
             .content-wrapper {
                 padding: 20px;
             }
@@ -2796,6 +2851,12 @@
                 padding-top: 56px;
             }
 
+            /* Remove top padding and background when calendar is visible */
+            .main-content:has(#calendar-view) {
+                padding-top: 0 !important;
+                background: transparent !important;
+            }
+
             .content-wrapper {
                 padding: 12px;
             }
@@ -2826,6 +2887,56 @@
             .btn {
                 padding: 10px 16px;
                 font-size: 14px;
+            }
+
+            /* Mobile Calendar Glassmorphism */
+            #calendar-view .mobile-day-section {
+                background: rgba(30, 41, 59, 0.4) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+                border-radius: 12px !important;
+                padding: 16px !important;
+            }
+
+            #calendar-view .mobile-client-card {
+                background: rgba(255, 255, 255, 0.1) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                color: rgba(255, 255, 255, 0.95) !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+                border-radius: 8px !important;
+            }
+
+            #calendar-view .mobile-client-card * {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .mobile-day-section h3,
+            #calendar-view .mobile-day-section .day-name,
+            #calendar-view .mobile-day-section .day-number,
+            #calendar-view .mobile-day-section .day-date {
+                color: rgba(255, 255, 255, 0.95) !important;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            #calendar-view .mobile-day-section .empty-state,
+            #calendar-view .mobile-day-section .no-appointments {
+                color: rgba(255, 255, 255, 0.7) !important;
+                font-style: italic;
+            }
+
+            #calendar-view .mobile-day-header {
+                border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+            }
+
+            #calendar-view .mobile-day-section span,
+            #calendar-view .mobile-day-section p,
+            #calendar-view .mobile-day-section h3,
+            #calendar-view .mobile-day-section h4 {
+                color: rgba(255, 255, 255, 0.95) !important;
             }
         }
 
@@ -2919,7 +3030,7 @@
             }
 
             /* Business info section mobile */
-            #receipt-preview-content div[style*="RIZE CLEANING"] {
+            #receipt-preview-content div[style*="LivinGreen"] {
                 text-align: center !important;
                 padding: 16px !important;
                 border-radius: 8px !important;
@@ -2975,7 +3086,7 @@
             }
 
             /* Compact business info */
-            #receipt-preview-content div[style*="RIZE CLEANING"] {
+            #receipt-preview-content div[style*="LivinGreen"] {
                 padding: 12px !important;
             }
         }
@@ -4180,20 +4291,295 @@
             box-shadow: 0 6px 24px rgba(16, 163, 127, 0.4) !important;
         }
 
-        /* Modals glass-morphism */
+        /* Modals glass-morphism - Dark style matching calendar */
         #edit-appointment-modal > div,
-        #client-details-modal > div {
-            background: rgba(255, 255, 255, 0.95) !important;
+        #client-details-modal > div,
+        #reschedule-modal > div,
+        #receipt-modal > div {
+            background: rgba(30, 41, 59, 0.5) !important;
             backdrop-filter: blur(40px) saturate(180%) !important;
             -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3) !important;
         }
 
-        [data-theme="dark"] #edit-appointment-modal > div,
-        [data-theme="dark"] #client-details-modal > div {
-            background: rgba(0, 0, 0, 0.85) !important;
+        /* All text in modals should be white */
+        #edit-appointment-modal > div *,
+        #client-details-modal > div *,
+        #reschedule-modal > div *,
+        #receipt-modal > div * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Modal headings */
+        #edit-appointment-modal h2,
+        #client-details-modal h2,
+        #edit-appointment-modal h3,
+        #client-details-modal h3,
+        #reschedule-modal h3,
+        #receipt-modal h3,
+        #receipt-modal h4 {
+            color: rgba(255, 255, 255, 0.98) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Input fields in all modals - White thin borders */
+        #edit-appointment-modal input,
+        #edit-appointment-modal select,
+        #edit-appointment-modal textarea,
+        #reschedule-modal input,
+        #reschedule-modal select,
+        #reschedule-modal textarea,
+        #receipt-modal input,
+        #receipt-modal select,
+        #receipt-modal textarea {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 6px !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            padding: 12px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #edit-appointment-modal input:focus,
+        #edit-appointment-modal select:focus,
+        #edit-appointment-modal textarea:focus,
+        #reschedule-modal input:focus,
+        #reschedule-modal select:focus,
+        #reschedule-modal textarea:focus,
+        #receipt-modal input:focus,
+        #receipt-modal select:focus,
+        #receipt-modal textarea:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            outline: none !important;
+        }
+
+        /* Labels in modals */
+        #edit-appointment-modal label,
+        #reschedule-modal label,
+        #receipt-modal label {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500 !important;
+        }
+
+        /* Buttons in edit, reschedule, and receipt modals */
+        #edit-appointment-modal button,
+        #reschedule-modal button,
+        #receipt-modal button {
+            background: rgba(59, 130, 246, 0.25) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(59, 130, 246, 0.3) !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
+        }
+
+        #edit-appointment-modal button:hover,
+        #reschedule-modal button:hover,
+        #receipt-modal button:hover {
+            background: rgba(59, 130, 246, 0.35) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        /* Close buttons (X) in modals */
+        #edit-appointment-modal button[onclick*="close"],
+        #reschedule-modal button[onclick*="close"],
+        #receipt-modal button[onclick*="close"] {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Receipt modal inner sections with glassmorphism */
+        #receipt-modal div[style*="background: var(--bg-tertiary)"],
+        #receipt-modal div[style*="background: var(--bg-secondary)"],
+        #receipt-client-info,
+        #services-list {
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Services list container and "Generar Recibo" card */
+        #receipt-modal > div > div[style*="background: var(--bg-secondary)"] {
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        }
+
+        /* Small text and labels in receipt modal */
+        #receipt-modal small,
+        #receipt-modal label[style*="color: #374151"] {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Select dropdown options - dark background for visibility */
+        #receipt-modal select option,
+        #edit-appointment-modal select option,
+        #reschedule-modal select option {
+            background: rgba(30, 41, 59, 0.95) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Receipt preview modal styling */
+        #receipt-preview-modal > div {
+            background: rgba(30, 41, 59, 0.5) !important;
+            backdrop-filter: blur(40px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        #receipt-preview-modal h3,
+        #receipt-preview-modal div,
+        #receipt-preview-modal button {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #receipt-preview-modal button {
+            background: rgba(59, 130, 246, 0.25) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(59, 130, 246, 0.3) !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #receipt-preview-modal button:hover {
+            background: rgba(59, 130, 246, 0.35) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+            transform: translateY(-2px);
+        }
+
+        #receipt-preview-modal button[onclick*="close"] {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Mobile adjustments for all modals */
+        @media (max-width: 480px) {
+            #edit-appointment-modal > div,
+            #reschedule-modal > div,
+            #receipt-modal > div,
+            #receipt-preview-modal > div {
+                max-width: 95% !important;
+                padding: 20px !important;
+            }
+
+            #edit-appointment-modal button,
+            #reschedule-modal button,
+            #receipt-modal button,
+            #receipt-preview-modal button {
+                font-size: 12px !important;
+                padding: 10px 12px !important;
+            }
+
+            #edit-appointment-modal input,
+            #edit-appointment-modal select,
+            #edit-appointment-modal textarea,
+            #reschedule-modal input,
+            #reschedule-modal select,
+            #reschedule-modal textarea,
+            #receipt-modal input,
+            #receipt-modal select,
+            #receipt-modal textarea {
+                font-size: 14px !important;
+                padding: 10px !important;
+            }
+        }
+
+        /* Appointment modal glassmorphism */
+        #appointment-modal > div {
+            background: rgba(30, 41, 59, 0.5) !important;
+            backdrop-filter: blur(40px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* All text in appointment modal should be white */
+        #appointment-modal > div * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Appointment modal headings */
+        #appointment-modal h2,
+        #appointment-modal h3,
+        #appointment-modal h4 {
+            color: rgba(255, 255, 255, 0.98) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Appointment modal buttons - Blue glassmorphism */
+        #appointment-modal button {
+            background: rgba(59, 130, 246, 0.25) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(59, 130, 246, 0.3) !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
+        }
+
+        #appointment-modal button:hover {
+            background: rgba(59, 130, 246, 0.35) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        /* Close button (X) - Special styling */
+        #appointment-modal button[onclick="closeAppointmentModal()"] {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-size: 24px !important;
+            padding: 0 !important;
+        }
+
+        /* Appointment details card background */
+        #appointment-details-content > div[style*="background: #f9fafb"] {
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Time badge in appointment details */
+        #appointment-details-content span[style*="background: #10a37f"] {
+            background: rgba(59, 130, 246, 0.4) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        }
+
+        /* Mobile-specific appointment modal styling */
+        @media (max-width: 480px) {
+            #appointment-modal > div {
+                max-width: 95% !important;
+                padding: 20px !important;
+            }
+
+            #appointment-modal button {
+                font-size: 12px !important;
+                padding: 10px 12px !important;
+            }
         }
 
         /* Content area modern background */
@@ -4207,44 +4593,174 @@
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                         url('./images/background.webp') center center / cover no-repeat !important;
             background-attachment: fixed !important;
-            padding: 48px 24px !important;
         }
 
-        /* Calendar glassmorphism effects */
-        #calendar-view .gas-price-header {
-            background: rgba(30, 41, 59, 0.3) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-            color: rgba(255, 255, 255, 0.95) !important;
+        /* Calendar View - Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            /* Make body use same background as calendar */
+            body:has(#calendar-view:not([style*="display: none"])) {
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                            url('./images/background.webp') center center / cover no-repeat !important;
+                background-attachment: fixed !important;
+            }
+
+            /* Gas price header - transparent on tablet */
+            #calendar-view .gas-price-header {
+                margin: 0 0 16px 0 !important;
+                padding: 12px !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                border: none !important;
+                box-shadow: none !important;
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .gas-price-header * {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .calendar-header {
+                margin: 0 0 16px 0 !important;
+                padding: 16px !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            #calendar-view .calendar-header * {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .week-range {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view #weekly-calendar-container {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Position mobile menu button absolutely over calendar */
+            body:has(#calendar-view:not([style*="display: none"])) .mobile-menu-btn {
+                position: absolute;
+                top: 20px;
+                z-index: 1001;
+                background: rgba(30, 41, 59, 0.5);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
         }
 
-        #calendar-view .gas-price-header .gas-price-display {
-            color: rgba(16, 163, 127, 1) !important;
+        /* Calendar View - Mobile adjustments */
+        @media (max-width: 480px) {
+            /* Make body use same background as calendar */
+            body:has(#calendar-view:not([style*="display: none"])) {
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                            url('./images/background.webp') center center / cover no-repeat !important;
+                background-attachment: fixed !important;
+            }
+
+            /* Gas price header - transparent, minimal spacing */
+            #calendar-view .gas-price-header {
+                margin: 0 0 12px 0 !important;
+                padding: 12px !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                border: none !important;
+                box-shadow: none !important;
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .gas-price-header * {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .calendar-header {
+                margin: 0 0 12px 0 !important;
+                padding: 12px !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            #calendar-view .calendar-header * {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view .week-range {
+                color: rgba(255, 255, 255, 0.95) !important;
+            }
+
+            #calendar-view #weekly-calendar-container {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #calendar-view > *:first-child {
+                margin-top: 0 !important;
+            }
+
+            /* Position mobile menu button absolutely over calendar */
+            body:has(#calendar-view:not([style*="display: none"])) .mobile-menu-btn {
+                position: absolute;
+                top: 15px;
+                z-index: 1001;
+                background: rgba(30, 41, 59, 0.5);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
         }
 
-        #calendar-view .calendar-header {
-            background: rgba(30, 41, 59, 0.3) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        /* Calendar glassmorphism effects - Desktop only */
+        @media (min-width: 769px) {
+            #calendar-view .gas-price-header {
+                background: rgba(30, 41, 59, 0.3) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+                color: rgba(255, 255, 255, 0.95) !important;
+                border-radius: 12px !important;
+                margin-bottom: 16px !important;
+                padding: 12px !important;
+            }
+
+            #calendar-view .gas-price-header .gas-price-display {
+                color: rgba(96, 165, 250, 1) !important;
+                text-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            }
+
+            #calendar-view .calendar-header {
+                background: rgba(30, 41, 59, 0.3) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+                margin-bottom: 24px !important;
+                padding: 24px !important;
+            }
         }
 
-        #calendar-view .week-range {
-            color: rgba(255, 255, 255, 0.95) !important;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
+        /* Desktop only - Glassmorphism for calendar week range and container */
+        @media (min-width: 769px) {
+            #calendar-view .week-range {
+                color: rgba(255, 255, 255, 0.95) !important;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
 
-        #calendar-view #weekly-calendar-container {
-            background: rgba(30, 41, 59, 0.25) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 24px !important;
-            padding: 24px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            #calendar-view #weekly-calendar-container {
+                background: rgba(30, 41, 59, 0.25) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 24px !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+                padding: 24px !important;
+            }
         }
 
         #calendar-view #weekly-calendar-grid {
@@ -5217,7 +5733,7 @@
 
             <!-- Calendar View (Hidden by default) -->
             <div class="content-area" id="calendar-view" style="display: none;">
-                <div class="gas-price-header" style="text-align: center; margin-bottom: 20px; padding: 12px; background: var(--gas-price-bg); color: var(--gas-price-text); border-radius: 12px; font-weight: 600; box-shadow: 0 1px 3px var(--shadow-light);">
+                <div class="gas-price-header" style="text-align: center; font-weight: 600;">
                     Precio de Gasolina Hoy en Utah: <span style="color: var(--gas-price-value);" class="gas-price-display">$3.32</span>/<span style="color: var(--gas-price-unit);">galón</span> <span style="font-size: 12px; color: var(--gas-price-status);">(actualizando...)</span>
                 </div>
                 
@@ -11628,10 +12144,8 @@ IMPORTANTE:
                 daySection.className = 'mobile-day-section';
                 daySection.style.cssText = `
                     margin-bottom: 24px;
-                    background: white;
                     border-radius: 12px;
                     padding: 16px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 `;
                 
                 // Day header
@@ -11643,7 +12157,7 @@ IMPORTANTE:
                     justify-content: space-between;
                     margin-bottom: 16px;
                     padding-bottom: 12px;
-                    border-bottom: 1px solid #e5e5e5;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
                 `;
                 
                 const dayTitle = document.createElement('div');
@@ -11658,14 +12172,14 @@ IMPORTANTE:
                 dayName.style.cssText = `
                     font-size: 18px;
                     font-weight: 700;
-                    color: ${dayData.isToday ? 'var(--brand-primary)' : 'var(--text-primary)'};
+                    color: ${dayData.isToday ? '#86efac' : 'rgba(255, 255, 255, 0.95)'};
                 `;
-                
+
                 const dayNumber = document.createElement('span');
                 dayNumber.textContent = dayData.date.getDate();
                 dayNumber.style.cssText = `
-                    background: ${dayData.isToday ? '#10a37f' : '#f3f4f6'};
-                    color: ${dayData.isToday ? 'white' : '#6b7280'};
+                    background: ${dayData.isToday ? '#10a37f' : 'rgba(255, 255, 255, 0.15)'};
+                    color: white;
                     width: 32px;
                     height: 32px;
                     border-radius: 50%;
@@ -11687,12 +12201,16 @@ IMPORTANTE:
                     
                     const gasCostElement = document.createElement('div');
                     gasCostElement.style.cssText = `
-                        background: #dcfce7;
-                        color: #059669;
+                        background: rgba(59, 130, 246, 0.25);
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        color: rgba(147, 197, 253, 0.95);
                         padding: 6px 12px;
                         border-radius: 20px;
                         font-size: 12px;
                         font-weight: 600;
+                        border: 1px solid rgba(59, 130, 246, 0.35);
+                        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
                     `;
                     gasCostElement.textContent = `$${gasCost.toFixed(2)}`;
                     dayHeader.appendChild(gasCostElement);
@@ -11709,8 +12227,6 @@ IMPORTANTE:
                         const clientCard = document.createElement('div');
                         clientCard.className = 'mobile-client-card';
                         clientCard.style.cssText = `
-                            background: var(--bg-tertiary);
-                            border: 1px solid #e5e5e5;
                             border-radius: 8px;
                             padding: 12px;
                             margin-bottom: 8px;
@@ -11721,16 +12237,16 @@ IMPORTANTE:
                         clientCard.innerHTML = `
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="flex: 1; min-width: 0;">
-                                    <h3 style="font-size: 15px; font-weight: 600; color: #2d333a; margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${appointment.name}</h3>
+                                    <h3 style="font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.95); margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${appointment.name}</h3>
                                     <div style="display: flex; align-items: center; gap: 6px;">
-                                        <svg style="width: 14px; height: 14px; color: #6b7280; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <svg style="width: 14px; height: 14px; color: rgba(255, 255, 255, 0.7); flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                             <circle cx="12" cy="10" r="3"></circle>
                                         </svg>
-                                        <span style="color: #6b7280; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${appointment.city}</span>
+                                        <span style="color: rgba(255, 255, 255, 0.7); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${appointment.city}</span>
                                     </div>
                                 </div>
-                                <span style="background: #10a37f; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; flex-shrink: 0;">${appointment.time}</span>
+                                <span style="background: rgba(59, 130, 246, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; flex-shrink: 0; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);">${appointment.time}</span>
                             </div>
                         `;
                         
@@ -11744,20 +12260,23 @@ IMPORTANTE:
                         const addAppointmentBtn = document.createElement('button');
                         addAppointmentBtn.style.cssText = `
                             width: 100%;
-                            background: var(--brand-primary);
-                            color: white;
-                            border: none;
+                            background: rgba(59, 130, 246, 0.25);
+                            backdrop-filter: blur(12px);
+                            -webkit-backdrop-filter: blur(12px);
+                            color: rgba(255, 255, 255, 0.95);
+                            border: 1px solid rgba(59, 130, 246, 0.3);
                             border-radius: 8px;
                             padding: 12px 16px;
                             font-size: 14px;
                             font-weight: 600;
                             cursor: pointer;
-                            transition: all 0.2s;
+                            transition: all 0.3s ease;
                             margin-top: 8px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
                             gap: 8px;
+                            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
                         `;
                         addAppointmentBtn.innerHTML = `
                             <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -11773,13 +12292,17 @@ IMPORTANTE:
                         });
                         
                         addAppointmentBtn.addEventListener('mouseover', () => {
-                            addAppointmentBtn.style.background = '#059669';
-                            addAppointmentBtn.style.transform = 'translateY(-1px)';
+                            addAppointmentBtn.style.background = 'rgba(59, 130, 246, 0.35)';
+                            addAppointmentBtn.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                            addAppointmentBtn.style.transform = 'translateY(-2px)';
+                            addAppointmentBtn.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.25)';
                         });
-                        
+
                         addAppointmentBtn.addEventListener('mouseout', () => {
-                            addAppointmentBtn.style.background = '#10a37f';
+                            addAppointmentBtn.style.background = 'rgba(59, 130, 246, 0.25)';
+                            addAppointmentBtn.style.borderColor = 'rgba(59, 130, 246, 0.3)';
                             addAppointmentBtn.style.transform = 'translateY(0)';
+                            addAppointmentBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)';
                         });
                         
                         daySection.appendChild(addAppointmentBtn);
@@ -11787,9 +12310,8 @@ IMPORTANTE:
                 } else if (dayEvent) {
                     // Show day event
                     const eventCard = document.createElement('div');
+                    eventCard.className = 'mobile-client-card';
                     eventCard.style.cssText = `
-                        background: var(--bg-tertiary);
-                        border: 1px solid #e5e5e5;
                         border-radius: 8px;
                         padding: 12px;
                         margin-bottom: 8px;
@@ -11798,40 +12320,34 @@ IMPORTANTE:
                     `;
                     
                     const eventConfig = {
-                        'vacaciones': { 
-                            color: '#dc2626', 
-                            bg: '#fee2e2', 
+                        'vacaciones': {
+                            color: '#fca5a5',
                             icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
                             text: 'Vacaciones'
                         },
-                        'libre': { 
-                            color: '#059669', 
-                            bg: '#dcfce7', 
+                        'libre': {
+                            color: '#86efac',
                             icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
                             text: 'Día Libre'
                         },
-                        'compromiso': { 
-                            color: '#d97706', 
-                            bg: '#fef3c7', 
+                        'compromiso': {
+                            color: '#fcd34d',
                             icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8z',
                             text: 'Compromiso'
                         },
-                        'salida': { 
-                            color: '#7c3aed', 
-                            bg: '#ede9fe', 
+                        'salida': {
+                            color: '#c4b5fd',
                             icon: 'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4',
                             text: 'Salida'
                         },
-                        'sin-pega': { 
-                            color: '#6b7280', 
-                            bg: '#f3f4f6', 
+                        'sin-pega': {
+                            color: '#d1d5db',
                             icon: 'M18 6L6 18M6 6l12 12',
                             text: 'Sin Pega'
                         }
                     };
-                    
+
                     const config = eventConfig[dayEvent];
-                    eventCard.style.background = config.bg;
                     eventCard.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <svg style="width: 20px; height: 20px; color: ${config.color}; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -11854,9 +12370,9 @@ IMPORTANTE:
                 } else {
                     // Empty state for days without appointments
                     const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state mobile-client-card';
                     emptyState.style.cssText = `
-                        background: var(--bg-tertiary);
-                        border: 1px dashed #d1d5db;
+                        border: 1px dashed rgba(255, 255, 255, 0.3);
                         border-radius: 8px;
                         padding: 12px;
                         margin-bottom: 8px;
@@ -11869,27 +12385,25 @@ IMPORTANTE:
                     
                     emptyState.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                            <svg style="width: 16px; height: 16px; color: #9ca3af; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <svg style="width: 16px; height: 16px; color: rgba(255, 255, 255, 0.7); flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                 <line x1="3" y1="10" x2="21" y2="10"></line>
                             </svg>
-                            <span style="color: #9ca3af; font-size: 14px; flex: 1;">Sin citas programadas</span>
+                            <span style="color: rgba(255, 255, 255, 0.7); font-size: 14px; flex: 1; font-style: italic;">Sin citas programadas</span>
                         </div>
-                        <button style="background: #10a37f; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0;">
+                        <button style="background: rgba(59, 130, 246, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);">
                             + Evento
                         </button>
                     `;
                     
                     emptyState.addEventListener('click', () => showEventOptions(dayData.dateStr));
                     emptyState.addEventListener('mouseover', () => {
-                        emptyState.style.borderColor = '#10a37f';
-                        emptyState.style.background = '#f0fdf4';
+                        emptyState.style.borderColor = 'rgba(59, 130, 246, 0.5)';
                     });
                     emptyState.addEventListener('mouseout', () => {
-                        emptyState.style.borderColor = '#d1d5db';
-                        emptyState.style.background = '#f9fafb';
+                        emptyState.style.borderColor = 'rgba(255, 255, 255, 0.3)';
                     });
                     
                     daySection.appendChild(emptyState);
@@ -11953,8 +12467,11 @@ IMPORTANTE:
                     const gasCostElement = document.createElement('div');
                     gasCostElement.className = 'gas-cost-outside';
                     gasCostElement.style.cssText = `
-                        background: var(--brand-primary);
-                        color: white;
+                        background: rgba(59, 130, 246, 0.3);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        color: rgba(255, 255, 255, 0.95);
+                        border: 1px solid rgba(59, 130, 246, 0.4);
                         padding: 4px 8px;
                         margin-bottom: 4px;
                         border-radius: 6px;
@@ -11962,7 +12479,7 @@ IMPORTANTE:
                         font-weight: 600;
                         font-size: 11px;
                         line-height: 1.2;
-                        box-shadow: 0 1px 3px rgba(16, 163, 127, 0.3);
+                        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
                     `;
                     gasCostElement.textContent = `$${gasCost.toFixed(2)}`;
                     dayWrapper.appendChild(gasCostElement);
@@ -12674,8 +13191,8 @@ IMPORTANTE:
 
         // Generate professional HTML receipt content
         function generateReceiptHTML(receiptNumber, currentDate, totalAmount) {
-            // Generate QR code data for receipt verification
-            const qrData = `RIZE-${receiptNumber}-${totalAmount.toFixed(2)}`;
+            // Generate QR code for LivinGreen website
+            const qrData = `https://www.livingreen.life/`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrData)}`;
 
             return `
@@ -12724,24 +13241,19 @@ IMPORTANTE:
                         <div style="margin-bottom: 24px;">
                             ${receiptServices.map((service, index) => `
                                 <div style="border-bottom: ${index === receiptServices.length - 1 ? 'none' : '1px solid #e9ecef'}; padding: 16px 0;">
-                                    <!-- Service Name -->
-                                    <div style="font-size: 16px; font-weight: 500; color: #212529; margin-bottom: 4px;">
-                                        ${service.service}
-                                    </div>
-
-                                    <!-- Service Description -->
-                                    <div style="font-size: 14px; color: #6c757d; margin-bottom: 8px;">
-                                        ${getServiceDescription(service.service)}
-                                    </div>
-
-                                    <!-- Quantity and Price -->
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div style="font-size: 14px; color: #6c757d;">
-                                            ${service.quantity} × $${service.price.toFixed(2)} each
+                                    <!-- Service Name and Price -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="font-size: 16px; font-weight: 500; color: #212529;">
+                                            ${service.service}
                                         </div>
                                         <div style="font-size: 16px; font-weight: 600; color: #212529;">
                                             $${service.total.toFixed(2)}
                                         </div>
+                                    </div>
+
+                                    <!-- Quantity and Unit Price -->
+                                    <div style="font-size: 14px; color: #6c757d;">
+                                        ${service.quantity} × $${service.price.toFixed(2)} each
                                     </div>
                                 </div>
                             `).join('')}
@@ -12779,16 +13291,14 @@ IMPORTANTE:
                             <div style="margin-bottom: 12px;">
                                 <img src="${qrCodeUrl}" alt="QR Code" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 4px;">
                             </div>
-                            <div style="font-size: 12px; color: #6c757d;">Scan for receipt verification</div>
+                            <div style="font-size: 12px; color: #6c757d;">Visit our website</div>
                         </div>
 
                         <!-- Business Info -->
                         <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; margin-top: 16px;">
-                            <div style="font-size: 16px; font-weight: 600; color: #212529; margin-bottom: 8px; text-align: center;">RIZE CLEANING</div>
+                            <div style="font-size: 16px; font-weight: 600; color: #212529; margin-bottom: 8px; text-align: center;">LivinGreen</div>
                             <div style="font-size: 12px; color: #6c757d; text-align: center; line-height: 1.4;">
-                                <div>Phone: (801) 739-0700</div>
-                                <div>Email: info@rizecleaning.com</div>
-                                <div>Web: www.rizecleaning.com</div>
+                                <div>Web: www.livingreen.life</div>
                             </div>
                         </div>
                     </div>
@@ -13155,11 +13665,11 @@ IMPORTANTE:
             yPos += 25;
 
             // QR Code data and placeholder
-            const qrData = `RIZE-${receiptNumber}-${totalAmount.toFixed(2)}`;
+            const qrData = `https://www.livingreen.life/`;
             pdf.setTextColor(...secondaryText);
             pdf.setFontSize(10);
             pdf.setFont(undefined, 'normal');
-            pdf.text('Scan for receipt verification', pageWidth / 2, yPos, { align: 'center' });
+            pdf.text('Visit our website', pageWidth / 2, yPos, { align: 'center' });
 
             // Simple QR code placeholder box
             pdf.setDrawColor(...borderColor);
@@ -13174,23 +13684,19 @@ IMPORTANTE:
             // Business Info
             yPos += 50;
             pdf.setFillColor(...backgroundColor);
-            pdf.rect(margin, yPos, contentWidth, 30, 'F');
+            pdf.rect(margin, yPos, contentWidth, 20, 'F');
 
             yPos += 12;
             pdf.setTextColor(...primaryText);
             pdf.setFontSize(12);
             pdf.setFont(undefined, 'bold');
-            pdf.text('RIZE CLEANING', pageWidth / 2, yPos, { align: 'center' });
+            pdf.text('LivinGreen', pageWidth / 2, yPos, { align: 'center' });
 
             yPos += 8;
             pdf.setTextColor(...secondaryText);
             pdf.setFontSize(9);
             pdf.setFont(undefined, 'normal');
-            pdf.text('Phone: (801) 739-0700', pageWidth / 2, yPos, { align: 'center' });
-            yPos += 5;
-            pdf.text('Email: info@rizecleaning.com', pageWidth / 2, yPos, { align: 'center' });
-            yPos += 5;
-            pdf.text('Web: www.rizecleaning.com', pageWidth / 2, yPos, { align: 'center' });
+            pdf.text('Web: www.livingreen.life', pageWidth / 2, yPos, { align: 'center' });
 
             // Download the PDF
             const fileName = `Mobile_Invoice_${receiptNumber}_${clientName.replace(/\s+/g, '_')}.pdf`;
@@ -13208,8 +13714,8 @@ IMPORTANTE:
             const firstName = appointment.name.split(' ')[0];
 
             // Create share content
-            const shareTitle = `Factura ${receiptNumber} - RIZE Cleaning`;
-            const shareText = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista - RIZE Professional Cleaning`;
+            const shareTitle = `Factura ${receiptNumber} - LivinGreen`;
+            const shareText = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista - LivinGreen`;
             const shareUrl = window.location.href; // Current page URL
 
             // Check if Web Share API is supported
@@ -13283,7 +13789,7 @@ IMPORTANTE:
                 if (storedReceipt && storedReceipt.shortUrl) {
                     // Create professional SMS message (optimized for SMS length)
                     const firstName = appointment.name.split(' ')[0];
-                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${storedReceipt.shortUrl} - RIZE Professional Cleaning`;
+                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${storedReceipt.shortUrl} - LivinGreen`;
 
                     // Open SMS app
                     openSMSApp(appointment.phone, message);
@@ -13370,7 +13876,7 @@ IMPORTANTE:
 
         // Generate receipt text for server storage
         function generateReceiptTextForStorage(receiptNumber, totalAmount, services, appointment) {
-            let receiptText = `🧽 RIZE PROFESSIONAL CLEANING\n`;
+            let receiptText = `🌿 LivinGreen\n`;
             receiptText += `=====================================\n\n`;
             receiptText += `FACTURA #${receiptNumber}\n`;
             receiptText += `Fecha: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}\n`;
@@ -13396,7 +13902,7 @@ IMPORTANTE:
 
             receiptText += `-------------------------------------\n`;
             receiptText += `TOTAL: $${totalAmount.toFixed(2)}\n\n`;
-            receiptText += `Gracias por elegir RIZE Professional Cleaning!\n`;
+            receiptText += `Gracias por elegir LivinGreen!\n`;
             receiptText += `¡Su satisfacción es nuestra prioridad!`;
 
             return receiptText;
@@ -13603,7 +14109,7 @@ IMPORTANTE:
             
             // Create complete professional SMS message (optimized for SMS length)
             const firstName = selectedAppointment.name.split(' ')[0]; // Solo primer nombre
-            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - RIZE Professional Cleaning`;
+            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - LivinGreen`;
             
             // Try different SMS formats for better compatibility
             let smsUrl;
@@ -14002,33 +14508,33 @@ END:VCARD`;
             const receiptNumber = generateRealisticInvoiceNumber();
             const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
             const totalAmount = receiptServices.reduce((sum, service) => sum + service.total, 0);
-            
-            let receiptText = `🧽 RIZE PROFESSIONAL CLEANING\n`;
+
+            let receiptText = `🌿 LivinGreen\n`;
             receiptText += `=====================================\n\n`;
             receiptText += `FACTURA #${receiptNumber}\n`;
             receiptText += `Fecha: ${currentDate}\n`;
             receiptText += `Total: $${totalAmount.toFixed(2)}\n\n`;
-            
+
             receiptText += `FACTURAR A:\n`;
             receiptText += `${selectedAppointment.name}\n`;
             if (selectedAppointment.address) {
                 receiptText += `${selectedAppointment.address}\n`;
             }
             receiptText += `\n`;
-            
+
             receiptText += `SERVICIOS:\n`;
             receiptText += `-------------------------------------\n`;
-            
+
             receiptServices.forEach(service => {
                 receiptText += `${service.service}\n`;
                 receiptText += `Cantidad: ${service.quantity} x $${service.price.toFixed(2)} = $${service.total.toFixed(2)}\n\n`;
             });
-            
+
             receiptText += `-------------------------------------\n`;
             receiptText += `TOTAL: $${totalAmount.toFixed(2)}\n\n`;
-            receiptText += `Gracias por elegir RIZE Professional Cleaning!\n`;
+            receiptText += `Gracias por elegir LivinGreen!\n`;
             receiptText += `¡Su satisfacción es nuestra prioridad!`;
-            
+
             return receiptText;
         }
 
@@ -14360,7 +14866,7 @@ END:VCARD`;
                     console.log('Created simple receipt URL for WhatsApp:', shareableUrl);
                     
                     const firstName = selectedAppointment.name.split(' ')[0];
-                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shareableUrl} - RIZE Professional Cleaning`;
+                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shareableUrl} - LivinGreen`;
                     const encodedMessage = encodeURIComponent(message);
                     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
                     
@@ -14402,7 +14908,7 @@ END:VCARD`;
                         if (result.success) {
                             const shortUrl = result.shortUrl || result.fullUrl;
                             const firstName = selectedAppointment.name.split(' ')[0];
-                            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - RIZE Professional Cleaning`;
+                            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - LivinGreen`;
                             const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
                             window.open(smsUrl);
                         } else {
@@ -14422,7 +14928,7 @@ END:VCARD`;
                         document.body.removeChild(link);
                         
                         const firstName = selectedAppointment.name.split(' ')[0];
-                        const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. PDF descargado - adjunte a este mensaje. - RIZE Professional Cleaning`;
+                        const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. PDF descargado - adjunte a este mensaje. - LivinGreen`;
                         const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
                         window.open(smsUrl);
                     }
