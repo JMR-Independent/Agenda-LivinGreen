@@ -1299,24 +1299,24 @@
 
         /* Dashboard Styles */
         .dashboard-header {
-            background: white;
+            background: transparent !important;
             border-radius: 8px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e5e5e5;
+            box-shadow: none !important;
+            border: none !important;
         }
 
         .dashboard-title {
             font-size: 24px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: rgba(255, 255, 255, 0.98) !important;
             margin: 0 0 8px 0;
         }
 
         .dashboard-subtitle {
             font-size: 14px;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.8) !important;
             font-weight: 400;
         }
 
@@ -1329,26 +1329,28 @@
         }
 
         .metric-card {
-            background: var(--card-bg);
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
             border-radius: 16px;
             padding: 20px;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             transition: all 0.3s ease;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
         }
 
         .metric-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-            border-color: var(--brand-primary);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
         }
 
 
         .metric-value {
             font-size: 32px;
             font-weight: 700;
-            color: var(--brand-primary);
+            color: rgba(255, 255, 255, 0.98) !important;
             line-height: 1;
             margin-bottom: 8px;
         }
@@ -1356,7 +1358,7 @@
         .metric-label {
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.8) !important;
         }
 
         /* Charts Row */
@@ -1368,39 +1370,47 @@
         }
 
         .chart-card {
-            background: white;
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
             border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.2s;
-            border: 1px solid #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
         }
 
         .chart-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: var(--brand-primary);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
         }
 
         .chart-header {
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 16px;
+            padding-bottom: 0;
+            border-bottom: none;
         }
 
         .chart-header h3 {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: rgba(200, 200, 200, 0.7) !important;
             margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
         }
 
         .chart-content {
             position: relative;
-            height: 200px;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: visible;
         }
 
         /* Analytics Row */
@@ -1412,18 +1422,20 @@
         }
 
         .analytics-panel {
-            background: white;
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
             border-radius: 8px;
             padding: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.2s;
-            border: 1px solid #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
 
         .analytics-panel:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: var(--brand-primary);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
         }
 
         .panel-header {
@@ -1435,7 +1447,7 @@
         .panel-header h3 {
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.95) !important;
             margin: 0;
         }
 
@@ -1459,7 +1471,7 @@
         .revenue-bar-label {
             font-size: 14px;
             font-weight: 500;
-            color: var(--text-tertiary);
+            color: rgba(255, 255, 255, 0.9) !important;
             min-width: 80px;
         }
 
@@ -1482,7 +1494,7 @@
         .revenue-bar-value {
             font-size: 14px;
             font-weight: 600;
-            color: var(--brand-primary);
+            color: rgba(255, 255, 255, 0.95) !important;
             min-width: 60px;
             text-align: right;
         }
@@ -1499,13 +1511,14 @@
             align-items: center;
             gap: 12px;
             padding: 12px;
-            background: var(--bg-tertiary);
+            background: rgba(255, 255, 255, 0.1) !important;
             border-radius: 8px;
             transition: background 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .activity-item:hover {
-            background: var(--bg-tertiary);
+            background: rgba(255, 255, 255, 0.15) !important;
         }
 
         .activity-icon {
@@ -1528,13 +1541,13 @@
         .activity-title {
             font-size: 14px;
             font-weight: 500;
-            color: var(--text-tertiary);
+            color: rgba(255, 255, 255, 0.95) !important;
             margin: 0 0 2px 0;
         }
 
         .activity-subtitle {
             font-size: 12px;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.8) !important;
         }
 
         .activity-time {
@@ -1549,18 +1562,20 @@
         }
 
         .trend-card {
-            background: white;
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
             border-radius: 8px;
             padding: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.2s;
-            border: 1px solid #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
 
         .trend-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: var(--brand-primary);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
         }
 
         .trend-header {
@@ -1572,7 +1587,7 @@
         .trend-header h3 {
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.95) !important;
             margin: 0;
         }
 
@@ -1782,7 +1797,8 @@
             }
 
             .chart-content {
-                height: 140px;
+                height: 200px;
+                overflow: visible;
             }
 
             .panel-content {
@@ -3545,6 +3561,30 @@
             height: 100%;
         }
 
+        /* City Slider Styles for Mini Bento Grid */
+        .city-slider-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .city-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .city-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .city-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
         /* Mini Stats Styles for Datos Card */
         .mini-stats-grid {
             display: grid;
@@ -4441,16 +4481,26 @@
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3) !important;
         }
 
+        /* Header and footer text colors in receipt preview modal */
         #receipt-preview-modal h3,
-        #receipt-preview-modal div,
-        #receipt-preview-modal button {
+        #receipt-preview-modal > div > div:first-child *,
+        #receipt-preview-modal > div > div:last-child * {
             color: rgba(255, 255, 255, 0.95) !important;
         }
 
+        /* Keep receipt content white (for PDF generation) */
+        #receipt-preview-content,
+        #receipt-preview-content * {
+            color: initial !important;
+            background: white !important;
+        }
+
+        /* Action buttons styling */
         #receipt-preview-modal button {
             background: rgba(59, 130, 246, 0.25) !important;
             backdrop-filter: blur(12px) !important;
             -webkit-backdrop-filter: blur(12px) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
             border: 1px solid rgba(59, 130, 246, 0.3) !important;
             border-radius: 8px !important;
             transition: all 0.3s ease !important;
@@ -4465,6 +4515,14 @@
         #receipt-preview-modal button[onclick*="close"] {
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Footer section in receipt preview modal */
+        #receipt-preview-modal > div > div[style*="border-top"] {
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
 
         /* Mobile adjustments for all modals */
@@ -4588,17 +4646,19 @@
         }
 
         /* Calendar View - Same background as landing page */
-        #calendar-view {
+        #calendar-view,
+        #datos-view {
             min-height: 100vh;
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                         url('./images/background.webp') center center / cover no-repeat !important;
             background-attachment: fixed !important;
         }
 
-        /* Calendar View - Tablet adjustments */
+        /* Calendar View and Datos View - Tablet adjustments */
         @media (min-width: 481px) and (max-width: 768px) {
-            /* Make body use same background as calendar */
-            body:has(#calendar-view:not([style*="display: none"])) {
+            /* Make body use same background as calendar and datos */
+            body:has(#calendar-view:not([style*="display: none"])),
+            body:has(#datos-view:not([style*="display: none"])) {
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                             url('./images/background.webp') center center / cover no-repeat !important;
                 background-attachment: fixed !important;
@@ -4653,10 +4713,11 @@
             }
         }
 
-        /* Calendar View - Mobile adjustments */
+        /* Calendar View and Datos View - Mobile adjustments */
         @media (max-width: 480px) {
-            /* Make body use same background as calendar */
-            body:has(#calendar-view:not([style*="display: none"])) {
+            /* Make body use same background as calendar and datos */
+            body:has(#calendar-view:not([style*="display: none"])),
+            body:has(#datos-view:not([style*="display: none"])) {
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                             url('./images/background.webp') center center / cover no-repeat !important;
                 background-attachment: fixed !important;
@@ -5844,16 +5905,16 @@
                                     <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Service Type:</label>
                                     <select id="service-type" onchange="updateServicePrice()" style="width: 100%; padding: 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-input); color: var(--text-tertiary);">
                                         <option value="">Select service</option>
-                                        <option value="Bedrooms">Bedrooms - $30 each</option>
-                                        <option value="Hallways">Hallways - $10 - $30</option>
-                                        <option value="Living Rooms">Living Rooms - $30 - $60</option>
-                                        <option value="Stairs">Stairs - $45 - $55</option>
+                                        <option value="Carpet Cleaning - Bedroom">Carpet Cleaning - Bedroom - $30 each</option>
+                                        <option value="Carpet Cleaning - Hallway">Carpet Cleaning - Hallway - $10 - $30</option>
+                                        <option value="Carpet Cleaning - Living Room">Carpet Cleaning - Living Room - $30 - $60</option>
+                                        <option value="Carpet Cleaning - Stairs">Carpet Cleaning - Stairs - $45 - $55</option>
                                         <option value="Odor Removal">Odor Removal - $20 per area</option>
-                                        <option value="1-Seat Chair">1-Seat Chair - $35</option>
-                                        <option value="2-Seat Loveseat">2-Seat Loveseat - $65</option>
-                                        <option value="3-Seat Sofa">3-Seat Sofa - $85</option>
-                                        <option value="Sectionals">Sectionals - From $100</option>
-                                        <option value="Dining Chairs">Dining Chairs - $10 each</option>
+                                        <option value="Chair Cleaning (1-Seat)">Chair Cleaning (1-Seat) - $35</option>
+                                        <option value="Loveseat Cleaning (2-Seat)">Loveseat Cleaning (2-Seat) - $65</option>
+                                        <option value="Sofa Cleaning (3-Seat)">Sofa Cleaning (3-Seat) - $85</option>
+                                        <option value="Sectional Cleaning">Sectional Cleaning - From $100</option>
+                                        <option value="Dining Chair Cleaning">Dining Chair Cleaning - $10 each</option>
                                     </select>
                                 </div>
                                 <div>
@@ -11153,32 +11214,60 @@ IMPORTANTE:
         async function loadDatosAnalytics() {
             console.log('🔄 Loading dashboard analytics...');
             try {
-                const appointments = await getAppointmentsFromSupabase();
-                console.log('📊 Loaded appointments for dashboard:', appointments.length);
-                
+                // Use the SAME data source as Registro section
+                // Get appointments from OfflineDB (which loads from Supabase if online)
+                let appointments = await OfflineDB.getAppointments();
+
+                // If online, get from Supabase (same as loadClientRegistry does)
+                if (navigator.onLine) {
+                    try {
+                        const supabaseAppointments = await getAppointmentsFromSupabase();
+                        if (supabaseAppointments && supabaseAppointments.length > 0) {
+                            appointments = supabaseAppointments;
+                        }
+                    } catch (error) {
+                        console.log('⚠️ Using offline data for analytics');
+                    }
+                }
+
+                console.log('📊 Loaded appointments for analytics:', appointments.length);
+
+                // Filter: Only count appointments with valid client names (same as Registro does)
+                const validAppointments = appointments.filter(apt => apt.name && apt.name.trim());
+                console.log('📊 Valid client appointments (with names):', validAppointments.length);
+                console.log('📊 Filtered out (no name):', appointments.length - validAppointments.length);
+
                 // Calculate main metrics
-                const totalClients = appointments.length;
-                const totalRevenue = appointments.reduce((sum, apt) => sum + (parseFloat(apt.price) || 0), 0);
-                const averageTicket = totalClients > 0 ? totalRevenue / totalClients : 0;
-                
+                // Count unique clients by NAME (same as Registro section does)
+                const uniqueClients = new Set();
+                validAppointments.forEach(apt => {
+                    const clientKey = apt.name.toLowerCase().trim();
+                    uniqueClients.add(clientKey);
+                });
+                const totalClients = uniqueClients.size;
+                const totalAppointments = validAppointments.length;
+                const totalRevenue = validAppointments.reduce((sum, apt) => sum + (parseFloat(apt.price) || 0), 0);
+                const averageTicket = totalAppointments > 0 ? totalRevenue / totalAppointments : 0;
+
                 console.log('📈 Dashboard metrics:', {
                     totalClients,
+                    totalAppointments,
                     totalRevenue,
                     averageTicket
                 });
-                
+
                 // Update metric cards
                 document.getElementById('total-clients-count').textContent = totalClients.toLocaleString();
                 document.getElementById('average-ticket-amount').textContent = `$${averageTicket.toFixed(0)}`;
-                document.getElementById('total-appointments').textContent = appointments.length.toLocaleString();
+                document.getElementById('total-appointments').textContent = totalAppointments.toLocaleString();
                 document.getElementById('total-revenue').textContent = `$${totalRevenue.toLocaleString()}`;
-                
-                // Generate charts and analytics
-                generateCitiesChart(appointments);
-                generateJobsChart(appointments);
-                generateRevenueByCity(appointments);
-                generateRecentActivity(appointments);
-                generateMonthlyTrend(appointments);
+
+                // Generate charts and analytics (use validAppointments only)
+                generateCitiesChart(validAppointments);
+                generateJobsChart(validAppointments);
+                generateRevenueByCity(validAppointments);
+                generateRecentActivity(validAppointments);
+                generateMonthlyTrend(validAppointments);
                 
                 console.log('✅ Dashboard analytics loaded successfully');
                 
@@ -11212,12 +11301,8 @@ IMPORTANTE:
         }
 
         function generateCitiesChart(appointments) {
-            const canvas = document.getElementById('cities-chart');
-            const ctx = canvas.getContext('2d');
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+            const container = document.getElementById('cities-chart').parentElement;
+
             // Calculate city data
             const cityCount = {};
             appointments.forEach(apt => {
@@ -11228,48 +11313,186 @@ IMPORTANTE:
 
             const sortedCities = Object.entries(cityCount)
                 .sort(([,a], [,b]) => b - a)
-                .slice(0, 5); // Reduced to 5 for better mobile fit
+                .slice(0, 8); // Top 8 cities for fuller grid
 
             if (sortedCities.length === 0) {
-                // No data message
-                ctx.fillStyle = '#6b7280';
-                ctx.font = '14px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
+                container.innerHTML = `
+                    <div style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; font-size: 14px;">
+                        No hay datos disponibles
+                    </div>
+                `;
                 return;
             }
 
-            // Create simple bar chart optimized for mobile
             const maxValue = Math.max(...sortedCities.map(([,count]) => count));
-            const barWidth = (canvas.width - 40) / sortedCities.length;
-            const maxBarHeight = canvas.height - 60;
 
-            sortedCities.forEach(([city, count], index) => {
-                const barHeight = (count / maxValue) * maxBarHeight;
-                const barWidthActual = Math.min(35, barWidth - 5);
-                const x = 20 + index * barWidth + (barWidth - barWidthActual) / 2;
-                const y = canvas.height - 30 - barHeight;
+            // Color variations for different slides
+            const colorPairs = [
+                { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgba(59, 130, 246, 0.4)' },  // Blue
+                { bg: 'rgba(147, 51, 234, 0.2)', border: 'rgba(147, 51, 234, 0.4)' },  // Purple
+                { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.4)' },  // Green
+                { bg: 'rgba(249, 115, 22, 0.2)', border: 'rgba(249, 115, 22, 0.4)' },  // Orange
+                { bg: 'rgba(236, 72, 153, 0.2)', border: 'rgba(236, 72, 153, 0.4)' },  // Pink
+                { bg: 'rgba(20, 184, 166, 0.2)', border: 'rgba(20, 184, 166, 0.4)' },  // Teal
+                { bg: 'rgba(251, 146, 60, 0.2)', border: 'rgba(251, 146, 60, 0.4)' },  // Amber
+                { bg: 'rgba(139, 92, 246, 0.2)', border: 'rgba(139, 92, 246, 0.4)' }   // Violet
+            ];
 
-                // Draw bar with gradient
-                const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
-                gradient.addColorStop(0, '#10a37f');
-                gradient.addColorStop(1, '#059669');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidthActual, barHeight);
+            // Create bento grid with varying sizes and slides
+            const cityCards = sortedCities.map(([city, count], index) => {
+                const intensity = (count / maxValue);
 
-                // Draw city name (truncated for mobile)
-                ctx.fillStyle = '#374151';
-                ctx.font = '10px Inter';
-                ctx.textAlign = 'center';
-                const cityName = city.length > 8 ? city.substring(0, 6) + '..' : city;
-                ctx.fillText(cityName, x + barWidthActual/2, canvas.height - 15);
+                // Explicit grid positioning for clean layout
+                let gridPosition, fontSize, countSize;
+                if (index === 0) {
+                    gridPosition = 'grid-column: 1 / 3; grid-row: 1 / 3;';
+                    fontSize = '18px';
+                    countSize = '36px';
+                } else if (index === 1) {
+                    gridPosition = 'grid-column: 3 / 4; grid-row: 1 / 2;';
+                    fontSize = '14px';
+                    countSize = '28px';
+                } else if (index === 2) {
+                    gridPosition = 'grid-column: 4 / 5; grid-row: 1 / 2;';
+                    fontSize = '14px';
+                    countSize = '28px';
+                } else if (index === 3) {
+                    gridPosition = 'grid-column: 3 / 4; grid-row: 2 / 3;';
+                    fontSize = '13px';
+                    countSize = '24px';
+                } else if (index === 4) {
+                    gridPosition = 'grid-column: 4 / 5; grid-row: 2 / 3;';
+                    fontSize = '13px';
+                    countSize = '24px';
+                } else if (index === 5) {
+                    gridPosition = 'grid-column: 1 / 2; grid-row: 3 / 4;';
+                    fontSize = '13px';
+                    countSize = '24px';
+                } else if (index === 6) {
+                    gridPosition = 'grid-column: 2 / 3; grid-row: 3 / 4;';
+                    fontSize = '13px';
+                    countSize = '24px';
+                } else {
+                    gridPosition = 'grid-column: 3 / 5; grid-row: 3 / 4;';
+                    fontSize = '14px';
+                    countSize = '26px';
+                }
 
-                // Draw count
-                ctx.fillStyle = '#1f2937';
-                ctx.font = 'bold 11px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText(count.toString(), x + barWidthActual/2, y - 5);
+                const color1 = colorPairs[index % colorPairs.length];
+                const color2 = colorPairs[(index + 1) % colorPairs.length];
+
+                return `
+                    <div class="city-slider-item" style="${gridPosition} overflow: hidden; border-radius: 12px;">
+                        <div class="city-slides city-slides-${index}">
+                            <!-- Slide 1: City Name -->
+                            <div class="city-slide" style="
+                                background: ${color1.bg};
+                                backdrop-filter: blur(12px);
+                                -webkit-backdrop-filter: blur(12px);
+                                border: 1px solid ${color1.border};
+                                padding: ${index === 0 ? '24px' : '16px'};
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                height: 100%;
+                                position: relative;
+                            ">
+                                <div style="text-align: center; z-index: 1; position: relative;">
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${fontSize};
+                                        font-weight: 700;
+                                        line-height: 1.2;
+                                    ">${city}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.5);
+                                        font-size: ${index === 0 ? '12px' : '10px'};
+                                        margin-top: 8px;
+                                        text-transform: uppercase;
+                                        letter-spacing: 1px;
+                                    ">Ciudad</div>
+                                </div>
+                            </div>
+                            <!-- Slide 2: Count -->
+                            <div class="city-slide" style="
+                                background: ${color2.bg};
+                                backdrop-filter: blur(12px);
+                                -webkit-backdrop-filter: blur(12px);
+                                border: 1px solid ${color2.border};
+                                padding: ${index === 0 ? '24px' : '16px'};
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                height: 100%;
+                                position: relative;
+                            ">
+                                <div style="text-align: center; z-index: 1; position: relative;">
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${countSize};
+                                        font-weight: 700;
+                                        line-height: 1;
+                                    ">${count}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.6);
+                                        font-size: ${index === 0 ? '14px' : '11px'};
+                                        margin-top: 8px;
+                                        font-weight: 500;
+                                    ">citas</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-rows: repeat(3, 1fr);
+                    gap: 10px;
+                    height: 100%;
+                    width: 100%;
+                ">
+                    ${cityCards}
+                </div>
+            `;
+
+            // Initialize sliders for each city card with random intervals
+            sortedCities.forEach((_, index) => {
+                initCitySlider(index);
             });
+        }
+
+        // Initialize individual city slider with random timing
+        function initCitySlider(index) {
+            const slidesContainer = document.querySelector(`.city-slides-${index}`);
+            if (!slidesContainer) return;
+
+            let isSecondSlide = false;
+
+            function getRandomInterval() {
+                // Different random ranges for each card
+                const min = 2500 + (index * 200);
+                const max = 4500 + (index * 300);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function toggleSlide() {
+                if (isSecondSlide) {
+                    slidesContainer.classList.remove('show-second');
+                } else {
+                    slidesContainer.classList.add('show-second');
+                }
+
+                isSecondSlide = !isSecondSlide;
+                setTimeout(toggleSlide, getRandomInterval());
+            }
+
+            // Start with different initial delays for randomness
+            const initialDelay = Math.floor(Math.random() * 3000) + (index * 400);
+            setTimeout(toggleSlide, initialDelay);
         }
 
         function generateJobsChart(appointments) {
@@ -12682,16 +12905,16 @@ IMPORTANTE:
 
         // Service Pricing Configuration
         const SERVICE_PRICES = {
-            'Bedrooms': { basePrice: 30, priceRange: '$30 each' },
-            'Hallways': { basePrice: 20, minPrice: 10, maxPrice: 30, priceRange: '$10 - $30' },
-            'Living Rooms': { basePrice: 45, minPrice: 30, maxPrice: 60, priceRange: '$30 - $60' },
-            'Stairs': { basePrice: 50, minPrice: 45, maxPrice: 55, priceRange: '$45 - $55' },
+            'Carpet Cleaning - Bedroom': { basePrice: 30, priceRange: '$30 each' },
+            'Carpet Cleaning - Hallway': { basePrice: 20, minPrice: 10, maxPrice: 30, priceRange: '$10 - $30' },
+            'Carpet Cleaning - Living Room': { basePrice: 45, minPrice: 30, maxPrice: 60, priceRange: '$30 - $60' },
+            'Carpet Cleaning - Stairs': { basePrice: 50, minPrice: 45, maxPrice: 55, priceRange: '$45 - $55' },
             'Odor Removal': { basePrice: 20, priceRange: '$20 per area' },
-            '1-Seat Chair': { basePrice: 35, priceRange: '$35 each' },
-            '2-Seat Loveseat': { basePrice: 65, priceRange: '$65 each' },
-            '3-Seat Sofa': { basePrice: 85, priceRange: '$85 each' },
-            'Sectionals': { basePrice: 100, priceRange: 'From $100' },
-            'Dining Chairs': { basePrice: 10, priceRange: '$10 each' }
+            'Chair Cleaning (1-Seat)': { basePrice: 35, priceRange: '$35 each' },
+            'Loveseat Cleaning (2-Seat)': { basePrice: 65, priceRange: '$65 each' },
+            'Sofa Cleaning (3-Seat)': { basePrice: 85, priceRange: '$85 each' },
+            'Sectional Cleaning': { basePrice: 100, priceRange: 'From $100' },
+            'Dining Chair Cleaning': { basePrice: 10, priceRange: '$10 each' }
         };
 
         // Appointment Management Functions
@@ -13294,8 +13517,13 @@ IMPORTANTE:
                             <div style="font-size: 12px; color: #6c757d;">Visit our website</div>
                         </div>
 
+                        <!-- LivinGreen Logo -->
+                        <div style="text-align: center; margin: 12px 0 8px 0;">
+                            <img src="./images/livingreen-logo.png" alt="LivinGreen Logo" style="width: 120px; height: auto; display: block; margin: 0 auto; transform: scale(1.2); object-fit: contain; max-height: 60px; object-position: center;">
+                        </div>
+
                         <!-- Business Info -->
-                        <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                        <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px;">
                             <div style="font-size: 16px; font-weight: 600; color: #212529; margin-bottom: 8px; text-align: center;">LivinGreen</div>
                             <div style="font-size: 12px; color: #6c757d; text-align: center; line-height: 1.4;">
                                 <div>Web: www.livingreen.life</div>
@@ -13456,7 +13684,7 @@ IMPORTANTE:
             // Configure html2pdf options for mobile invoice - PRESERVES EXACT DESIGN
             const opt = {
                 margin: [5, 5, 5, 5], // Minimal margins to preserve mobile design
-                filename: `Mobile_Invoice_${window.currentReceiptData.receiptNumber}_${window.currentReceiptData.appointment.name.replace(/\s+/g, '_')}.pdf`,
+                filename: `Invoice_${window.currentReceiptData.receiptNumber}_${window.currentReceiptData.appointment.name.replace(/\s+/g, '_')}.pdf`,
                 image: {
                     type: 'jpeg',
                     quality: 1.0 // Maximum quality
@@ -13699,7 +13927,7 @@ IMPORTANTE:
             pdf.text('Web: www.livingreen.life', pageWidth / 2, yPos, { align: 'center' });
 
             // Download the PDF
-            const fileName = `Mobile_Invoice_${receiptNumber}_${clientName.replace(/\s+/g, '_')}.pdf`;
+            const fileName = `Invoice_${receiptNumber}_${clientName.replace(/\s+/g, '_')}.pdf`;
             pdf.save(fileName);
         }
 
@@ -14214,7 +14442,7 @@ IMPORTANTE:
                 // Configure html2pdf options - PRESERVES EXACT MOBILE DESIGN
                 const opt = {
                     margin: [5, 5, 5, 5], // Minimal margins to preserve mobile design
-                    filename: `Mobile_Invoice_${data.receiptNumber}_${data.clientName.replace(/\s+/g, '_')}.pdf`,
+                    filename: `Invoice_${data.receiptNumber}_${data.clientName.replace(/\s+/g, '_')}.pdf`,
                     image: {
                         type: 'jpeg',
                         quality: 1.0 // Maximum quality
@@ -14350,12 +14578,12 @@ IMPORTANTE:
             invoiceCounter++;
             localStorage.setItem(storageKey, invoiceCounter.toString());
             
-            // Format: RIZE-YYMM-XXX (e.g., RIZE-2501-001, RIZE-2501-002, etc.)
+            // Format: LVG-YYMM-XXX (e.g., LVG-2501-001, LVG-2501-002, etc.)
             const yearShort = currentYear.toString().slice(-2); // Last 2 digits of year
             const monthPadded = currentMonth.toString().padStart(2, '0');
             const counterPadded = invoiceCounter.toString().padStart(3, '0');
-            
-            return `RIZE-${yearShort}${monthPadded}-${counterPadded}`;
+
+            return `LVG-${yearShort}${monthPadded}-${counterPadded}`;
         }
 
         // Save contact to phone and update customer record
@@ -15262,22 +15490,41 @@ END:VCARD`;
         // Load real analytics data for bento card
         async function loadBentoAnalytics() {
             try {
-                const appointments = await getAppointmentsFromSupabase();
+                // Use the SAME data source as Registro section
+                // Get appointments from OfflineDB (which loads from Supabase if online)
+                let appointments = await OfflineDB.getAppointments();
+
+                // If online, get from Supabase (same as loadClientRegistry does)
+                if (navigator.onLine) {
+                    try {
+                        const supabaseAppointments = await getAppointmentsFromSupabase();
+                        if (supabaseAppointments && supabaseAppointments.length > 0) {
+                            appointments = supabaseAppointments;
+                        }
+                    } catch (error) {
+                        console.log('⚠️ Using offline data for bento analytics');
+                    }
+                }
+
+                console.log('📊 Bento: Loaded appointments for analytics:', appointments.length);
+
+                // Filter: Only count appointments with valid client names (same as Registro does)
+                const validAppointments = appointments.filter(apt => apt.name && apt.name.trim());
+                console.log('📊 Bento: Valid client appointments (with names):', validAppointments.length);
+                console.log('📊 Bento: Filtered out (no name):', appointments.length - validAppointments.length);
 
                 // Calculate UNIQUE clients (by name)
                 const uniqueClientNames = new Set();
                 const clientFirstAppointment = {}; // Track first appointment date for each client
 
-                appointments.forEach(apt => {
-                    if (apt.name) {
-                        const clientName = apt.name.toLowerCase().trim();
-                        uniqueClientNames.add(clientName);
+                validAppointments.forEach(apt => {
+                    const clientName = apt.name.toLowerCase().trim();
+                    uniqueClientNames.add(clientName);
 
-                        // Track first appointment date for this client
-                        const aptDate = new Date(apt.date);
-                        if (!clientFirstAppointment[clientName] || aptDate < clientFirstAppointment[clientName]) {
-                            clientFirstAppointment[clientName] = aptDate;
-                        }
+                    // Track first appointment date for this client
+                    const aptDate = new Date(apt.date);
+                    if (!clientFirstAppointment[clientName] || aptDate < clientFirstAppointment[clientName]) {
+                        clientFirstAppointment[clientName] = aptDate;
                     }
                 });
 
@@ -15287,7 +15534,7 @@ END:VCARD`;
                 const now = new Date();
                 const currentMonth = now.getMonth();
                 const currentYear = now.getFullYear();
-                const appointmentsThisMonth = appointments.filter(apt => {
+                const appointmentsThisMonth = validAppointments.filter(apt => {
                     const aptDate = new Date(apt.date);
                     return aptDate.getMonth() === currentMonth && aptDate.getFullYear() === currentYear;
                 }).length;
@@ -15302,14 +15549,14 @@ END:VCARD`;
 
                 // Calculate unique cities
                 const uniqueCities = new Set();
-                appointments.forEach(apt => {
+                validAppointments.forEach(apt => {
                     if (apt.city) uniqueCities.add(apt.city);
                 });
                 const activeCities = uniqueCities.size;
 
                 // Calculate unique services/jobs
                 const uniqueJobs = new Set();
-                appointments.forEach(apt => {
+                validAppointments.forEach(apt => {
                     if (apt.job) {
                         // Jobs are stored as comma-separated string
                         const jobs = apt.job.split(',').map(j => j.trim());
