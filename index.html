@@ -1697,7 +1697,7 @@
             }
 
             .chart-content {
-                height: 120px;
+                height: 280px;
             }
 
             .panel-content {
@@ -1709,7 +1709,7 @@
             }
 
             .trend-content {
-                height: 100px;
+                height: 160px;
             }
 
             .trend-header h3 {
@@ -1798,7 +1798,7 @@
             }
 
             .chart-content {
-                height: 200px;
+                height: 320px;
                 overflow: visible;
             }
 
@@ -1807,7 +1807,7 @@
             }
 
             .trend-content {
-                height: 100px;
+                height: 180px;
             }
         }
 
@@ -8005,7 +8005,108 @@ Incluye:
             await updateSyncStatusUI();
             console.log('✅ Sync test completed!');
         };
-        
+
+        window.debugAllAppointments = async function() {
+            console.log('🔍 ===== DEBUGGING ALL APPOINTMENTS =====');
+            const appointments = await OfflineDB.getAppointments();
+            console.log('📊 Total appointments in database:', appointments.length);
+
+            // Group by date
+            const byDate = {};
+            appointments.forEach(apt => {
+                const date = apt.date;
+                if (!byDate[date]) byDate[date] = [];
+                byDate[date].push(apt);
+            });
+
+            // Show sorted by date
+            const sortedDates = Object.keys(byDate).sort();
+            console.log('📅 Appointments by date:');
+            sortedDates.forEach(date => {
+                console.log(`\n📅 ${date}: ${byDate[date].length} citas`);
+                byDate[date].forEach((apt, i) => {
+                    console.log(`  ${i+1}. ${apt.name} - ${apt.city || 'N/A'} - $${apt.price || 0} - ${apt.job || 'N/A'}`);
+                });
+            });
+
+            // Group by month
+            const byMonth = {};
+            appointments.forEach(apt => {
+                const date = new Date(apt.date + 'T00:00:00');
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                if (!byMonth[monthKey]) byMonth[monthKey] = [];
+                byMonth[monthKey].push(apt);
+            });
+
+            console.log('\n📊 Appointments by month:');
+            Object.keys(byMonth).sort().forEach(month => {
+                console.log(`  ${month}: ${byMonth[month].length} citas`);
+            });
+
+            console.log('\n✅ Debug completed! Check the logs above.');
+            return appointments;
+        };
+
+        window.deleteAppointmentsBefore = async function(dateString) {
+            console.log(`🗑️ Deleting all appointments before ${dateString}...`);
+            const appointments = await OfflineDB.getAppointments();
+            console.log('📊 Total appointments before deletion:', appointments.length);
+
+            const targetDate = new Date(dateString + 'T00:00:00');
+            const toKeep = appointments.filter(apt => {
+                const aptDate = new Date(apt.date + 'T00:00:00');
+                return aptDate >= targetDate;
+            });
+            const toDelete = appointments.filter(apt => {
+                const aptDate = new Date(apt.date + 'T00:00:00');
+                return aptDate < targetDate;
+            });
+
+            console.log(`📊 Appointments to keep (>= ${dateString}):`, toKeep.length);
+            console.log(`🗑️ Appointments to delete (< ${dateString}):`, toDelete.length);
+
+            if (toDelete.length === 0) {
+                console.log('✅ No appointments to delete!');
+                return;
+            }
+
+            console.log('🗑️ Appointments being deleted:');
+            toDelete.forEach(apt => {
+                console.log(`  - ${apt.date}: ${apt.name} - ${apt.city}`);
+            });
+
+            if (confirm(`⚠️ This will delete ${toDelete.length} appointments before ${dateString}. Continue?`)) {
+                // Save only the appointments to keep
+                localStorage.setItem('appointments', JSON.stringify(toKeep));
+
+                // Also delete from Supabase if online
+                if (navigator.onLine && toDelete.length > 0) {
+                    console.log('🌐 Deleting from Supabase...');
+                    for (const apt of toDelete) {
+                        try {
+                            if (apt.timestamp) {
+                                await supabaseClient
+                                    .from('appointments')
+                                    .delete()
+                                    .eq('timestamp', apt.timestamp);
+                            }
+                        } catch (error) {
+                            console.error('❌ Error deleting from Supabase:', error);
+                        }
+                    }
+                }
+
+                console.log(`✅ Deleted ${toDelete.length} appointments!`);
+                console.log(`📊 Remaining appointments: ${toKeep.length}`);
+
+                // Reload the page to refresh all data
+                alert(`✅ Eliminadas ${toDelete.length} citas. La página se recargará.`);
+                location.reload();
+            } else {
+                console.log('❌ Deletion cancelled');
+            }
+        };
+
         window.clearOfflineData = async function() {
             if (confirm('🚨 This will clear all offline data. Are you sure?')) {
                 localStorage.clear();
@@ -11251,8 +11352,7 @@ IMPORTANTE:
         async function loadDatosAnalytics() {
             console.log('🔄 Loading dashboard analytics...');
             try {
-                // Use the SAME data source as Registro section
-                // Get appointments from OfflineDB (which loads from Supabase if online)
+                // EXACT SAME LOGIC AS loadClientRegistry - no filters, no cleanup
                 let appointments = await OfflineDB.getAppointments();
 
                 // If online, get from Supabase (same as loadClientRegistry does)
@@ -11267,12 +11367,17 @@ IMPORTANTE:
                     }
                 }
 
-                console.log('📊 Loaded appointments for analytics:', appointments.length);
+                console.log('📊 RAW appointments from database:', appointments.length);
+                console.log('📊 All appointments with dates:', appointments.map(apt => ({
+                    name: apt.name,
+                    date: apt.date,
+                    city: apt.city,
+                    price: apt.price
+                })));
 
-                // Filter: Only count appointments with valid client names (same as Registro does)
+                // Filter: Only count appointments with valid client names (ONLY filter, no date filtering)
                 const validAppointments = appointments.filter(apt => apt.name && apt.name.trim());
-                console.log('📊 Valid client appointments (with names):', validAppointments.length);
-                console.log('📊 Filtered out (no name):', appointments.length - validAppointments.length);
+                console.log('📊 Valid appointments (with names):', validAppointments.length);
 
                 // Calculate main metrics
                 // Count unique clients by NAME (same as Registro section does)
@@ -11303,8 +11408,11 @@ IMPORTANTE:
                 generateCitiesChart(validAppointments);
                 generateJobsChart(validAppointments);
                 generateRevenueByCity(validAppointments);
-                generateMonthlyTrend(validAppointments);
-                
+                // Generate monthly trend using CALENDAR data source
+                console.log('🚀 CALLING generateMonthlyTrendFromCalendar...');
+                await generateMonthlyTrendFromCalendar();
+                console.log('✅ generateMonthlyTrendFromCalendar COMPLETED');
+
                 console.log('✅ Dashboard analytics loaded successfully');
                 
             } catch (error) {
@@ -11901,12 +12009,39 @@ IMPORTANTE:
         function generateMonthlyTrend(appointments) {
             const container = document.getElementById('monthly-trend-chart').parentElement;
 
-            // Group appointments by month
+            console.log('🔍 ===== MONTHLY TREND DEBUG =====');
+            console.log('📊 Total appointments received (already filtered):', appointments.length);
+            console.log('📊 First 5 appointments:', appointments.slice(0, 5).map(apt => ({
+                name: apt.name,
+                date: apt.date,
+                price: apt.price
+            })));
+
+            // Group appointments by month WITH DETAILED LOGGING
             const monthlyData = {};
+            const monthDetails = {};
+
             appointments.forEach(apt => {
                 const date = parseLocalDate(apt.date);
                 const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+
+                // Store details for debugging
+                if (!monthDetails[monthKey]) {
+                    monthDetails[monthKey] = [];
+                }
+                monthDetails[monthKey].push({
+                    name: apt.name,
+                    date: apt.date,
+                    parsedDate: date.toISOString().split('T')[0]
+                });
+            });
+
+            console.log('📊 Monthly counts:', monthlyData);
+            console.log('📊 Detailed breakdown by month:');
+            Object.keys(monthlyData).sort().forEach(month => {
+                console.log(`  ${month}: ${monthlyData[month]} citas`);
+                console.log('    Sample appointments:', monthDetails[month].slice(0, 3));
             });
 
             const sortedMonths = Object.keys(monthlyData).sort().slice(-6); // Last 6 months
@@ -12065,6 +12200,238 @@ IMPORTANTE:
             if (diffInSeconds < 86400) return `Hace ${Math.floor(diffInSeconds / 3600)} h`;
             if (diffInSeconds < 2592000) return `Hace ${Math.floor(diffInSeconds / 86400)} días`;
             return date.toLocaleDateString('es-ES');
+        }
+
+        // Monthly Trend using CALENDAR data source
+        async function generateMonthlyTrendFromCalendar() {
+            console.log('🔍 ==================== MONTHLY TREND DEBUG START ====================');
+
+            const container = document.getElementById('monthly-trend-chart')?.parentElement;
+            if (!container) {
+                console.error('❌ Container not found!');
+                return;
+            }
+            console.log('✅ Container found:', container);
+
+            try {
+                // Use EXACT same data source as calendar
+                console.log('📡 Fetching appointments from OfflineDB...');
+                const allAppointments = await OfflineDB.getAppointments();
+                console.log('📊 Total appointments received:', allAppointments.length);
+
+                // Log first 5 appointments to see the data structure
+                console.log('📋 First 5 appointments:', allAppointments.slice(0, 5).map(apt => ({
+                    name: apt.name,
+                    date: apt.date,
+                    price: apt.price,
+                    city: apt.city
+                })));
+
+                // Group by month
+                console.log('📁 Starting to group appointments by month...');
+                const monthlyData = {};
+                let skippedNoDate = 0;
+                let skippedNoName = 0;
+                let processed = 0;
+
+                allAppointments.forEach((apt, index) => {
+                    if (!apt.date) {
+                        skippedNoDate++;
+                        return;
+                    }
+                    if (!apt.name || !apt.name.trim()) {
+                        skippedNoName++;
+                        return;
+                    }
+
+                    const dateParts = apt.date.split('-'); // YYYY-MM-DD
+                    if (dateParts.length !== 3) {
+                        console.warn(`⚠️ Invalid date format at index ${index}:`, apt.date);
+                        return;
+                    }
+
+                    const monthKey = `${dateParts[0]}-${dateParts[1]}`; // YYYY-MM
+
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = [];
+                        console.log(`📅 New month found: ${monthKey}`);
+                    }
+                    monthlyData[monthKey].push(apt);
+                    processed++;
+                });
+
+                console.log(`📊 Processing summary:
+                    - Total appointments: ${allAppointments.length}
+                    - Processed: ${processed}
+                    - Skipped (no date): ${skippedNoDate}
+                    - Skipped (no name): ${skippedNoName}`);
+
+                console.log('📊 FINAL MONTHLY DATA:', Object.keys(monthlyData).sort().map(month => ({
+                    month,
+                    count: monthlyData[month].length,
+                    samples: monthlyData[month].slice(0, 2).map(apt => `${apt.name} (${apt.date})`)
+                })));
+
+                const sortedMonths = Object.keys(monthlyData).sort();
+
+                if (sortedMonths.length === 0) {
+                    container.innerHTML = `
+                        <div style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; font-size: 14px;">
+                            No hay datos disponibles
+                        </div>
+                    `;
+                    return;
+                }
+
+                const maxCount = Math.max(...sortedMonths.map(month => monthlyData[month].length));
+
+                // Create month cards
+                const monthCards = sortedMonths.map((month, index) => {
+                    const count = monthlyData[month].length;
+                    const prevMonth = index > 0 ? monthlyData[sortedMonths[index - 1]].length : count;
+                    const change = prevMonth > 0 ? ((count - prevMonth) / prevMonth) * 100 : 0;
+                    const isGrowth = change > 0;
+                    const isFlat = Math.abs(change) < 5;
+
+                    // FIX: Parse month correctly to avoid off-by-one errors
+                    const [yearStr, monthStr] = month.split('-');
+                    const year = parseInt(yearStr);
+                    const monthNum = parseInt(monthStr); // 1-12 (not 0-indexed)
+
+                    // Create date using 0-indexed month for JavaScript
+                    const monthDate = new Date(year, monthNum - 1, 1);
+                    const monthName = monthDate.toLocaleDateString('es-ES', { month: 'short' });
+
+                    console.log(`🔍 Month ${month} -> Display name: ${monthName} ${year}`);
+
+                    // Color based on performance
+                    let color;
+                    if (isFlat) {
+                        color = { main: 'rgba(59, 130, 246, 0.2)', accent: 'rgba(59, 130, 246, 0.6)', border: 'rgba(59, 130, 246, 0.4)' };
+                    } else if (isGrowth) {
+                        color = { main: 'rgba(16, 185, 129, 0.2)', accent: 'rgba(16, 185, 129, 0.6)', border: 'rgba(16, 185, 129, 0.4)' };
+                    } else {
+                        color = { main: 'rgba(251, 146, 60, 0.2)', accent: 'rgba(251, 146, 60, 0.6)', border: 'rgba(251, 146, 60, 0.4)' };
+                    }
+
+                    const trendIcon = isFlat ? '→' : (isGrowth ? '↗' : '↘');
+                    const trendText = isFlat ? 'estable' : (isGrowth ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`);
+                    const barHeight = (count / maxCount) * 100;
+
+                    return `
+                        <div style="
+                            flex: 1;
+                            min-width: 110px;
+                            background: ${color.main};
+                            backdrop-filter: blur(12px);
+                            -webkit-backdrop-filter: blur(12px);
+                            border: 1px solid ${color.border};
+                            border-radius: 12px;
+                            padding: 18px 16px 20px 16px;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            position: relative;
+                            overflow: visible;
+                        "
+                        onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='${color.accent}'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='${color.border}'">
+                            <div style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: flex-start;
+                                position: relative;
+                                z-index: 2;
+                            ">
+                                <div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: 13px;
+                                        font-weight: 700;
+                                        text-transform: capitalize;
+                                    ">${monthName}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.5);
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">${year}</div>
+                                </div>
+                                <div style="
+                                    background: ${color.accent};
+                                    padding: 4px 8px;
+                                    border-radius: 12px;
+                                    font-size: 11px;
+                                    font-weight: 600;
+                                    color: rgba(255, 255, 255, 0.95);
+                                ">
+                                    ${trendIcon} ${index === 0 ? '' : trendText}
+                                </div>
+                            </div>
+                            <div style="
+                                color: rgba(255, 255, 255, 0.95);
+                                font-size: 32px;
+                                font-weight: 700;
+                                line-height: 1.1;
+                                position: relative;
+                                z-index: 2;
+                                margin-top: 4px;
+                            ">${count}</div>
+                            <div style="
+                                color: rgba(255, 255, 255, 0.6);
+                                font-size: 11px;
+                                font-weight: 500;
+                                position: relative;
+                                z-index: 2;
+                            ">citas</div>
+                            <div style="
+                                position: absolute;
+                                bottom: 0;
+                                left: 0;
+                                right: 0;
+                                height: ${barHeight}%;
+                                background: ${color.accent};
+                                opacity: 0.1;
+                                transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                                z-index: 1;
+                                border-radius: 0 0 12px 12px;
+                            "></div>
+                        </div>
+                    `;
+                }).join('');
+
+                console.log('🎨 Rendering chart with', sortedMonths.length, 'months');
+                console.log('📊 Months being displayed:', sortedMonths.map(m => {
+                    const [y, mon] = m.split('-');
+                    const date = new Date(parseInt(y), parseInt(mon) - 1, 1);
+                    return date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) + ' (' + monthlyData[m].length + ' citas)';
+                }));
+
+                container.innerHTML = `
+                    <div style="
+                        display: flex;
+                        gap: 12px;
+                        width: 100%;
+                        height: 100%;
+                        padding: 12px 0;
+                        overflow-x: auto;
+                        overflow-y: visible;
+                    ">
+                        ${monthCards}
+                    </div>
+                `;
+
+                console.log('✅ Chart rendered successfully!');
+                console.log('🔍 ==================== MONTHLY TREND DEBUG END ====================');
+            } catch (error) {
+                console.error('❌ ERROR in generateMonthlyTrendFromCalendar:', error);
+                console.error('❌ Error stack:', error.stack);
+                container.innerHTML = `
+                    <div style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; font-size: 14px;">
+                        Error cargando datos: ${error.message}
+                    </div>
+                `;
+            }
         }
 
         // Client Registry Functions
