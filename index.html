@@ -1597,6 +1597,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: visible;
         }
 
         /* Dashboard Mobile Layout */
@@ -3580,6 +3581,54 @@
         }
 
         .city-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        /* Job Slider Styles for Mini Bento Grid */
+        .job-slider-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .job-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .job-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .job-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        /* Revenue Slider Styles for Mini Bento Grid */
+        .revenue-slider-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .revenue-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+
+        .revenue-slides.show-second {
+            transform: translateX(-50%);
+        }
+
+        .revenue-slide {
             width: 50%;
             flex-shrink: 0;
             height: 100%;
@@ -6290,18 +6339,6 @@
                         <div class="panel-content">
                             <div id="revenue-by-city" class="revenue-bars">
                                 <!-- Revenue bars will be generated here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity -->
-                    <div class="analytics-panel">
-                        <div class="panel-header">
-                            <h3>Actividad Reciente</h3>
-                        </div>
-                        <div class="panel-content">
-                            <div id="recent-activity" class="activity-list">
-                                <!-- Recent appointments will be shown here -->
                             </div>
                         </div>
                     </div>
@@ -11266,7 +11303,6 @@ IMPORTANTE:
                 generateCitiesChart(validAppointments);
                 generateJobsChart(validAppointments);
                 generateRevenueByCity(validAppointments);
-                generateRecentActivity(validAppointments);
                 generateMonthlyTrend(validAppointments);
                 
                 console.log('✅ Dashboard analytics loaded successfully');
@@ -11496,83 +11532,161 @@ IMPORTANTE:
         }
 
         function generateJobsChart(appointments) {
-            const canvas = document.getElementById('jobs-chart');
-            const ctx = canvas.getContext('2d');
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Calculate job data
+            const container = document.getElementById('jobs-chart').parentElement;
+
+            // Calculate job data from apt.job (singular, string)
             const jobCount = {};
             appointments.forEach(apt => {
-                if (apt.jobs && Array.isArray(apt.jobs)) {
-                    apt.jobs.forEach(job => {
-                        jobCount[job] = (jobCount[job] || 0) + 1;
+                if (apt.job && apt.job.trim()) {
+                    // Split by comma in case there are multiple jobs in one string
+                    const jobs = apt.job.split(',').map(j => j.trim());
+                    jobs.forEach(job => {
+                        if (job) {
+                            jobCount[job] = (jobCount[job] || 0) + 1;
+                        }
                     });
                 }
             });
 
             const sortedJobs = Object.entries(jobCount)
                 .sort(([,a], [,b]) => b - a)
-                .slice(0, 5);
+                .slice(0, 8); // Top 8 jobs
 
             if (sortedJobs.length === 0) {
-                // No data message
-                ctx.fillStyle = '#6b7280';
-                ctx.font = '16px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
+                container.innerHTML = `
+                    <div style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; font-size: 14px;">
+                        No hay datos disponibles
+                    </div>
+                `;
                 return;
             }
 
-            // Create donut chart
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(centerX, centerY) - 40;
-            const innerRadius = radius * 0.6;
+            const maxValue = Math.max(...sortedJobs.map(([,count]) => count));
 
-            let currentAngle = -Math.PI / 2;
-            const total = sortedJobs.reduce((sum, [,count]) => sum + count, 0);
-            const colors = ['#10a37f', '#059669', '#3b82f6', '#f59e0b', '#ef4444'];
+            // Color variations - modern palette
+            const colors = [
+                { main: 'rgba(236, 72, 153, 0.25)', accent: 'rgba(236, 72, 153, 0.6)', border: 'rgba(236, 72, 153, 0.4)' },  // Pink
+                { main: 'rgba(139, 92, 246, 0.25)', accent: 'rgba(139, 92, 246, 0.6)', border: 'rgba(139, 92, 246, 0.4)' },  // Violet
+                { main: 'rgba(59, 130, 246, 0.25)', accent: 'rgba(59, 130, 246, 0.6)', border: 'rgba(59, 130, 246, 0.4)' },  // Blue
+                { main: 'rgba(16, 185, 129, 0.25)', accent: 'rgba(16, 185, 129, 0.6)', border: 'rgba(16, 185, 129, 0.4)' },  // Green
+                { main: 'rgba(251, 146, 60, 0.25)', accent: 'rgba(251, 146, 60, 0.6)', border: 'rgba(251, 146, 60, 0.4)' },  // Amber
+                { main: 'rgba(20, 184, 166, 0.25)', accent: 'rgba(20, 184, 166, 0.6)', border: 'rgba(20, 184, 166, 0.4)' },  // Teal
+                { main: 'rgba(244, 63, 94, 0.25)', accent: 'rgba(244, 63, 94, 0.6)', border: 'rgba(244, 63, 94, 0.4)' },     // Rose
+                { main: 'rgba(168, 85, 247, 0.25)', accent: 'rgba(168, 85, 247, 0.6)', border: 'rgba(168, 85, 247, 0.4)' }   // Purple
+            ];
 
-            sortedJobs.forEach(([job, count], index) => {
-                const sliceAngle = (count / total) * 2 * Math.PI;
-                
-                // Draw slice
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
-                ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
-                ctx.closePath();
-                ctx.fillStyle = colors[index % colors.length];
-                ctx.fill();
+            // Create horizontal stacked cards
+            const jobCards = sortedJobs.map(([job, count], index) => {
+                const percentage = (count / maxValue) * 100;
+                const color = colors[index % colors.length];
 
-                // Draw label
-                const labelAngle = currentAngle + sliceAngle / 2;
-                const labelX = centerX + Math.cos(labelAngle) * (radius + 20);
-                const labelY = centerY + Math.sin(labelAngle) * (radius + 20);
-                
-                ctx.fillStyle = '#374151';
-                ctx.font = '12px Inter';
-                ctx.textAlign = labelX > centerX ? 'left' : 'right';
-                ctx.fillText(`${job} (${count})`, labelX, labelY);
+                return `
+                    <div style="
+                        background: ${color.main};
+                        backdrop-filter: blur(12px);
+                        -webkit-backdrop-filter: blur(12px);
+                        border: 1px solid ${color.border};
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin-bottom: 10px;
+                        position: relative;
+                        overflow: hidden;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        cursor: default;
+                    "
+                    onmouseover="this.style.transform='translateX(4px)'; this.style.borderColor='${color.accent}'"
+                    onmouseout="this.style.transform='translateX(0)'; this.style.borderColor='${color.border}'">
+                        <!-- Progress bar background -->
+                        <div style="
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            height: 100%;
+                            width: ${percentage}%;
+                            background: ${color.accent};
+                            opacity: 0.15;
+                            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+                        "></div>
 
-                currentAngle += sliceAngle;
-            });
+                        <!-- Content -->
+                        <div style="
+                            position: relative;
+                            z-index: 1;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            gap: 16px;
+                        ">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="
+                                    color: rgba(255, 255, 255, 0.95);
+                                    font-size: ${index === 0 ? '15px' : '14px'};
+                                    font-weight: ${index === 0 ? '700' : '600'};
+                                    line-height: 1.3;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                ">${job}</div>
+                            </div>
 
-            // Draw center text
-            ctx.fillStyle = '#1f2937';
-            ctx.font = 'bold 18px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText(total.toString(), centerX, centerY - 5);
-            ctx.fillStyle = '#6b7280';
-            ctx.font = '12px Inter';
-            ctx.fillText('Total', centerX, centerY + 15);
+                            <div style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                            ">
+                                <!-- Count badge -->
+                                <div style="
+                                    background: ${color.accent};
+                                    padding: 6px 14px;
+                                    border-radius: 20px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 6px;
+                                ">
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${index === 0 ? '16px' : '14px'};
+                                        font-weight: 700;
+                                    ">${count}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.7);
+                                        font-size: 11px;
+                                        font-weight: 500;
+                                    ">veces</div>
+                                </div>
+
+                                <!-- Percentage -->
+                                <div style="
+                                    color: rgba(255, 255, 255, 0.6);
+                                    font-size: 12px;
+                                    font-weight: 600;
+                                    min-width: 45px;
+                                    text-align: right;
+                                ">${percentage.toFixed(0)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    width: 100%;
+                    padding: 8px 0;
+                ">
+                    ${jobCards}
+                </div>
+            `;
         }
 
         function generateRevenueByCity(appointments) {
             const cityRevenue = {};
             const cityCount = {};
 
+            // Calculate revenue and count per city
             appointments.forEach(apt => {
                 if (apt.city && apt.price) {
                     const price = parseFloat(apt.price);
@@ -11591,64 +11705,202 @@ IMPORTANTE:
                     visits: cityCount[city]
                 }))
                 .sort((a, b) => b.revenue - a.revenue)
-                .slice(0, 5);
+                .slice(0, 6); // Top 6 cities
 
             const container = document.getElementById('revenue-by-city');
-            
+
             if (cityAverages.length === 0) {
-                container.innerHTML = '<div style="color: #666; text-align: center; padding: 40px;">No hay datos disponibles</div>';
+                container.innerHTML = '<div style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; font-size: 14px;">No hay datos disponibles</div>';
                 return;
             }
 
             const maxRevenue = Math.max(...cityAverages.map(c => c.revenue));
-            
-            container.innerHTML = cityAverages.map(({city, revenue, visits}) => 
-                `<div class="revenue-bar-item">
-                    <div class="revenue-bar-label">${city}</div>
-                    <div class="revenue-bar-container">
-                        <div class="revenue-bar-fill" style="width: ${(revenue / maxRevenue) * 100}%"></div>
+
+            // Color variations for revenue cards
+            const colorPairs = [
+                { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.4)' },  // Green
+                { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgba(59, 130, 246, 0.4)' },  // Blue
+                { bg: 'rgba(251, 146, 60, 0.2)', border: 'rgba(251, 146, 60, 0.4)' },  // Amber
+                { bg: 'rgba(139, 92, 246, 0.2)', border: 'rgba(139, 92, 246, 0.4)' },  // Violet
+                { bg: 'rgba(236, 72, 153, 0.2)', border: 'rgba(236, 72, 153, 0.4)' },  // Pink
+                { bg: 'rgba(20, 184, 166, 0.2)', border: 'rgba(20, 184, 166, 0.4)' }   // Teal
+            ];
+
+            // Create revenue cards with slides
+            const revenueCards = cityAverages.map(({city, revenue, visits, avgTicket}, index) => {
+                const intensity = (revenue / maxRevenue);
+
+                // Grid positioning
+                let gridPosition, fontSize, revenueSize;
+                if (index === 0) {
+                    gridPosition = 'grid-column: 1 / 3; grid-row: 1 / 3;';
+                    fontSize = '17px';
+                    revenueSize = '32px';
+                } else if (index === 1) {
+                    gridPosition = 'grid-column: 3 / 4; grid-row: 1 / 2;';
+                    fontSize = '14px';
+                    revenueSize = '24px';
+                } else if (index === 2) {
+                    gridPosition = 'grid-column: 4 / 5; grid-row: 1 / 2;';
+                    fontSize = '14px';
+                    revenueSize = '24px';
+                } else if (index === 3) {
+                    gridPosition = 'grid-column: 3 / 4; grid-row: 2 / 3;';
+                    fontSize = '13px';
+                    revenueSize = '22px';
+                } else if (index === 4) {
+                    gridPosition = 'grid-column: 4 / 5; grid-row: 2 / 3;';
+                    fontSize = '13px';
+                    revenueSize = '22px';
+                } else {
+                    gridPosition = 'grid-column: 1 / 5; grid-row: 3 / 4;';
+                    fontSize = '14px';
+                    revenueSize = '24px';
+                }
+
+                const color1 = colorPairs[index % colorPairs.length];
+                const color2 = colorPairs[(index + 1) % colorPairs.length];
+
+                return `
+                    <div class="revenue-slider-item" style="${gridPosition} overflow: hidden; border-radius: 12px;">
+                        <div class="revenue-slides revenue-slides-${index}">
+                            <!-- Slide 1: City + Total Revenue -->
+                            <div class="revenue-slide" style="
+                                background: ${color1.bg};
+                                backdrop-filter: blur(12px);
+                                -webkit-backdrop-filter: blur(12px);
+                                border: 1px solid ${color1.border};
+                                padding: ${index === 0 ? '24px' : '16px'};
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                height: 100%;
+                                position: relative;
+                            ">
+                                <div style="text-align: center; z-index: 1;">
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${fontSize};
+                                        font-weight: 700;
+                                        margin-bottom: 8px;
+                                        line-height: 1.2;
+                                    ">${city}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${revenueSize};
+                                        font-weight: 700;
+                                        line-height: 1;
+                                    ">$${revenue.toLocaleString()}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.6);
+                                        font-size: ${index === 0 ? '12px' : '10px'};
+                                        margin-top: 4px;
+                                        font-weight: 500;
+                                    ">ingresos totales</div>
+                                </div>
+                            </div>
+                            <!-- Slide 2: Visits + Avg Ticket -->
+                            <div class="revenue-slide" style="
+                                background: ${color2.bg};
+                                backdrop-filter: blur(12px);
+                                -webkit-backdrop-filter: blur(12px);
+                                border: 1px solid ${color2.border};
+                                padding: ${index === 0 ? '24px' : '16px'};
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                height: 100%;
+                                position: relative;
+                            ">
+                                <div style="text-align: center; z-index: 1;">
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.7);
+                                        font-size: ${index === 0 ? '12px' : '10px'};
+                                        margin-bottom: 6px;
+                                        text-transform: uppercase;
+                                        letter-spacing: 1px;
+                                    ">${city}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${index === 0 ? '26px' : '20px'};
+                                        font-weight: 700;
+                                        line-height: 1;
+                                        margin-bottom: 8px;
+                                    ">${visits}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.6);
+                                        font-size: ${index === 0 ? '11px' : '9px'};
+                                        margin-bottom: 10px;
+                                    ">visitas</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.95);
+                                        font-size: ${index === 0 ? '18px' : '15px'};
+                                        font-weight: 600;
+                                    ">$${Math.round(avgTicket)}</div>
+                                    <div style="
+                                        color: rgba(255, 255, 255, 0.6);
+                                        font-size: ${index === 0 ? '10px' : '9px'};
+                                    ">promedio</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="revenue-bar-value">$${revenue.toLocaleString()}</div>
-                </div>`
-            ).join('');
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-rows: repeat(3, 1fr);
+                    gap: 10px;
+                    height: 100%;
+                    width: 100%;
+                    min-height: 240px;
+                ">
+                    ${revenueCards}
+                </div>
+            `;
+
+            // Initialize sliders for each revenue card
+            cityAverages.forEach((_, index) => {
+                initRevenueSlider(index);
+            });
         }
 
-        function generateRecentActivity(appointments) {
-            // Get recent appointments (last 5)
-            const recentAppointments = appointments
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5);
+        // Initialize individual revenue slider with random timing
+        function initRevenueSlider(index) {
+            const slidesContainer = document.querySelector(`.revenue-slides-${index}`);
+            if (!slidesContainer) return;
 
-            const container = document.getElementById('recent-activity');
-            
-            if (recentAppointments.length === 0) {
-                container.innerHTML = '<div style="color: #666; text-align: center; padding: 40px;">No hay actividad reciente</div>';
-                return;
+            let isSecondSlide = false;
+
+            function getRandomInterval() {
+                const min = 3000 + (index * 220);
+                const max = 5200 + (index * 380);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
             }
 
-            container.innerHTML = recentAppointments.map((apt, index) => {
-                const date = parseLocalDate(apt.date);
-                const timeAgo = getTimeAgo(date);
-                const initials = apt.name ? apt.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
-                
-                return `<div class="activity-item">
-                    <div class="activity-icon">${initials}</div>
-                    <div class="activity-content">
-                        <div class="activity-title">${apt.name || 'Cliente'}</div>
-                        <div class="activity-subtitle">${apt.city} - $${apt.price}</div>
-                    </div>
-                    <div class="activity-time">${timeAgo}</div>
-                </div>`;
-            }).join('');
+            function toggleSlide() {
+                if (isSecondSlide) {
+                    slidesContainer.classList.remove('show-second');
+                } else {
+                    slidesContainer.classList.add('show-second');
+                }
+
+                isSecondSlide = !isSecondSlide;
+                setTimeout(toggleSlide, getRandomInterval());
+            }
+
+            const initialDelay = Math.floor(Math.random() * 3800) + (index * 500);
+            setTimeout(toggleSlide, initialDelay);
         }
 
         function generateMonthlyTrend(appointments) {
-            const canvas = document.getElementById('monthly-trend-chart');
-            const ctx = canvas.getContext('2d');
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+            const container = document.getElementById('monthly-trend-chart').parentElement;
+
             // Group appointments by month
             const monthlyData = {};
             appointments.forEach(apt => {
@@ -11658,65 +11910,150 @@ IMPORTANTE:
             });
 
             const sortedMonths = Object.keys(monthlyData).sort().slice(-6); // Last 6 months
-            
+
             if (sortedMonths.length === 0) {
-                ctx.fillStyle = '#6b7280';
-                ctx.font = '16px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
+                container.innerHTML = `
+                    <div style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; font-size: 14px;">
+                        No hay datos disponibles
+                    </div>
+                `;
                 return;
             }
 
             const maxCount = Math.max(...sortedMonths.map(month => monthlyData[month]));
-            const stepX = (canvas.width - 80) / (sortedMonths.length - 1);
-            const maxY = canvas.height - 60;
 
-            // Draw grid lines
-            ctx.strokeStyle = '#f3f4f6';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 5; i++) {
-                const y = 40 + (maxY - 40) * (i / 5);
-                ctx.beginPath();
-                ctx.moveTo(40, y);
-                ctx.lineTo(canvas.width - 40, y);
-                ctx.stroke();
-            }
+            // Create month cards
+            const monthCards = sortedMonths.map((month, index) => {
+                const count = monthlyData[month];
+                const prevMonth = index > 0 ? monthlyData[sortedMonths[index - 1]] : count;
+                const change = prevMonth > 0 ? ((count - prevMonth) / prevMonth) * 100 : 0;
+                const isGrowth = change > 0;
+                const isFlat = Math.abs(change) < 5;
 
-            // Draw line chart
-            ctx.strokeStyle = '#10a37f';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            
-            sortedMonths.forEach((month, index) => {
-                const x = 40 + index * stepX;
-                const y = maxY - ((monthlyData[month] / maxCount) * (maxY - 40));
-                
-                if (index === 0) {
-                    ctx.moveTo(x, y);
+                const monthDate = new Date(month + '-01');
+                const monthName = monthDate.toLocaleDateString('es-ES', { month: 'short' });
+                const year = monthDate.getFullYear();
+
+                // Color based on performance
+                let color;
+                if (isFlat) {
+                    color = { main: 'rgba(59, 130, 246, 0.2)', accent: 'rgba(59, 130, 246, 0.6)', border: 'rgba(59, 130, 246, 0.4)' }; // Blue
+                } else if (isGrowth) {
+                    color = { main: 'rgba(16, 185, 129, 0.2)', accent: 'rgba(16, 185, 129, 0.6)', border: 'rgba(16, 185, 129, 0.4)' }; // Green
                 } else {
-                    ctx.lineTo(x, y);
+                    color = { main: 'rgba(251, 146, 60, 0.2)', accent: 'rgba(251, 146, 60, 0.6)', border: 'rgba(251, 146, 60, 0.4)' }; // Amber
                 }
-                
-                // Draw point
-                ctx.fillStyle = '#10a37f';
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                // Draw month label
-                ctx.fillStyle = '#6b7280';
-                ctx.font = '12px Inter';
-                ctx.textAlign = 'center';
-                const monthName = new Date(month + '-01').toLocaleDateString('es-ES', { month: 'short' });
-                ctx.fillText(monthName, x, canvas.height - 10);
-                
-                // Draw count
-                ctx.fillStyle = '#1f2937';
-                ctx.font = 'bold 12px Inter';
-                ctx.fillText(monthlyData[month].toString(), x, y - 10);
-            });
-            
-            ctx.stroke();
+
+                // Trend icon
+                const trendIcon = isFlat ? '→' : (isGrowth ? '↗' : '↘');
+                const trendText = isFlat ? 'estable' : (isGrowth ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`);
+
+                // Bar height relative to max
+                const barHeight = (count / maxCount) * 100;
+
+                return `
+                    <div style="
+                        flex: 1;
+                        min-width: 110px;
+                        background: ${color.main};
+                        backdrop-filter: blur(12px);
+                        -webkit-backdrop-filter: blur(12px);
+                        border: 1px solid ${color.border};
+                        border-radius: 12px;
+                        padding: 18px 16px 20px 16px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        position: relative;
+                        overflow: visible;
+                    "
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='${color.accent}'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='${color.border}'">
+                        <!-- Header -->
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-start;
+                            position: relative;
+                            z-index: 2;
+                        ">
+                            <div>
+                                <div style="
+                                    color: rgba(255, 255, 255, 0.95);
+                                    font-size: 13px;
+                                    font-weight: 700;
+                                    text-transform: capitalize;
+                                ">${monthName}</div>
+                                <div style="
+                                    color: rgba(255, 255, 255, 0.5);
+                                    font-size: 10px;
+                                    font-weight: 500;
+                                ">${year}</div>
+                            </div>
+
+                            <!-- Trend badge -->
+                            <div style="
+                                background: ${color.accent};
+                                padding: 4px 8px;
+                                border-radius: 12px;
+                                font-size: 11px;
+                                font-weight: 600;
+                                color: rgba(255, 255, 255, 0.95);
+                            ">
+                                ${trendIcon} ${index === 0 ? '' : trendText}
+                            </div>
+                        </div>
+
+                        <!-- Count -->
+                        <div style="
+                            color: rgba(255, 255, 255, 0.95);
+                            font-size: 32px;
+                            font-weight: 700;
+                            line-height: 1.1;
+                            position: relative;
+                            z-index: 2;
+                            margin-top: 4px;
+                        ">${count}</div>
+
+                        <div style="
+                            color: rgba(255, 255, 255, 0.6);
+                            font-size: 11px;
+                            font-weight: 500;
+                            position: relative;
+                            z-index: 2;
+                        ">citas</div>
+
+                        <!-- Visual bar -->
+                        <div style="
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            height: ${barHeight}%;
+                            background: ${color.accent};
+                            opacity: 0.1;
+                            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                            z-index: 1;
+                            border-radius: 0 0 12px 12px;
+                        "></div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="
+                    display: flex;
+                    gap: 12px;
+                    width: 100%;
+                    height: 100%;
+                    padding: 12px 0;
+                    overflow-x: auto;
+                    overflow-y: visible;
+                ">
+                    ${monthCards}
+                </div>
+            `;
         }
 
         function getTimeAgo(date) {
