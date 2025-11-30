@@ -724,20 +724,32 @@
         }
 
         /* Override content-area padding for calendar view - Mobile first approach */
-        #calendar-view.content-area {
+        #calendar-view.content-area,
+        #history-view.content-area,
+        #messages-view.content-area,
+        #finance-view.content-area,
+        #settings-view.content-area {
             padding: 0 !important; /* Mobile base: no padding */
         }
 
         /* Tablet: moderate padding */
         @media (min-width: 481px) and (max-width: 768px) {
-            #calendar-view.content-area {
+            #calendar-view.content-area,
+            #history-view.content-area,
+            #messages-view.content-area,
+            #finance-view.content-area,
+            #settings-view.content-area {
                 padding: 12px !important;
             }
         }
 
         /* Desktop: more padding */
         @media (min-width: 769px) {
-            #calendar-view.content-area {
+            #calendar-view.content-area,
+            #history-view.content-area,
+            #messages-view.content-area,
+            #finance-view.content-area,
+            #settings-view.content-area {
                 padding: 24px !important;
             }
         }
@@ -903,23 +915,32 @@
             height: 16px;
         }
 
-        /* Registry Design - Glassmorphism Style */
+        /* Registry Design - Calendar Style Glassmorphism */
         .registry-header {
-            background: rgba(59, 130, 246, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.3s ease;
+        }
+
+        .registry-header:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         .registry-title {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.95);
-            margin-bottom: 24px;
+            color: rgba(255, 255, 255, 0.95) !important;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .registry-stats {
@@ -930,41 +951,55 @@
         }
 
         .stat-card {
-            background: var(--card-bg);
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 16px;
             padding: 20px;
-            border: 1px solid var(--border-color);
             transition: all 0.3s ease;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
         }
 
         .stat-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-            border-color: var(--brand-primary);
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         .stat-number {
             font-size: 32px;
             font-weight: 700;
-            color: var(--brand-primary);
+            color: rgba(255, 255, 255, 0.95) !important;
             line-height: 1;
             margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .stat-label {
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.8) !important;
         }
 
         .search-container {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 24px;
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px;
+            padding: 28px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px var(--shadow-light);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.3s ease;
+        }
+
+        .search-container:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         .search-grid {
@@ -982,24 +1017,28 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-tertiary);
+            color: rgba(255, 255, 255, 0.95) !important;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .search-input, .search-select {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-input);
-            border-radius: 6px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px;
             font-size: 16px;
-            background: var(--bg-input);
-            transition: border-color 0.2s;
-            color: var(--text-tertiary);
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.95) !important;
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
+            box-shadow: none !important;
         }
         
         /* Fix search select dropdown arrow */
@@ -1013,36 +1052,49 @@
 
         .search-input:focus, .search-select:focus {
             outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--brand-light);
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+            transform: translateY(-2px);
         }
 
         .search-btn {
-            background: var(--gradient-purple);
-            border: none;
-            border-radius: 12px;
-            padding: 14px 24px;
+            background: linear-gradient(135deg, #10a37f, #059669);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 14px;
+            padding: 14px 28px;
             color: white;
             font-weight: 600;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 20px rgba(16, 163, 127, 0.3),
+                        0 1px 0 rgba(255, 255, 255, 0.2) inset;
         }
 
         .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
-            background: linear-gradient(135deg, #7C3AED, #6366F1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(16, 163, 127, 0.4),
+                        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .search-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(16, 163, 127, 0.3);
         }
 
         .clients-container {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px var(--shadow-light);
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none !important;
         }
 
         .clients-grid {
@@ -1051,18 +1103,22 @@
         }
 
         .client-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            transition: all 0.2s;
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
             cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
         }
 
         .client-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow-medium);
-            border-color: var(--brand-primary);
+            transform: translateY(-4px);
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         .client-header {
@@ -1075,17 +1131,21 @@
         .client-name {
             font-size: 18px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: rgba(255, 255, 255, 0.95) !important;
             margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .client-date {
             font-size: 12px;
             font-weight: 600;
-            color: var(--text-secondary);
-            background: var(--bg-tertiary);
-            padding: 4px 8px;
-            border-radius: 4px;
+            color: rgba(255, 255, 255, 0.95) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .client-details {
@@ -1105,12 +1165,12 @@
         .client-detail-icon {
             width: 16px;
             height: 16px;
-            color: var(--brand-primary);
+            color: rgba(255, 255, 255, 0.7) !important;
             flex-shrink: 0;
         }
 
         .client-detail-text {
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.95) !important;
             font-weight: 500;
         }
 
@@ -1132,10 +1192,13 @@
         }
 
         .job-tag {
-            background: var(--brand-light);
-            color: var(--brand-primary);
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 500;
         }
@@ -1233,6 +1296,501 @@
 
         .finance-amount.expense {
             color: var(--error);
+        }
+
+        /* ================================
+           FINANCE BENTO GRID - MODERN DESIGN
+           ================================ */
+
+        .finance-bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 180px;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .finance-bento-card {
+            background: rgba(59, 130, 246, 0.12) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 24px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .finance-bento-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .finance-bento-card:hover::before {
+            opacity: 1;
+        }
+
+        .finance-bento-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 16px 48px rgba(59, 130, 246, 0.25) !important;
+            border-color: rgba(59, 130, 246, 0.4) !important;
+        }
+
+        /* Card Sizes */
+        .finance-large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .finance-medium {
+            grid-column: span 2;
+            grid-row: span 1;
+        }
+
+        .finance-small {
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+
+        /* Special Card Styles */
+        .finance-net-income {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(59, 130, 246, 0.1)) !important;
+            border-color: rgba(34, 197, 94, 0.3) !important;
+        }
+
+        .finance-net-income:hover {
+            border-color: rgba(34, 197, 94, 0.5) !important;
+            box-shadow: 0 16px 48px rgba(34, 197, 94, 0.25) !important;
+        }
+
+        .finance-income {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1)) !important;
+        }
+
+        .finance-expense {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.08)) !important;
+            border-color: rgba(239, 68, 68, 0.25) !important;
+        }
+
+        .finance-expense:hover {
+            border-color: rgba(239, 68, 68, 0.4) !important;
+            box-shadow: 0 16px 48px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .finance-tithe {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.1)) !important;
+            border-color: rgba(139, 92, 246, 0.3) !important;
+        }
+
+        .finance-tithe:hover {
+            border-color: rgba(139, 92, 246, 0.5) !important;
+            box-shadow: 0 16px 48px rgba(139, 92, 246, 0.25) !important;
+        }
+
+        /* Icon Styling */
+        .finance-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .finance-icon {
+            width: 32px;
+            height: 32px;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .finance-bento-card:hover .finance-icon {
+            transform: scale(1.1) rotate(5deg);
+            color: rgba(255, 255, 255, 1);
+        }
+
+        /* Content Styling */
+        .finance-card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .finance-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7) !important;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .finance-value {
+            font-size: 42px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95) !important;
+            margin: 8px 0;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+            line-height: 1;
+        }
+
+        .finance-large .finance-value {
+            font-size: 56px;
+        }
+
+        .finance-small .finance-value {
+            font-size: 32px;
+        }
+
+        .finance-value.expense {
+            color: rgba(248, 113, 113, 0.95) !important;
+        }
+
+        .finance-description {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6) !important;
+            margin: 8px 0 0 0;
+            line-height: 1.4;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95) !important;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Weekly Grid Improvements */
+        .weekly-finance-section {
+            margin-top: 32px;
+        }
+
+        /* Modern Week Cards */
+        .week-card-modern {
+            background: rgba(59, 130, 246, 0.12) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .week-card-modern:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2) !important;
+            border-color: rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .week-card-header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .week-badge {
+            display: inline-block;
+            width: fit-content;
+            padding: 6px 14px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .week-date {
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8) !important;
+            margin: 0;
+        }
+
+        .week-stats-modern {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .week-stat-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .week-stat-row:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .week-stat-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex: 1;
+        }
+
+        .week-stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-weight: 500;
+        }
+
+        .week-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .week-stat-value.positive {
+            color: rgba(74, 222, 128, 0.95) !important;
+        }
+
+        .week-stat-value.negative {
+            color: rgba(248, 113, 113, 0.95) !important;
+        }
+
+        .week-net-income {
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .week-net-income.negative {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .week-net-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8) !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .week-net-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: rgba(74, 222, 128, 0.95) !important;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .week-net-income.negative .week-net-value {
+            color: rgba(248, 113, 113, 0.95) !important;
+        }
+
+        /* Historical Finance Section */
+        .historical-finance-section {
+            margin-top: 32px;
+        }
+
+        .historical-card {
+            background: rgba(59, 130, 246, 0.15) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+            transition: all 0.3s ease;
+        }
+
+        .historical-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.25) !important;
+            border-color: rgba(59, 130, 246, 0.4) !important;
+        }
+
+        .historical-header {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .historical-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95) !important;
+            margin: 0 0 8px 0;
+        }
+
+        .historical-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6) !important;
+            margin: 0;
+        }
+
+        .historical-content {
+            text-align: center;
+        }
+
+        .historical-amount {
+            font-size: 56px;
+            font-weight: 700;
+            color: rgba(74, 222, 128, 0.95) !important;
+            margin-bottom: 12px;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            line-height: 1;
+        }
+
+        .historical-months-count {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6) !important;
+            margin: 0 0 24px 0;
+        }
+
+        /* Carousel Styles */
+        .carousel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 24px 0 16px 0;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .carousel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85) !important;
+            margin: 0;
+        }
+
+        .carousel-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .carousel-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .carousel-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .historical-carousel-wrapper {
+            overflow: hidden;
+            margin: 0 -8px;
+        }
+
+        .historical-carousel {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .historical-carousel::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .historical-carousel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .historical-carousel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .historical-carousel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .historical-month-item {
+            min-width: 200px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .historical-month-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .historical-month-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7) !important;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .historical-month-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .historical-month-value.positive {
+            color: rgba(74, 222, 128, 0.95) !important;
+        }
+
+        .historical-month-value.negative {
+            color: rgba(248, 113, 113, 0.95) !important;
         }
 
         .week-card {
@@ -2768,7 +3326,11 @@
             }
 
             /* Remove top padding and background when calendar is visible */
-            .main-content:has(#calendar-view) {
+            .main-content:has(#calendar-view),
+            .main-content:has(#history-view),
+            .main-content:has(#messages-view),
+            .main-content:has(#finance-view),
+            .main-content:has(#settings-view) {
                 padding-top: 0 !important;
                 background: transparent !important;
             }
@@ -2830,6 +3392,78 @@
                 gap: 12px;
             }
 
+            .monthly-summary-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+
+            .weekly-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+
+            /* Finance Bento Grid Mobile */
+            .finance-bento-grid {
+                grid-template-columns: 1fr !important;
+                grid-auto-rows: auto !important;
+                gap: 16px;
+            }
+
+            .finance-large,
+            .finance-medium,
+            .finance-small {
+                grid-column: span 1 !important;
+                grid-row: span 1 !important;
+            }
+
+            .finance-bento-card {
+                padding: 20px;
+                min-height: 140px;
+            }
+
+            .finance-value {
+                font-size: 36px !important;
+            }
+
+            .finance-large .finance-value {
+                font-size: 40px !important;
+            }
+
+            .finance-small .finance-value {
+                font-size: 32px !important;
+            }
+
+            /* Historical Section Mobile */
+            .historical-card {
+                padding: 20px;
+            }
+
+            .historical-amount {
+                font-size: 42px !important;
+            }
+
+            .carousel-header {
+                margin: 16px 0 12px 0;
+            }
+
+            .carousel-title {
+                font-size: 14px;
+            }
+
+            .carousel-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .historical-month-item {
+                min-width: 160px;
+                padding: 16px;
+            }
+
+            .historical-month-value {
+                font-size: 20px !important;
+            }
+
             .stat-card {
                 padding: 16px;
             }
@@ -2872,7 +3506,11 @@
             }
 
             /* Remove top padding and background when calendar is visible */
-            .main-content:has(#calendar-view) {
+            .main-content:has(#calendar-view),
+            .main-content:has(#history-view),
+            .main-content:has(#messages-view),
+            .main-content:has(#finance-view),
+            .main-content:has(#settings-view) {
                 padding-top: 0 !important;
                 background: transparent !important;
             }
@@ -4370,13 +5008,496 @@
 
         [data-theme="dark"] .search-container {
             background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        [data-theme="dark"] .registry-header {
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        [data-theme="dark"] .registry-header:hover {
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        [data-theme="dark"] .clients-container {
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        0 1px 0 rgba(255, 255, 255, 0.03) inset !important;
+        }
+
+        [data-theme="dark"] .client-card {
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        [data-theme="dark"] .client-card:hover {
+            background: rgba(0, 0, 0, 0.5) !important;
+            border-color: rgba(16, 163, 127, 0.4) !important;
+            box-shadow: 0 12px 32px rgba(16, 163, 127, 0.2),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        [data-theme="dark"] .search-input,
+        [data-theme="dark"] .search-select {
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        [data-theme="dark"] .search-input:focus,
+        [data-theme="dark"] .search-select:focus {
+            background: rgba(0, 0, 0, 0.5) !important;
+            border-color: rgba(16, 163, 127, 0.6) !important;
+            box-shadow: 0 4px 16px rgba(16, 163, 127, 0.2),
+                        0 0 0 4px rgba(16, 163, 127, 0.15),
+                        0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
         }
 
         /* Search button modern */
         .search-btn {
             background: linear-gradient(135deg, var(--brand-primary), #0d8c6d) !important;
             box-shadow: 0 4px 16px rgba(16, 163, 127, 0.3) !important;
+        }
+
+        /* HISTORY VIEW (REGISTRO) - FORCE CALENDAR STYLE WITH HIGH SPECIFICITY */
+        #history-view .registry-header {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #history-view .registry-header:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #history-view .registry-title {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #history-view .search-container {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #history-view .search-container:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #history-view .search-field label {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #history-view .search-input,
+        #history-view .search-select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: none !important;
+        }
+
+        #history-view .search-input:focus,
+        #history-view .search-select:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #history-view .clients-container {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        #history-view .client-card {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #history-view .client-card:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-4px) !important;
+        }
+
+        #history-view .client-name {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #history-view .client-date {
+            color: rgba(255, 255, 255, 0.95) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #history-view .client-detail-icon {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        #history-view .client-detail-text {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #history-view .job-tag {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #history-view .stat-card {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #history-view .stat-card:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #history-view .stat-number {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #history-view .stat-label {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Force all text inside history-view to be white */
+        #history-view * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Exception for SVG icons - keep their stroke color */
+        #history-view svg {
+            color: inherit !important;
+        }
+
+        /* MESSAGES VIEW - FORCE CALENDAR STYLE WITH HIGH SPECIFICITY */
+        #messages-view .dashboard-header {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+            padding: 32px !important;
+            margin-bottom: 32px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #messages-view .dashboard-header:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        #messages-view .dashboard-title {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #messages-view .dashboard-subtitle {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        #messages-view .message-card {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #messages-view .message-card:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-4px) !important;
+        }
+
+        #messages-view .message-card h3 {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #messages-view .copy-btn {
+            background: linear-gradient(135deg, #10a37f, #059669) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 20px rgba(16, 163, 127, 0.3) !important;
+        }
+
+        #messages-view .copy-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            box-shadow: 0 8px 32px rgba(16, 163, 127, 0.4) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        #messages-view .message-content {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 20px !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #messages-view #copy-notification {
+            background: rgba(30, 41, 59, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Force all text inside messages-view to be white */
+        #messages-view * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Exception for SVG icons */
+        #messages-view svg {
+            color: inherit !important;
+        }
+
+        /* FINANCE VIEW - FORCE CALENDAR STYLE WITH HIGH SPECIFICITY */
+        #finance-view .finance-header {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+            padding: 32px !important;
+            margin-bottom: 32px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #finance-view .finance-title {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #finance-view .current-month,
+        #finance-view .current-month span {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        #finance-view .weekly-finance-section,
+        #finance-view .monthly-finance-section,
+        #finance-view .tithe-section {
+            background: transparent !important;
+        }
+
+        #finance-view .weekly-finance-section h2,
+        #finance-view .monthly-finance-section h2,
+        #finance-view .tithe-section h2 {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #finance-view .finance-card,
+        #finance-view .tithe-card,
+        #finance-view .weekly-card,
+        #finance-view .week-card {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #finance-view .finance-card:hover,
+        #finance-view .tithe-card:hover,
+        #finance-view .weekly-card:hover,
+        #finance-view .week-card:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-4px) !important;
+        }
+
+        #finance-view .finance-card h3,
+        #finance-view .finance-card small {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #finance-view .finance-amount {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #finance-view .tithe-description,
+        #finance-view .tithe-amount {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Override ALL inline backgrounds in finance-view */
+        #finance-view [style*="background"] {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #finance-view [style*="background"]:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Weekly cards specific styling */
+        #finance-view .weekly-card,
+        #finance-view #weekly-grid > div {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        /* Force all text inside finance-view to be white */
+        #finance-view * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* SETTINGS VIEW - FORCE CALENDAR STYLE WITH HIGH SPECIFICITY */
+        #settings-view .dashboard-header {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+            padding: 32px !important;
+            margin-bottom: 32px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #settings-view .dashboard-title {
+            color: rgba(255, 255, 255, 0.95) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #settings-view .dashboard-subtitle {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        #settings-view .form-section {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #settings-view .form-section h3 {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #settings-view .form-section > div {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+        }
+
+        #settings-view .form-section h4 {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        #settings-view button {
+            background: linear-gradient(135deg, #10a37f, #059669) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 20px rgba(16, 163, 127, 0.3) !important;
+            color: white !important;
+        }
+
+        #settings-view button:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            box-shadow: 0 8px 32px rgba(16, 163, 127, 0.4) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* Override ALL inline backgrounds in settings-view */
+        #settings-view [style*="background"] {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        #settings-view [style*="background"]:hover {
+            background: rgba(30, 41, 59, 0.5) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Override specific background colors */
+        #settings-view [style*="background: #f9fafb"],
+        #settings-view [style*="background: white"],
+        #settings-view [style*="background: #fff"] {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+        }
+
+        /* Force all text inside settings-view to be white */
+        #settings-view * {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Exception for SVG icons */
+        #finance-view svg,
+        #settings-view svg {
+            color: inherit !important;
         }
 
         .search-btn:hover {
@@ -4708,9 +5829,13 @@
 
         /* Calendar View and Datos View - Tablet adjustments */
         @media (min-width: 481px) and (max-width: 768px) {
-            /* Make body use same background as calendar and datos */
+            /* Make body use same background as calendar, datos, history, messages, finance and settings */
             body:has(#calendar-view:not([style*="display: none"])),
-            body:has(#datos-view:not([style*="display: none"])) {
+            body:has(#datos-view:not([style*="display: none"])),
+            body:has(#history-view:not([style*="display: none"])),
+            body:has(#messages-view:not([style*="display: none"])),
+            body:has(#finance-view:not([style*="display: none"])),
+            body:has(#settings-view:not([style*="display: none"])) {
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                             url('./images/background.webp') center center / cover no-repeat !important;
                 background-attachment: fixed !important;
@@ -4767,9 +5892,13 @@
 
         /* Calendar View and Datos View - Mobile adjustments */
         @media (max-width: 480px) {
-            /* Make body use same background as calendar and datos */
+            /* Make body use same background as calendar, datos, history, messages, finance and settings */
             body:has(#calendar-view:not([style*="display: none"])),
-            body:has(#datos-view:not([style*="display: none"])) {
+            body:has(#datos-view:not([style*="display: none"])),
+            body:has(#history-view:not([style*="display: none"])),
+            body:has(#messages-view:not([style*="display: none"])),
+            body:has(#finance-view:not([style*="display: none"])),
+            body:has(#settings-view:not([style*="display: none"])) {
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                             url('./images/background.webp') center center / cover no-repeat !important;
                 background-attachment: fixed !important;
@@ -5351,17 +6480,13 @@
                     <!-- Slide 1: Calendar con números -->
                     <div class="calendar-slide active">
                         <div class="bento-item-content bento-item-accent" style="padding: 16px 16px 28px 16px; justify-content: flex-start; align-items: flex-start;">
-                            <h3 style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 6px; width: 100%; text-align: left; letter-spacing: 0.3px;">November 2025</h3>
+                            <h3 id="mini-calendar-month" style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 6px; width: 100%; text-align: left; letter-spacing: 0.3px;">November 2025</h3>
                             <div class="mini-calendar">
                                 <div class="mini-calendar-days">
                                     <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
                                 </div>
-                                <div class="mini-calendar-dates">
-                                    <div></div><div></div><div></div><div></div><div></div><div>1</div><div>2</div>
-                                    <div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div>
-                                    <div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div>
-                                    <div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div>23</div>
-                                    <div>24</div><div>25</div><div>26</div><div class="today">27</div><div>28</div><div>29</div><div>30</div>
+                                <div class="mini-calendar-dates" id="mini-calendar-dates">
+                                    <!-- Dates will be generated dynamically -->
                                 </div>
                             </div>
                         </div>
@@ -6216,65 +7341,129 @@
 
             <!-- Finance View -->
             <div class="content-area" id="finance-view" style="display: none;">
-                <div class="finance-header">
-                    <h1 class="finance-title">Finanzas</h1>
-                    <div class="current-month">
-                        <span id="current-month-label">Septiembre 2024</span>
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">Finanzas</h1>
+                    <div class="dashboard-subtitle">
+                        <span id="current-month-label">Noviembre 2024</span>
                     </div>
                 </div>
 
-                <!-- Weekly Summary -->
+                <!-- Finance Bento Grid -->
+                <div class="finance-bento-grid">
+                    <!-- Large Card: Net Income -->
+                    <div class="finance-bento-card finance-large finance-net-income">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Ganancia Neta</h3>
+                            <div class="finance-value" id="monthly-net-income">$0.00</div>
+                            <p class="finance-description">Ingresos - Gastos</p>
+                        </div>
+                    </div>
+
+                    <!-- Medium Card: Gross Income -->
+                    <div class="finance-bento-card finance-medium finance-income">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Ingresos Brutos</h3>
+                            <div class="finance-value" id="monthly-gross-income">$0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Small Card: Gas -->
+                    <div class="finance-bento-card finance-small finance-expense">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 22V7C3 6.46957 3.21071 5.96086 3.58579 5.58579C3.96086 5.21071 4.46957 5 5 5H13C13.5304 5 14.0391 5.21071 14.4142 5.58579C14.7893 5.96086 15 6.46957 15 7V22M3 22H15M3 22H2M15 22H16M18 10H17V22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V13C21 12.4696 20.7893 11.9609 20.4142 11.5858C20.0391 11.2107 19.5304 11 19 11L18 10ZM18 10V6C18 5.46957 17.7893 4.96086 17.4142 4.58579C17.0391 4.21071 16.5304 4 16 4L15 5M6 9H12V13H6V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Gasolina</h3>
+                            <div class="finance-value expense" id="monthly-gas-expense">-$0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Small Card: Advertising -->
+                    <div class="finance-bento-card finance-small finance-expense">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Publicidad</h3>
+                            <div class="finance-value expense" id="monthly-advertising-expense">-$0.00</div>
+                            <p class="finance-description">$45/semana</p>
+                        </div>
+                    </div>
+
+                    <!-- Medium Card: Tithe -->
+                    <div class="finance-bento-card finance-medium finance-tithe">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Diezmo (10%)</h3>
+                            <div class="finance-value" id="monthly-tithe">$0.00</div>
+                            <p class="finance-description">De la ganancia neta</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Summary Section -->
                 <div class="weekly-finance-section">
-                    <h2>Resumen Semanal</h2>
+                    <h2 class="section-title">Resumen Semanal</h2>
                     <div class="weekly-grid" id="weekly-grid">
                         <!-- Weekly cards will be generated here -->
                     </div>
                 </div>
 
-                <!-- Monthly Summary -->
-                <div class="monthly-finance-section">
-                    <h2>Resumen Mensual</h2>
-                    <div class="monthly-summary-grid">
-                        <div class="finance-card total-income">
-                            <div class="finance-card-header">
-                                <h3>Ingresos Brutos</h3>
-                            </div>
-                            <div class="finance-amount" id="monthly-gross-income">$0.00</div>
+                <!-- Historical Net Income Section -->
+                <div class="historical-finance-section">
+                    <div class="historical-card">
+                        <div class="historical-header">
+                            <h3>Total Neto Acumulado</h3>
+                            <p class="historical-subtitle">Ganancia total desde el inicio</p>
+                        </div>
+                        <div class="historical-content">
+                            <div class="historical-amount" id="historical-net-income">$0.00</div>
+                            <p class="historical-months-count" id="historical-months-count">0 meses</p>
                         </div>
 
-                        <div class="finance-card gas-expense">
-                            <div class="finance-card-header">
-                                <h3>Gasolina</h3>
+                        <!-- Carousel Controls -->
+                        <div class="carousel-header">
+                            <h4 class="carousel-title">Desglose Mensual</h4>
+                            <div class="carousel-controls">
+                                <button class="carousel-btn" id="carousel-prev" onclick="scrollHistoricalCarousel(-1)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M15 18l-6-6 6-6"/>
+                                    </svg>
+                                </button>
+                                <button class="carousel-btn" id="carousel-next" onclick="scrollHistoricalCarousel(1)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 18l6-6-6-6"/>
+                                    </svg>
+                                </button>
                             </div>
-                            <div class="finance-amount expense" id="monthly-gas-expense">-$0.00</div>
                         </div>
 
-                        <div class="finance-card advertising-expense">
-                            <div class="finance-card-header">
-                                <h3>Publicidad</h3>
-                                <small>$45/semana</small>
+                        <!-- Carousel Container -->
+                        <div class="historical-carousel-wrapper">
+                            <div class="historical-carousel" id="historical-carousel">
+                                <!-- Monthly cards will be generated here -->
                             </div>
-                            <div class="finance-amount expense" id="monthly-advertising-expense">-$0.00</div>
-                        </div>
-
-                        <div class="finance-card net-income">
-                            <div class="finance-card-header">
-                                <h3>Ganancia Neta</h3>
-                            </div>
-                            <div class="finance-amount" id="monthly-net-income">$0.00</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tithe Section -->
-                <div class="tithe-section">
-                    <h2>Diezmo (10%)</h2>
-                    <div class="tithe-card">
-                        <div class="tithe-calculation">
-                            <div class="tithe-description">
-                                Basado en ganancia neta (Ingresos - Gasolina - Publicidad)
-                            </div>
-                            <div class="tithe-amount" id="monthly-tithe">$0.00</div>
                         </div>
                     </div>
                 </div>
@@ -8872,8 +10061,8 @@ Incluye:
                 console.log('🚀 Page loaded. Test with: testMobileMenu() or testJobDropdown()');
             }
             
-            // Update gas prices on load and check daily
-            updateGasPrice();
+            // FORCE gas price update on app load (always get fresh price)
+            updateGasPrice(true);
             
             // Removed: reminder system initialization
             
@@ -8882,11 +10071,11 @@ Incluye:
                 if (currentView === 'calendar' && updateToCurrentDay()) {
                     generateWeeklyCalendar();
                 }
-                // Also check if we need to update gas prices (once per day)
+                // Also check if we need to update gas prices (force update when day changes)
                 const today = new Date().toDateString();
                 const lastGasUpdate = localStorage.getItem('gasPrice_lastUpdate');
                 if (lastGasUpdate !== today) {
-                    updateGasPrice();
+                    updateGasPrice(true);
                 }
                 
                 // Removed: reminder checking code
@@ -10845,51 +12034,70 @@ IMPORTANTE:
         }
 
         // Gas Price and Distance Calculations
-        let GAS_PRICE_UTAH = 3.32; // Default fallback price
+        let GAS_PRICE_UTAH = 3.083; // Default fallback price (Updated Nov 30, 2025)
         const SEDONA_2008_MPG = 18; // Combined MPG for 2008 Kia Sedona
         
         // Gas price update function
-        async function updateGasPrice() {
+        async function updateGasPrice(forceUpdate = false) {
             try {
-                console.log('🔍 Updating gas prices...');
-                
-                // Check if we've already updated today
+                console.log('🔍 Updating gas prices...', forceUpdate ? '(FORCED)' : '');
+
+                // Check if we've already updated today (skip cache if forceUpdate is true)
                 const today = new Date().toDateString();
                 const lastUpdate = localStorage.getItem('gasPrice_lastUpdate');
                 const cachedPrice = localStorage.getItem('gasPrice_utah');
-                
-                if (lastUpdate === today && cachedPrice) {
+
+                if (!forceUpdate && lastUpdate === today && cachedPrice) {
                     GAS_PRICE_UTAH = parseFloat(cachedPrice);
                     console.log('✅ Using cached gas price:', GAS_PRICE_UTAH);
                     updateGasPriceDisplay();
                     return;
                 }
-                
+
                 // Try to fetch current gas prices from multiple sources
                 const sources = [
                     'https://api.gasbuddy.com/v1/utah/prices', // GasBuddy API
                     'https://api.eia.gov/series/?api_key=YOUR_KEY&series_id=PET.EMM_EPMRU_PTE_SUT_DPG.W' // EIA API
                 ];
-                
+
                 // For now, simulate a realistic daily fluctuation
                 // In production, you'd use a real API
-                const basePrice = 3.32;
+                const basePrice = 3.083; // Updated Nov 30, 2025 - Real Utah gas price
                 const dailyVariation = (Math.random() - 0.5) * 0.20; // +/- 10 cents variation
                 const newPrice = Math.round((basePrice + dailyVariation) * 100) / 100;
-                
+
                 GAS_PRICE_UTAH = newPrice;
-                
+
                 // Cache the price for today
                 localStorage.setItem('gasPrice_utah', GAS_PRICE_UTAH.toString());
                 localStorage.setItem('gasPrice_lastUpdate', today);
-                
-                console.log('✅ Updated gas price to:', GAS_PRICE_UTAH);
+
+                // Store today's gas price in historical record
+                const gasPriceHistory = JSON.parse(localStorage.getItem('gasPriceHistory') || '{}');
+                gasPriceHistory[today] = GAS_PRICE_UTAH;
+                localStorage.setItem('gasPriceHistory', JSON.stringify(gasPriceHistory));
+
+                console.log('✅ Updated gas price to: $' + GAS_PRICE_UTAH);
                 updateGasPriceDisplay();
-                
+
             } catch (error) {
                 console.error('❌ Error updating gas price:', error);
                 // Keep using the cached or default price
             }
+        }
+
+        // Get gas price for a specific date (for historical calculations)
+        function getGasPriceForDate(dateString) {
+            const gasPriceHistory = JSON.parse(localStorage.getItem('gasPriceHistory') || '{}');
+            const date = new Date(dateString).toDateString();
+
+            // If we have a historical price for this date, use it
+            if (gasPriceHistory[date]) {
+                return gasPriceHistory[date];
+            }
+
+            // Otherwise, use current price (for old appointments)
+            return GAS_PRICE_UTAH;
         }
         
         function updateGasPriceDisplay() {
@@ -11002,19 +12210,24 @@ IMPORTANTE:
             return { route: cities, totalDistance };
         }
 
-        function calculateGasCost(cities) {
+        function calculateGasCost(cities, dateString = null) {
             if (!cities || cities.length === 0) return 0;
-            
+
             const uniqueCities = [...new Set(cities)]; // Eliminar duplicados
             const optimalRoute = findOptimalRoute(uniqueCities);
-            
+
+            // Get gas price for the specific date (historical) or use current price
+            let gasPrice = GAS_PRICE_UTAH; // Default to current price
+            if (dateString) {
+                gasPrice = getGasPriceForDate(dateString);
+            }
+
             // Costo por milla para Kia Sedona 2008 (18 MPG combinado, más realista)
-            const gasPrice = 3.32; // por galón
             const mpg = 18; // millas por galón para 2008 Kia Sedona
             const costPerMile = gasPrice / mpg;
-            
+
             const totalCost = optimalRoute.totalDistance * costPerMile;
-            
+
             // Mínimo de $2 para cualquier viaje (costo base)
             return Math.max(totalCost, 2.00);
         }
@@ -11084,6 +12297,7 @@ IMPORTANTE:
             updateCurrentMonth();
             calculateWeeklyFinances();
             calculateMonthlyFinances();
+            calculateHistoricalFinances();
         }
 
         function updateCurrentMonth() {
@@ -11102,18 +12316,35 @@ IMPORTANTE:
             // Get ALL appointments (not just current month)
             const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
 
-            // Group ALL appointments by week
+            // Initialize weeklyData with ALL weeks in current month
             const weeklyData = {};
-            appointments.forEach(apt => {
-                const aptDate = parseLocalDate(apt.date); // Use parseLocalDate instead of new Date
-                const weekStart = getWeekStart(aptDate);
-                const weekKey = weekStart.toISOString().split('T')[0];
 
-                console.log(`📅 Appointment ${apt.date} → Week starts ${weekKey} (${weekStart.toLocaleDateString('es-ES', { weekday: 'long' })})`);
+            // First, create entries for ALL weeks in the current month
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
 
-                if (!weeklyData[weekKey]) {
+            let currentWeekStart = getWeekStart(firstDayOfMonth);
+
+            // Generate all weeks that overlap with this month
+            while (currentWeekStart <= lastDayOfMonth) {
+                const weekKey = currentWeekStart.toISOString().split('T')[0];
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+
+                // Count days in current month
+                let daysInMonth = 0;
+                for (let i = 0; i <= 6; i++) {
+                    const day = new Date(currentWeekStart);
+                    day.setDate(day.getDate() + i);
+                    if (day.getMonth() === currentMonth && day.getFullYear() === currentYear) {
+                        daysInMonth++;
+                    }
+                }
+
+                // Only add weeks that have at least 4 days in current month
+                if (daysInMonth >= 4 || (currentWeekStart.getMonth() === currentMonth && currentWeekStart.getFullYear() === currentYear)) {
                     weeklyData[weekKey] = {
-                        weekStart: weekStart,
+                        weekStart: new Date(currentWeekStart),
                         appointments: [],
                         totalIncome: 0,
                         totalGasCost: 0,
@@ -11121,42 +12352,50 @@ IMPORTANTE:
                     };
                 }
 
-                weeklyData[weekKey].appointments.push(apt);
-                weeklyData[weekKey].totalIncome += parseFloat(apt.price || 0);
-                weeklyData[weekKey].cities.push(apt.city);
-            });
+                // Move to next week
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            }
 
-            // Filter to show only weeks that have at least one day in the current month
-            const filteredWeeklyData = {};
-            Object.keys(weeklyData).forEach(weekKey => {
-                const weekStart = weeklyData[weekKey].weekStart;
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6); // Sunday of that week
+            // Now populate with actual appointment data
+            appointments.forEach(apt => {
+                const aptDate = parseLocalDate(apt.date);
+                const weekStart = getWeekStart(aptDate);
+                const weekKey = weekStart.toISOString().split('T')[0];
 
-                // Check if this week overlaps with current month
-                const weekStartMonth = weekStart.getMonth();
-                const weekStartYear = weekStart.getFullYear();
-                const weekEndMonth = weekEnd.getMonth();
-                const weekEndYear = weekEnd.getFullYear();
-
-                const overlapsCurrentMonth =
-                    (weekStartMonth === currentMonth && weekStartYear === currentYear) ||
-                    (weekEndMonth === currentMonth && weekEndYear === currentYear) ||
-                    (weekStartMonth < currentMonth && weekEndMonth > currentMonth && weekStartYear === currentYear && weekEndYear === currentYear);
-
-                if (overlapsCurrentMonth) {
-                    filteredWeeklyData[weekKey] = weeklyData[weekKey];
+                // Only add to weeklyData if this week is in our list
+                if (weeklyData[weekKey]) {
+                    weeklyData[weekKey].appointments.push(apt);
+                    weeklyData[weekKey].totalIncome += parseFloat(apt.price || 0);
                 }
             });
 
-            // Calculate gas costs for each week
-            Object.keys(filteredWeeklyData).forEach(weekKey => {
-                const week = filteredWeeklyData[weekKey];
-                week.totalGasCost = calculateGasCost(week.cities);
+            // Calculate gas costs for each week (sum of daily costs)
+            Object.keys(weeklyData).forEach(weekKey => {
+                const week = weeklyData[weekKey];
+
+                // Group appointments by date
+                const appointmentsByDate = {};
+                week.appointments.forEach(apt => {
+                    if (!appointmentsByDate[apt.date]) {
+                        appointmentsByDate[apt.date] = [];
+                    }
+                    appointmentsByDate[apt.date].push(apt);
+                });
+
+                // Calculate gas cost per day and sum them (using historical prices)
+                let totalWeekGasCost = 0;
+                Object.keys(appointmentsByDate).forEach(date => {
+                    const dailyAppointments = appointmentsByDate[date];
+                    const dailyCities = dailyAppointments.map(apt => apt.city);
+                    const dailyGasCost = calculateGasCost(dailyCities, date); // Pass date for historical price
+                    totalWeekGasCost += dailyGasCost;
+                });
+
+                week.totalGasCost = totalWeekGasCost;
                 week.netIncome = week.totalIncome - week.totalGasCost - ADVERTISING_COST_PER_WEEK;
             });
 
-            displayWeeklyFinances(filteredWeeklyData);
+            displayWeeklyFinances(weeklyData);
         }
 
         function calculateMonthlyFinances() {
@@ -11173,14 +12412,28 @@ IMPORTANTE:
 
             // Calculate totals
             let totalIncome = 0;
-            let allCities = [];
-            
+
             monthlyAppointments.forEach(apt => {
                 totalIncome += parseFloat(apt.price || 0);
-                allCities.push(apt.city);
             });
 
-            const totalGasCost = calculateGasCost(allCities);
+            // Group appointments by date to calculate daily gas costs
+            const appointmentsByDate = {};
+            monthlyAppointments.forEach(apt => {
+                if (!appointmentsByDate[apt.date]) {
+                    appointmentsByDate[apt.date] = [];
+                }
+                appointmentsByDate[apt.date].push(apt);
+            });
+
+            // Calculate gas cost per day and sum them (using historical prices)
+            let totalGasCost = 0;
+            Object.keys(appointmentsByDate).forEach(date => {
+                const dailyAppointments = appointmentsByDate[date];
+                const dailyCities = dailyAppointments.map(apt => apt.city);
+                const dailyGasCost = calculateGasCost(dailyCities, date); // Pass date for historical price
+                totalGasCost += dailyGasCost;
+            });
             
             // Calculate weeks in current month for advertising cost
             const weeksInMonth = getWeeksInCurrentMonth();
@@ -11188,6 +12441,16 @@ IMPORTANTE:
             
             const netIncome = totalIncome - totalGasCost - totalAdvertisingCost;
             const tithe = Math.max(0, netIncome * 0.10); // 10% of net income, min 0
+
+            // Debug log for verification
+            console.log('📊 RESUMEN MENSUAL:');
+            console.log(`   Total Citas: ${monthlyAppointments.length}`);
+            console.log(`   Días con citas: ${Object.keys(appointmentsByDate).length}`);
+            console.log(`   Ingresos Brutos: $${totalIncome.toFixed(2)}`);
+            console.log(`   Gasolina (suma diaria): -$${totalGasCost.toFixed(2)}`);
+            console.log(`   Publicidad (${weeksInMonth} semanas x $45): -$${totalAdvertisingCost.toFixed(2)}`);
+            console.log(`   Ganancia Neta: $${netIncome.toFixed(2)}`);
+            console.log(`   Diezmo (10%): $${tithe.toFixed(2)}`);
 
             // Update display
             document.getElementById('monthly-gross-income').textContent = `$${totalIncome.toFixed(2)}`;
@@ -11201,43 +12464,192 @@ IMPORTANTE:
             const grid = document.getElementById('weekly-grid');
             grid.innerHTML = '';
 
-            Object.keys(weeklyData).sort().forEach(weekKey => {
+            // Sort weeks by date and number them correctly
+            const sortedWeeks = Object.keys(weeklyData).sort();
+
+            sortedWeeks.forEach((weekKey, index) => {
                 const week = weeklyData[weekKey];
                 const weekEnd = new Date(week.weekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
 
                 const weekCard = document.createElement('div');
-                weekCard.className = 'week-card';
-                
-                const weekTitle = `${week.weekStart.getDate()} - ${weekEnd.getDate()} ${getMonthName(week.weekStart)}`;
-                
+                weekCard.className = 'week-card-modern';
+
+                // Number weeks starting from 1
+                const weekNumber = index + 1;
+                const dateRange = `${week.weekStart.getDate()} - ${weekEnd.getDate()} ${getMonthName(week.weekStart)}`;
+
                 weekCard.innerHTML = `
-                    <h4>${weekTitle}</h4>
-                    <div class="week-stats">
-                        <div class="week-stat">
-                            <span class="week-stat-label">Citas:</span>
-                            <span class="week-stat-value">${week.appointments.length}</span>
+                    <div class="week-card-header">
+                        <div class="week-badge">S${weekNumber}</div>
+                        <p class="week-date">${dateRange}</p>
+                    </div>
+                    <div class="week-stats-modern">
+                        <div class="week-stat-row">
+                            <div class="week-stat-content">
+                                <span class="week-stat-label">Citas</span>
+                                <span class="week-stat-value">${week.appointments.length}</span>
+                            </div>
                         </div>
-                        <div class="week-stat">
-                            <span class="week-stat-label">Ingresos:</span>
-                            <span class="week-stat-value positive">$${week.totalIncome.toFixed(2)}</span>
+                        <div class="week-stat-row">
+                            <div class="week-stat-content">
+                                <span class="week-stat-label">Ingresos</span>
+                                <span class="week-stat-value positive">$${week.totalIncome.toFixed(2)}</span>
+                            </div>
                         </div>
-                        <div class="week-stat">
-                            <span class="week-stat-label">Gasolina:</span>
-                            <span class="week-stat-value negative">-$${week.totalGasCost.toFixed(2)}</span>
+                        <div class="week-stat-row">
+                            <div class="week-stat-content">
+                                <span class="week-stat-label">Gasolina</span>
+                                <span class="week-stat-value negative">-$${week.totalGasCost.toFixed(2)}</span>
+                            </div>
                         </div>
-                        <div class="week-stat">
-                            <span class="week-stat-label">Publicidad:</span>
-                            <span class="week-stat-value negative">-$${ADVERTISING_COST_PER_WEEK.toFixed(2)}</span>
-                        </div>
-                        <div class="week-stat">
-                            <span class="week-stat-label">Neto:</span>
-                            <span class="week-stat-value ${week.netIncome >= 0 ? 'positive' : 'negative'}">$${week.netIncome.toFixed(2)}</span>
+                        <div class="week-stat-row">
+                            <div class="week-stat-content">
+                                <span class="week-stat-label">Publicidad</span>
+                                <span class="week-stat-value negative">-$${ADVERTISING_COST_PER_WEEK.toFixed(2)}</span>
+                            </div>
                         </div>
                     </div>
+                    <div class="week-net-income ${week.netIncome >= 0 ? 'positive' : 'negative'}">
+                        <span class="week-net-label">Ganancia Neta</span>
+                        <span class="week-net-value">$${week.netIncome.toFixed(2)}</span>
+                    </div>
                 `;
-                
+
                 grid.appendChild(weekCard);
+            });
+        }
+
+        function calculateHistoricalFinances() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            // Get all appointments
+            const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+
+            // Group by month (including current month, excluding future months)
+            const monthlyData = {};
+
+            appointments.forEach(apt => {
+                const aptDate = parseLocalDate(apt.date);
+                const aptMonth = aptDate.getMonth();
+                const aptYear = aptDate.getFullYear();
+
+                // Skip future months
+                if (aptYear > currentYear || (aptYear === currentYear && aptMonth > currentMonth)) {
+                    return;
+                }
+
+                // Create month key (YYYY-MM)
+                const monthKey = `${aptYear}-${String(aptMonth + 1).padStart(2, '0')}`;
+
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = {
+                        year: aptYear,
+                        month: aptMonth,
+                        appointments: [],
+                        totalIncome: 0,
+                        totalGasCost: 0
+                    };
+                }
+
+                monthlyData[monthKey].appointments.push(apt);
+                monthlyData[monthKey].totalIncome += parseFloat(apt.price || 0);
+            });
+
+            // Calculate gas costs and net income for each month
+            let totalHistoricalNet = 0;
+
+            Object.keys(monthlyData).forEach(monthKey => {
+                const monthData = monthlyData[monthKey];
+
+                // Group appointments by date to calculate daily gas costs
+                const appointmentsByDate = {};
+                monthData.appointments.forEach(apt => {
+                    if (!appointmentsByDate[apt.date]) {
+                        appointmentsByDate[apt.date] = [];
+                    }
+                    appointmentsByDate[apt.date].push(apt);
+                });
+
+                // Calculate gas cost per day and sum them (using historical prices)
+                let monthGasCost = 0;
+                Object.keys(appointmentsByDate).forEach(date => {
+                    const dailyAppointments = appointmentsByDate[date];
+                    const dailyCities = dailyAppointments.map(apt => apt.city);
+                    const dailyGasCost = calculateGasCost(dailyCities, date); // Pass date for historical price
+                    monthGasCost += dailyGasCost;
+                });
+
+                monthData.totalGasCost = monthGasCost;
+
+                // Calculate weeks in that month for advertising cost
+                const firstDay = new Date(monthData.year, monthData.month, 1);
+                const lastDay = new Date(monthData.year, monthData.month + 1, 0);
+                const weeksInMonth = Math.ceil((lastDay.getDate() - firstDay.getDate() + 1) / 7);
+                const advertisingCost = weeksInMonth * ADVERTISING_COST_PER_WEEK;
+
+                monthData.netIncome = monthData.totalIncome - monthData.totalGasCost - advertisingCost;
+                totalHistoricalNet += monthData.netIncome;
+            });
+
+            // Display total
+            document.getElementById('historical-net-income').textContent = `$${totalHistoricalNet.toFixed(2)}`;
+
+            // Sort months by date (newest first)
+            const sortedMonths = Object.keys(monthlyData).sort().reverse();
+
+            // Display months count
+            const monthsCount = sortedMonths.length;
+            document.getElementById('historical-months-count').textContent =
+                monthsCount === 0 ? 'Sin datos históricos' :
+                monthsCount === 1 ? '1 mes' :
+                `${monthsCount} meses`;
+
+            // Display breakdown in carousel
+            const carouselDiv = document.getElementById('historical-carousel');
+            carouselDiv.innerHTML = '';
+
+            if (sortedMonths.length === 0) {
+                carouselDiv.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 40px; width: 100%;">No hay datos disponibles</p>';
+                // Hide carousel controls
+                const carouselHeader = document.querySelector('.carousel-header');
+                if (carouselHeader) carouselHeader.style.display = 'none';
+                return;
+            }
+
+            // Show carousel controls only if there are months
+            const carouselHeader = document.querySelector('.carousel-header');
+            if (carouselHeader) carouselHeader.style.display = 'flex';
+
+            sortedMonths.forEach(monthKey => {
+                const monthData = monthlyData[monthKey];
+                const monthName = getMonthName(new Date(monthData.year, monthData.month, 1));
+                const yearLabel = monthData.year !== currentYear ? ` ${monthData.year}` : '';
+
+                const monthItem = document.createElement('div');
+                monthItem.className = 'historical-month-item';
+                monthItem.innerHTML = `
+                    <div class="historical-month-name">${monthName}${yearLabel}</div>
+                    <div class="historical-month-value ${monthData.netIncome >= 0 ? 'positive' : 'negative'}">
+                        $${monthData.netIncome.toFixed(2)}
+                    </div>
+                `;
+                carouselDiv.appendChild(monthItem);
+            });
+
+            console.log('📈 HISTÓRICO:');
+            console.log(`   Total meses anteriores: ${sortedMonths.length}`);
+            console.log(`   Ganancia neta total: $${totalHistoricalNet.toFixed(2)}`);
+        }
+
+        function scrollHistoricalCarousel(direction) {
+            const carousel = document.getElementById('historical-carousel');
+            const scrollAmount = 220; // Card width + gap
+            carousel.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
             });
         }
 
@@ -13127,7 +14539,8 @@ IMPORTANTE:
                 // Gas cost (only if there are appointments)
                 if (dayData.appointments.length > 0) {
                     const cities = dayData.appointments.map(apt => apt.city);
-                    const gasCost = calculateGasCost(cities);
+                    const dateString = dayData.date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                    const gasCost = calculateGasCost(cities, dateString);
                     
                     const gasCostElement = document.createElement('div');
                     gasCostElement.style.cssText = `
@@ -13392,7 +14805,7 @@ IMPORTANTE:
                 // Add gas cost OUTSIDE and ABOVE the day column if there are appointments
                 if (dayAppointments.length > 0) {
                     const cities = dayAppointments.map(apt => apt.city);
-                    const gasCost = calculateGasCost(cities);
+                    const gasCost = calculateGasCost(cities, dateStr); // Use historical price for this date
                     
                     const gasCostElement = document.createElement('div');
                     gasCostElement.className = 'gas-cost-outside';
@@ -16021,11 +17434,66 @@ END:VCARD`;
             setTimeout(toggleSlide, getRandomInterval());
         }
 
+        // Update mini calendar in bento grid with current date
+        function updateMiniCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const today = now.getDate();
+
+            // Month names in English
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+
+            // Update month header
+            const monthHeader = document.getElementById('mini-calendar-month');
+            if (monthHeader) {
+                monthHeader.textContent = `${monthNames[month]} ${year}`;
+            }
+
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+
+            // Get day of week for first day (0 = Sunday, 1 = Monday, etc.)
+            // Convert to Monday = 0
+            let firstDayOfWeek = firstDay.getDay();
+            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+            // Generate calendar dates
+            const datesContainer = document.getElementById('mini-calendar-dates');
+            if (datesContainer) {
+                datesContainer.innerHTML = '';
+
+                // Add empty cells for days before first of month
+                for (let i = 0; i < firstDayOfWeek; i++) {
+                    const emptyCell = document.createElement('div');
+                    datesContainer.appendChild(emptyCell);
+                }
+
+                // Add days of month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.textContent = day;
+
+                    // Mark today
+                    if (day === today) {
+                        dayCell.className = 'today';
+                    }
+
+                    datesContainer.appendChild(dayCell);
+                }
+            }
+        }
+
         // Initialize calendar slider when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initCalendarSlider);
+            document.addEventListener('DOMContentLoaded', updateMiniCalendar);
         } else {
             initCalendarSlider();
+            updateMiniCalendar();
         }
 
         // Analytics Auto Slider
