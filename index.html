@@ -252,7 +252,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-primary);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                        url('./images/background.webp') center center / cover no-repeat !important;
+            background-attachment: fixed !important;
             color: var(--text-primary);
             height: 100vh;
             /* iOS Safari specific optimizations */
@@ -281,6 +283,9 @@
         html {
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
+                        url('./images/background.webp') center center / cover no-repeat !important;
+            background-attachment: fixed !important;
         }
         
         /* Prevent zoom on input focus (iOS Safari) */
@@ -293,6 +298,7 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            background: transparent !important;
         }
 
         /* === SIDEBAR NAVIGATION - MINIMALIST BLACK === */
@@ -455,22 +461,52 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             transition: background-color 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(at 20% 30%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 70%, rgba(16, 163, 127, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-content > * {
+            position: relative;
+            z-index: 1;
         }
 
         .header {
             padding: 20px 24px;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--bg-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.7) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
             position: relative;
             z-index: 100;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
         }
 
         .header h1 {
@@ -703,7 +739,9 @@
         .content-area {
             flex: 1;
             padding: 32px;
+            padding-bottom: 300px;
             overflow-y: auto;
+            overflow-x: visible;
             -webkit-overflow-scrolling: touch;
             height: 100%;
             scrollbar-width: thin;
@@ -771,14 +809,19 @@
             background: var(--brand-primary);
         }
 
-        /* Upload area */
+        /* Upload area - Calendar Design */
         .upload-section {
-            background: var(--card-bg);
-            border: 2px dashed var(--border-input);
-            border-radius: 16px;
-            padding: 24px;
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px;
+            padding: 28px;
             margin-bottom: 32px;
-            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -786,37 +829,62 @@
             justify-content: center;
         }
 
+        .upload-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .upload-section:hover::before {
+            opacity: 1;
+        }
+
         .upload-section:hover {
-            border-color: var(--brand-primary);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
+            background: rgba(30, 41, 59, 0.5) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+            transform: translateY(-4px);
         }
 
         .upload-section.dragover {
-            border-color: var(--brand-primary);
-            background: var(--bg-hover);
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            background: rgba(30, 41, 59, 0.6) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
         }
 
         .upload-icon {
-            width: 20px;
-            height: 20px;
-            color: var(--text-muted);
+            width: 24px;
+            height: 24px;
+            color: rgba(255, 255, 255, 0.7);
             flex-shrink: 0;
         }
 
         .upload-btn {
-            background: var(--brand-primary);
+            background: rgba(16, 163, 127, 0.9);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(16, 163, 127, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .upload-btn:hover {
-            background: var(--brand-hover);
+            background: rgba(16, 163, 127, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(16, 163, 127, 0.4);
         }
 
         .upload-info {
@@ -835,11 +903,34 @@
         /* Preview area */
         .preview-section {
             display: none;
-            background: var(--bg-secondary);
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px var(--shadow-light);
+            padding: 28px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .preview-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .preview-section:hover::before {
+            opacity: 1;
         }
 
         .images-grid {
@@ -851,10 +942,19 @@
 
         .image-item {
             position: relative;
-            background: var(--bg-secondary);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 8px var(--shadow-light);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .image-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
         .image-preview {
@@ -893,21 +993,32 @@
         }
 
         .clear-images-btn {
-            background: #ef4444;
+            background: rgba(239, 68, 68, 0.9);
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .clear-images-btn:hover {
-            background: #dc2626;
+            background: rgba(220, 38, 38, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(239, 68, 68, 0.4);
+        }
+
+        .clear-images-btn svg {
+            width: 16px;
+            height: 16px;
         }
 
         .clear-images-btn svg {
@@ -2400,19 +2511,59 @@
             }
         }
 
-        /* Form section */
+        /* Form section - Extended for dropdown visibility */
         .form-section {
-            background: var(--bg-secondary);
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px var(--shadow-light);
+            padding: 36px 32px 80px 32px;
+            min-height: 650px;
+            position: relative;
+            overflow: visible;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .form-section:hover::before {
+            opacity: 1;
+        }
+
+        .form-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-section h3,
+        .preview-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 20px;
+            letter-spacing: 0.3px;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
+            gap: 24px;
+            margin-top: 24px;
+            margin-bottom: 20px;
         }
 
         .form-group {
@@ -2421,39 +2572,95 @@
         }
 
         .form-group label {
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--text-tertiary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-group input,
-        .form-group select {
-            padding: 12px;
-            border: 1px solid var(--border-input);
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            color: var(--text-tertiary);
-            background: var(--bg-input);
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
+        .form-group select,
+        .form-group textarea,
+        input[type="text"],
+        input[type="date"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            padding: 12px 16px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            background: rgba(15, 23, 42, 0.4) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+        }
+
+        /* Force white text on date inputs */
+        .form-group input[type="date"],
+        input[type="date"] {
+            color: rgba(255, 255, 255, 0.95) !important;
+            color-scheme: dark;
+        }
+
+        /* Date input calendar icon white */
+        .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.7;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--brand-light);
+            border-color: rgba(16, 163, 127, 0.6);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.15);
         }
 
         /* Fix select dropdown arrow */
         .form-group select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-opacity='0.7'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 16px;
             padding-right: 40px;
+        }
+
+        /* Select options with glassmorphism - Force white text */
+        select option,
+        .form-group select option,
+        .content-area select option {
+            background: rgba(30, 41, 59, 0.95) !important;
+            color: #ffffff !important;
+            padding: 12px !important;
+        }
+
+        select option:hover,
+        select option:focus,
+        select option:checked,
+        .form-group select option:hover,
+        .form-group select option:focus,
+        .form-group select option:checked {
+            background: rgba(16, 163, 127, 0.4) !important;
+            color: #ffffff !important;
+        }
+
+        /* Force white text on all select elements in content-area */
+        .content-area select,
+        select[id*="time"],
+        select[id*="city"],
+        select[id*="service"] {
+            color: rgba(255, 255, 255, 0.95) !important;
         }
 
         /* Price field with dollar symbol */
@@ -2512,8 +2719,9 @@
         .calendar-nav {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             margin-bottom: 16px;
+            position: relative;
         }
 
         .calendar-nav-btn {
@@ -2532,6 +2740,40 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Back to home button for calendar view */
+        #calendar-back-to-home {
+            position: fixed !important;
+            top: 80px !important;
+            left: 20px !important;
+            z-index: 1000 !important;
+            padding: 12px !important;
+            border-radius: 50% !important;
+            width: 48px !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #calendar-back-to-home:hover {
+            background: rgba(59, 130, 246, 0.35) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        #calendar-back-to-home svg {
+            width: 20px !important;
+            height: 20px !important;
+            color: rgba(255, 255, 255, 0.9) !important;
         }
 
         .calendar-nav-btn:hover {
@@ -2849,20 +3091,32 @@
         }
 
         .submit-btn {
-            background: var(--brand-primary);
+            background: rgba(16, 163, 127, 0.9);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 14px 28px;
-            border-radius: 6px;
+            border-radius: 12px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
-            transition: background 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(16, 163, 127, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            width: 100%;
         }
 
         .submit-btn:hover {
-            background: #0d9169;
+            background: rgba(16, 163, 127, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(16, 163, 127, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: rgba(100, 100, 100, 0.5);
+            cursor: not-allowed;
+            transform: none;
         }
 
         .submit-btn:disabled {
@@ -2876,34 +3130,38 @@
         }
 
         .dropdown-header {
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 12px;
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px;
+            padding: 12px 16px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
             font-size: 14px;
             min-height: 22px;
         }
-        
+
         .dropdown-header span {
             font-size: 14px;
-            color: var(--text-tertiary);
+            color: rgba(255, 255, 255, 0.7) !important;
             font-weight: 400;
         }
 
         .dropdown-header:hover {
-            border-color: #9ca3af;
+            background: rgba(30, 41, 59, 0.5) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-2px);
         }
-        
+
         .dropdown-header:active {
-            background-color: #f3f4f6;
-            border-color: var(--brand-primary);
+            background: rgba(30, 41, 59, 0.6) !important;
+            border-color: rgba(16, 163, 127, 0.6) !important;
         }
         
         @media (hover: none) {
@@ -2934,13 +3192,15 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border: 1px solid #d1d5db;
+            background: rgba(30, 41, 59, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-top: none;
-            border-bottom-left-radius: 6px;
-            border-bottom-right-radius: 6px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+            z-index: 9999 !important;
             display: none;
             max-height: 250px;
             overflow-y: auto;
@@ -2956,14 +3216,15 @@
             align-items: center;
             gap: 12px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
             min-height: 44px;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            color: rgba(255, 255, 255, 0.9) !important;
         }
 
         .dropdown-item:hover {
-            background: var(--bg-tertiary);
+            background: rgba(255, 255, 255, 0.1) !important;
         }
 
         .dropdown-item input[type="checkbox"] {
@@ -2982,8 +3243,8 @@
         }
         
         .dropdown-item input[type="checkbox"]:checked + label {
-            color: var(--brand-primary);
-            font-weight: 500;
+            color: rgba(16, 163, 127, 1) !important;
+            font-weight: 600;
         }
 
         .dropdown-item label {
@@ -2992,6 +3253,7 @@
             margin: 0;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            color: rgba(255, 255, 255, 0.9) !important;
         }
 
         /* Loading spinner */
@@ -3001,10 +3263,16 @@
             padding: 20px;
         }
 
+        .loading p,
+        #loading-text {
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 500;
+        }
+
         .spinner {
             width: 32px;
             height: 32px;
-            border: 3px solid #f3f3f3;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-top: 3px solid #10a37f;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -3014,6 +3282,67 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Force white text in main schedule view */
+        .content-area p,
+        .content-area small,
+        .content-area label,
+        .content-area h4,
+        .content-area span {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .content-area input::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* Force white text on ALL option elements globally */
+        option {
+            color: #ffffff !important;
+            background-color: rgba(30, 41, 59, 0.95) !important;
+        }
+
+        /* Force glassmorphism on all inputs and selects in content-area */
+        .content-area input,
+        .content-area select,
+        .content-area textarea {
+            background: rgba(15, 23, 42, 0.4) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Force rounded corners on all form elements */
+        input,
+        select,
+        textarea {
+            border-radius: 8px !important;
+            -webkit-border-radius: 8px !important;
+            -moz-border-radius: 8px !important;
+        }
+
+        /* Ensure no bottom border radius override */
+        input:not([type="radio"]):not([type="checkbox"]),
+        select,
+        textarea {
+            border-bottom-left-radius: 8px !important;
+            border-bottom-right-radius: 8px !important;
+            border-top-left-radius: 8px !important;
+            border-top-right-radius: 8px !important;
+        }
+
+        /* Force glassmorphism on any white/light background cards in schedule view */
+        .content-area > div:not(#calendar-view):not(#history-view):not(#settings-view):not(#finance-view):not(#messages-view):not(#datos-view) [style*="background: #f9fafb"],
+        .content-area > div:not(#calendar-view):not(#history-view):not(#settings-view):not(#finance-view):not(#messages-view):not(#datos-view) [style*="background: white"],
+        .content-area > div:not(#calendar-view):not(#history-view):not(#settings-view):not(#finance-view):not(#messages-view):not(#datos-view) [style*="background: #fff"],
+        .content-area > div:not(#calendar-view):not(#history-view):not(#settings-view):not(#finance-view):not(#messages-view):not(#datos-view) [style*="background: #f8f9fa"] {
+            background: rgba(30, 41, 59, 0.4) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
         /* Hexagonal Loading Animation Styles */
@@ -4874,20 +5203,6 @@
             margin-bottom: 8px !important;
         }
 
-        /* Upload section modern style */
-        .upload-section {
-            background: rgba(16, 163, 127, 0.03) !important;
-            border: 2px dashed rgba(16, 163, 127, 0.2) !important;
-            border-radius: 16px !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .upload-section:hover {
-            background: rgba(16, 163, 127, 0.05) !important;
-            border-color: rgba(16, 163, 127, 0.4) !important;
-            transform: translateY(-2px);
-        }
-
         /* Modern buttons */
         button:not(.mobile-menu-btn):not(.dark-mode-toggle) {
             border-radius: 10px !important;
@@ -5818,9 +6133,10 @@
             background: transparent !important;
         }
 
-        /* Calendar View - Same background as landing page */
+        /* Calendar View & Main Schedule View - Same background as landing page */
         #calendar-view,
-        #datos-view {
+        #datos-view,
+        .main-content {
             min-height: 100vh;
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                         url('./images/background.webp') center center / cover no-repeat !important;
@@ -5878,15 +6194,9 @@
                 padding: 0 !important;
             }
 
-            /* Position mobile menu button absolutely over calendar */
+            /* Hide mobile menu button in calendar view - using new back button instead */
             body:has(#calendar-view:not([style*="display: none"])) .mobile-menu-btn {
-                position: absolute;
-                top: 20px;
-                z-index: 1001;
-                background: rgba(30, 41, 59, 0.5);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                display: none !important;
             }
         }
 
@@ -5945,15 +6255,9 @@
                 margin-top: 0 !important;
             }
 
-            /* Position mobile menu button absolutely over calendar */
+            /* Hide mobile menu button in calendar view - using new back button instead */
             body:has(#calendar-view:not([style*="display: none"])) .mobile-menu-btn {
-                position: absolute;
-                top: 15px;
-                z-index: 1001;
-                background: rgba(30, 41, 59, 0.5);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                display: none !important;
             }
         }
 
@@ -6367,7 +6671,7 @@
             <!-- Agendar Citas - LARGE -->
             <div class="bento-item bento-item-large" onclick="navigateToView('schedule')" style="animation-delay: 0.1s">
                 <div class="bento-item-content bento-item-image" style="padding: 24px; justify-content: flex-start; align-items: flex-start;">
-                    <h3 style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 16px; width: 100%; text-align: left;">Citas de hoy - Nov 27</h3>
+                    <h3 id="today-appointments-header" style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 16px; width: 100%; text-align: left;">Citas de hoy - Nov 27</h3>
                     <div style="display: flex; gap: 20px; width: 100%; align-items: center;">
                         <!-- Círculo con monto y progreso -->
                         <div class="today-amount-circle">
@@ -6738,8 +7042,8 @@
                         <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
                     <div style="flex: 1;">
-                        <span style="color: var(--text-upload); font-weight: 500; font-size: 14px;">Subir imágenes</span>
-                        <span style="color: var(--text-upload-light); font-size: 13px; margin-left: 8px;">o arrastra aquí</span>
+                        <span style="color: rgba(255, 255, 255, 0.95); font-weight: 600; font-size: 15px;">Subir imágenes</span>
+                        <span style="color: rgba(255, 255, 255, 0.6); font-size: 13px; margin-left: 8px;">o arrastra aquí</span>
                     </div>
                     <button class="upload-btn" onclick="document.getElementById('file-input').click()" style="padding: 8px 16px; font-size: 13px;">
                         Seleccionar
@@ -6971,6 +7275,13 @@
 
             <!-- Calendar View (Hidden by default) -->
             <div class="content-area" id="calendar-view" style="display: none;">
+                <!-- Back to Home Button -->
+                <button id="calendar-back-to-home" onclick="returnToBentoGrid()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                </button>
+
                 <div class="gas-price-header" style="text-align: center; font-weight: 600;">
                     Precio de Gasolina Hoy en Utah: <span style="color: var(--gas-price-value);" class="gas-price-display">$3.32</span>/<span style="color: var(--gas-price-unit);">galón</span> <span style="font-size: 12px; color: var(--gas-price-status);">(actualizando...)</span>
                 </div>
@@ -14371,28 +14682,28 @@ IMPORTANTE:
 
         async function showView(viewName) {
             // Hide all views
-            const views = ['schedule', 'calendar', 'history', 'datos', 'pago', 'finance', 'messages', 'settings'];
+            const views = ['calendar', 'history', 'datos', 'pago', 'finance', 'messages', 'settings'];
             views.forEach(view => {
                 const element = document.getElementById(view + '-view');
                 if (element) {
                     element.style.display = 'none';
                 }
             });
-            
-            // Handle main content area
+
+            // Handle main content area (schedule view)
             const mainContent = document.querySelector('.content-area:not([id$="-view"])');
             if (viewName === 'schedule') {
-                mainContent.style.display = 'block';
+                if (mainContent) mainContent.style.display = 'block';
             } else {
-                mainContent.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'none';
             }
-            
+
             // Show selected view
             const targetView = document.getElementById(viewName + '-view');
             if (targetView) {
                 targetView.style.display = 'block';
             }
-            
+
             currentView = viewName;
             
             // Initialize view-specific content
@@ -17487,13 +17798,32 @@ END:VCARD`;
             }
         }
 
+        // Update "Citas de hoy" header with current date
+        function updateTodayAppointmentsHeader() {
+            const now = new Date();
+            const day = now.getDate();
+
+            // Month names abbreviated in English
+            const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = monthNamesShort[now.getMonth()];
+
+            // Update header
+            const header = document.getElementById('today-appointments-header');
+            if (header) {
+                header.textContent = `Citas de hoy - ${month} ${day}`;
+            }
+        }
+
         // Initialize calendar slider when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initCalendarSlider);
             document.addEventListener('DOMContentLoaded', updateMiniCalendar);
+            document.addEventListener('DOMContentLoaded', updateTodayAppointmentsHeader);
         } else {
             initCalendarSlider();
             updateMiniCalendar();
+            updateTodayAppointmentsHeader();
         }
 
         // Analytics Auto Slider
