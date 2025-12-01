@@ -10668,6 +10668,35 @@
             }
         }
 
+        // Preprocess image for better OCR accuracy
+        async function preprocessImageForOCR(base64Data) {
+            return new Promise((resolve, reject) => {
+                try {
+                    console.log('🎨 Preprocessing image for better OCR...');
+
+                    const img = new Image();
+                    img.onload = function () {
+                        // Create canvas
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Scale up small images for better recognition
+                        const scale = Math.max(1, 2000 / Math.max(img.width, img.height));
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+
+                        // Draw image
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        // Get image data
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+
+                        // Calculate average brightness to detect dark mode
+                        let totalBrightness = 0;
+                        for (let i = 0; i < data.length; i += 4) {
+                            totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        }
                         const avgBrightness = totalBrightness / (data.length / 4);
                         const isDarkMode = avgBrightness < 100;
 
@@ -10726,6 +10755,26 @@
             });
         }
 
+        // Tesseract.js - Free OCR that runs in the browser
+        async function extractDataWithTesseract(imagesData) {
+            try {
+                console.log('📝 Starting Tesseract.js OCR (free, browser-based)...');
+
+                // Combine text from all images
+                let allText = '';
+
+                for (let i = 0; i < imagesData.length; i++) {
+                    const imageData = imagesData[i];
+                    console.log(`📷 Processing image ${i + 1}/${imagesData.length} with Tesseract...`);
+
+                    try {
+                        // Show progress to user
+                        const loadingEl = document.getElementById('loading');
+                        if (loadingEl) {
+                            const progressText = loadingEl.querySelector('p');
+                            if (progressText) {
+                                progressText.textContent = `Procesando imagen ${i + 1}/${imagesData.length} con OCR...`;
+                            }
                         }
 
                         // Preprocess image for better OCR accuracy
@@ -10799,6 +10848,33 @@
             }
         }
 
+        // Google Cloud Vision API - Best OCR accuracy
+        async function extractDataWithGoogleVision(imagesData) {
+            try {
+                console.log('📸 Starting Google Cloud Vision OCR...');
+
+                // Google Vision API Key (fallback for direct API calls)
+                const GOOGLE_VISION_API_KEY = 'AIzaSyCwvICuNacBN9Z2HOGPlYbyXc-cyHQAtmA';
+
+                // Combine text from all images
+                let allText = '';
+
+                // Check if we have API_BASE_URL (deployed or local server)
+                const useBackend = API_BASE_URL && !isFileProtocol;
+
+                console.log(`🔧 Using ${useBackend ? 'Backend Proxy' : 'Direct API'} for Google Vision`);
+
+                for (let i = 0; i < imagesData.length; i++) {
+                    const imageData = imagesData[i];
+                    console.log(`📷 Processing image ${i + 1}/${imagesData.length} with Google Vision...`);
+
+                    // Show progress to user
+                    const loadingEl = document.getElementById('loading');
+                    if (loadingEl) {
+                        const progressText = loadingEl.querySelector('p');
+                        if (progressText) {
+                            progressText.textContent = `Procesando imagen ${i + 1}/${imagesData.length} con Google Vision OCR...`;
+                        }
                     }
 
                     let response;
@@ -10915,6 +10991,50 @@
                 return null;
             }
         }
+
+        // Parse extracted text to find appointment data
+        function parseExtractedText(text) {
+            const data = {
+                name: '',
+                time: '',
+                city: '',
+                address: '',
+                job: '',
+                price: '',
+                day: '',
+                fullText: text  // Store full text for context-based time detection
+            };
+
+            console.log('🔍 Parsing extracted text:', text);
+
+            // Normalize text
+            const normalizedText = text.toLowerCase();
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+            console.log('📋 Extracted lines:', lines);
+
+            // Helper function: Check if a string looks like a name
+            function looksLikeName(str) {
+                if (!str || str.length < 2 || str.length > 50) return false;
+
+                // Not a name if it contains numbers (except at end for "Jr", "III", etc)
+                if (/^\d/.test(str) || /\d{2,}/.test(str)) return false;
+
+                // Not a name if it looks like a time (3:30, 11am, etc)
+                if (/\d+[:\.]\d+/.test(str) || /\d+\s*(am|pm)/i.test(str)) return false;
+
+                // Not a name if it starts with common greeting words
+                const blacklist = ['hola', 'buenas', 'gracias', 'perfecto', 'bien', 'estoy', 'tengo', 'para', 'tarde', 'disponible', 'noches', 'disculpa', 'buenos', 'dias'];
+                if (blacklist.some(word => str.toLowerCase().startsWith(word))) return false;
+
+                // Should have at least one uppercase letter (proper name)
+                if (!/[A-ZÁÉÍÓÚÑ]/.test(str)) return false;
+
+                // Should be mostly letters (allow spaces and basic punctuation)
+                if (!/^[A-ZÁÉÍÓÚÑa-záéíóúñ\s\.\-\']+$/.test(str)) return false;
+
+                return true;
+            }
 
             // Extract name - BUSCAR EN PRIMERAS 5 LÍNEAS
             // El nombre puede estar en la 1ra, 2da o 3ra línea (después de hora, fecha, etc)
@@ -11126,6 +11246,42 @@
             return data;
         }
 
+        async function extractDataWithMCP(imagesData) {
+            try {
+                // Convert images to a format that can be processed
+                const imagePromises = imagesData.map(async (imageData) => {
+                    // Create a temporary image element to get image data
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+
+                            // Try OCR using Web APIs if available
+                            resolve({
+                                width: img.width,
+                                height: img.height,
+                                base64: imageData.base64,
+                                processed: true
+                            });
+                        };
+                        img.src = `data:image/jpeg;base64,${imageData.base64}`;
+                    });
+                });
+
+                const processedImages = await Promise.all(imagePromises);
+                console.log('📷 Processed images for MCP analysis:', processedImages.length);
+
+                // Enhanced manual extraction with better pattern recognition
+                return await extractDataWithEnhancedOCR(imagesData);
+
+            } catch (error) {
+                console.error('❌ MCP extraction failed:', error);
+                return null;
+            }
         }
 
         async function extractDataWithOpenAI(imagesData) {
