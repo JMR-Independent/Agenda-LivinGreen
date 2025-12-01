@@ -3345,229 +3345,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
-        /* Hexagonal Loading Animation Styles */
-        .hex-loader-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(55, 57, 64, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            backdrop-filter: blur(5px);
-        }
-
-        .socket {
-            width: 200px;
-            height: 200px;
-            position: relative;
-        }
-
-        .hex-brick {
-            background: #10a37f;
-            width: 30px;
-            height: 17px;
-            position: absolute;
-            top: 5px;
-            animation-name: hexFade;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            -webkit-animation-name: hexFade;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-        }
-
-        .h2 {
-            transform: rotate(60deg);
-            -webkit-transform: rotate(60deg);
-        }
-
-        .h3 {
-            transform: rotate(-60deg);
-            -webkit-transform: rotate(-60deg);
-        }
-
-        .gel {
-            height: 30px;
-            width: 30px;
-            transition: all .3s;
-            -webkit-transition: all .3s;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-        }
-
-        .center-gel {
-            margin-left: -15px;
-            margin-top: -15px;
-            animation-name: hexPulse;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            -webkit-animation-name: hexPulse;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-        }
-
-        .c1 { margin-left: -47px; margin-top: -15px; }
-        .c2 { margin-left: -31px; margin-top: -43px; }
-        .c3 { margin-left: 1px; margin-top: -43px; }
-        .c4 { margin-left: 17px; margin-top: -15px; }
-        .c5 { margin-left: -31px; margin-top: 13px; }
-        .c6 { margin-left: 1px; margin-top: 13px; }
-        .c7 { margin-left: -63px; margin-top: -43px; }
-        .c8 { margin-left: 33px; margin-top: -43px; }
-        .c9 { margin-left: -15px; margin-top: 41px; }
-        .c10 { margin-left: -63px; margin-top: 13px; }
-        .c11 { margin-left: 33px; margin-top: 13px; }
-        .c12 { margin-left: -15px; margin-top: -71px; }
-        .c13 { margin-left: -47px; margin-top: -71px; }
-        .c14 { margin-left: 17px; margin-top: -71px; }
-        .c15 { margin-left: -47px; margin-top: 41px; }
-        .c16 { margin-left: 17px; margin-top: 41px; }
-        .c17 { margin-left: -79px; margin-top: -15px; }
-        .c18 { margin-left: 49px; margin-top: -15px; }
-        .c19 { margin-left: -63px; margin-top: -99px; }
-        .c20 { margin-left: 33px; margin-top: -99px; }
-        .c21 { margin-left: 1px; margin-top: -99px; }
-        .c22 { margin-left: -31px; margin-top: -99px; }
-        .c23 { margin-left: -63px; margin-top: 69px; }
-        .c24 { margin-left: 33px; margin-top: 69px; }
-        .c25 { margin-left: 1px; margin-top: 69px; }
-        .c26 { margin-left: -31px; margin-top: 69px; }
-        .c28 { margin-left: -95px; margin-top: -43px; }
-        .c29 { margin-left: -95px; margin-top: 13px; }
-        .c30 { margin-left: 49px; margin-top: 41px; }
-        .c31 { margin-left: -79px; margin-top: -71px; }
-        .c32 { margin-left: -111px; margin-top: -15px; }
-        .c33 { margin-left: 65px; margin-top: -43px; }
-        .c34 { margin-left: 65px; margin-top: 13px; }
-        .c35 { margin-left: -79px; margin-top: 41px; }
-        .c36 { margin-left: 49px; margin-top: -71px; }
-        .c37 { margin-left: 81px; margin-top: -15px; }
-
-        .r1 {
-            animation-name: hexPulse;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            animation-delay: .2s;
-            -webkit-animation-name: hexPulse;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-            -webkit-animation-delay: .2s;
-        }
-
-        .r2 {
-            animation-name: hexPulse;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            animation-delay: .4s;
-            -webkit-animation-name: hexPulse;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-            -webkit-animation-delay: .4s;
-        }
-
-        .r3 {
-            animation-name: hexPulse;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            animation-delay: .6s;
-            -webkit-animation-name: hexPulse;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-            -webkit-animation-delay: .6s;
-        }
-
-        .r1 > .hex-brick {
-            animation-name: hexFade;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            animation-delay: .2s;
-            -webkit-animation-name: hexFade;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-            -webkit-animation-delay: .2s;
-        }
-
-        .r2 > .hex-brick {
-            animation-name: hexFade;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            animation-delay: .4s;
-            -webkit-animation-name: hexFade;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-            -webkit-animation-delay: .4s;
-        }
-
-        .r3 > .hex-brick {
-            animation-name: hexFade;
-            animation-duration: 2s;
-            animation-iteration-count: infinite;
-            animation-delay: .6s;
-            -webkit-animation-name: hexFade;
-            -webkit-animation-duration: 2s;
-            -webkit-animation-iteration-count: infinite;
-            -webkit-animation-delay: .6s;
-        }
-
-        @keyframes hexPulse {
-            0% {
-                -webkit-transform: scale(1);
-                transform: scale(1);
-            }
-            50% {
-                -webkit-transform: scale(0.01);
-                transform: scale(0.01);
-            }
-            100% {
-                -webkit-transform: scale(1);
-                transform: scale(1);
-            }
-        }
-
-        @keyframes hexFade {
-            0% {
-                background: #10a37f;
-            }
-            50% {
-                background: #0d8a68;
-            }
-            100% {
-                background: #10a37f;
-            }
-        }
-
-        @-webkit-keyframes hexPulse {
-            0% {
-                -webkit-transform: scale(1);
-                transform: scale(1);
-            }
-            50% {
-                -webkit-transform: scale(0.01);
-                transform: scale(0.01);
-            }
-            100% {
-                -webkit-transform: scale(1);
-                transform: scale(1);
-            }
-        }
-
-        @-webkit-keyframes hexFade {
-            0% {
-                background: #10a37f;
-            }
-            50% {
-                background: #0d8a68;
-            }
-            100% {
-                background: #10a37f;
-            }
-        }
-
         /* Mobile POS Terminal styles */
         .mobile-pos-container {
             position: relative;
@@ -6474,197 +6251,6 @@
     </style>
 </head>
 <body>
-    <!-- Hexagonal Loading Animation -->
-    <div class="hex-loader-overlay" id="hex-loader" style="display: flex;">
-        <div class="socket">
-            <div class="gel center-gel">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c1 r1">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c2 r1">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c3 r1">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c4 r1">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c5 r1">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c6 r1">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c7 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c8 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c9 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c10 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c11 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c12 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c13 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c14 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c15 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c16 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c17 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c18 r2">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c19 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c20 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c21 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c22 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c23 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c24 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c25 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c26 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c28 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c29 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c30 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c31 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c32 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c33 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c34 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c35 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c36 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-            <div class="gel c37 r3">
-                <div class="hex-brick h1"></div>
-                <div class="hex-brick h2"></div>
-                <div class="hex-brick h3"></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Landing Page with Bento Grid -->
     <div class="landing-view" id="landing-view">
         <div class="bento-grid">
@@ -8049,20 +7635,8 @@ Incluye:
         // MODULARIZED JAVASCRIPT ARCHITECTURE
         // ================================================================
 
-        // Hexagonal Loading Animation Functions
-        function showHexLoader() {
-            const loader = document.getElementById('hex-loader');
-            if (loader) {
-                loader.style.display = 'flex';
-            }
-        }
-
-        function hideHexLoader() {
-            const loader = document.getElementById('hex-loader');
-            if (loader) {
-                loader.style.display = 'none';
-            }
-
+        // Initialize app view on load
+        function initializeAppView() {
             // Show landing page with Bento Grid
             const landingView = document.getElementById('landing-view');
             if (landingView) {
@@ -8086,17 +7660,6 @@ Incluye:
             if (header) {
                 header.style.display = 'none';
             }
-        }
-
-        // Example usage functions for different operations
-        function showLoadingForImageProcess() {
-            showHexLoader();
-            setTimeout(hideHexLoader, 3000); // Hide after 3 seconds as example
-        }
-
-        function showLoadingForAppointmentSave() {
-            showHexLoader();
-            setTimeout(hideHexLoader, 2000); // Hide after 2 seconds as example
         }
 
         // Mobile menu functions - define early to avoid reference errors
@@ -10773,7 +10336,16 @@ Incluye:
             console.log(`🔄 Processing ${imagesData.length} images for data extraction...`);
 
             try {
-                // Try Tesseract.js first (free, no API key needed, runs in browser)
+                // Try Google Cloud Vision first (most accurate OCR)
+                console.log('📸 Attempting Google Cloud Vision OCR (highest accuracy)...');
+                const visionResult = await extractDataWithGoogleVision(imagesData);
+                if (visionResult && Object.keys(visionResult).length > 0) {
+                    console.log('✅ Google Vision extraction successful:', visionResult);
+                    return visionResult;
+                }
+                console.log('⚠️ Google Vision extraction failed, trying next method...');
+
+                // Try Tesseract.js as fallback (free, runs in browser)
                 console.log('📝 Attempting Tesseract.js OCR (free, browser-based)...');
                 const tesseractResult = await extractDataWithTesseract(imagesData);
                 if (tesseractResult && Object.keys(tesseractResult).length > 0) {
@@ -10781,19 +10353,6 @@ Incluye:
                     return tesseractResult;
                 }
                 console.log('⚠️ Tesseract extraction failed, trying next method...');
-
-                // Try Google Cloud Vision as fallback (requires billing enabled)
-                if (API_BASE_URL) {
-                    console.log('📸 Attempting Google Cloud Vision (requires billing)...');
-                    const visionResult = await extractDataWithGoogleVision(imagesData);
-                    if (visionResult && Object.keys(visionResult).length > 0) {
-                        console.log('✅ Google Vision extraction successful:', visionResult);
-                        return visionResult;
-                    }
-                    console.log('⚠️ Google Vision extraction failed, trying next method...');
-                } else {
-                    console.log('⚠️ API not available (file:// protocol detected), skipping Google Vision...');
-                }
 
                 // Try MCP-based extraction as third option
                 console.log('🔍 Attempting MCP-based image analysis...');
@@ -10993,34 +10552,80 @@ Incluye:
             }
         }
 
-        // Google Cloud Vision API - Best OCR accuracy (requires billing enabled)
+        // Google Cloud Vision API - Best OCR accuracy
         async function extractDataWithGoogleVision(imagesData) {
             try {
                 console.log('📸 Starting Google Cloud Vision OCR...');
 
+                // Google Vision API Key (fallback for direct API calls)
+                const GOOGLE_VISION_API_KEY = 'AIzaSyCwvICuNacBN9Z2HOGPlYbyXc-cyHQAtmA';
+
                 // Combine text from all images
                 let allText = '';
+
+                // Check if we have API_BASE_URL (deployed or local server)
+                const useBackend = API_BASE_URL && !isFileProtocol;
+
+                console.log(`🔧 Using ${useBackend ? 'Backend Proxy' : 'Direct API'} for Google Vision`);
 
                 for (let i = 0; i < imagesData.length; i++) {
                     const imageData = imagesData[i];
                     console.log(`📷 Processing image ${i + 1}/${imagesData.length} with Google Vision...`);
 
-                    // Call our secure serverless Vision API endpoint
-                    const response = await fetch(`${API_BASE_URL}/vision`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            image: imageData.base64,
-                            features: [
-                                {
-                                    type: 'TEXT_DETECTION',
-                                    maxResults: 1
-                                }
-                            ]
-                        })
-                    });
+                    // Show progress to user
+                    const loadingEl = document.getElementById('loading');
+                    if (loadingEl) {
+                        const progressText = loadingEl.querySelector('p');
+                        if (progressText) {
+                            progressText.textContent = `Procesando imagen ${i + 1}/${imagesData.length} con Google Vision OCR...`;
+                        }
+                    }
+
+                    let response;
+
+                    if (useBackend) {
+                        // Use backend proxy (secure, no CORS issues)
+                        console.log('🔐 Using secure backend proxy for Google Vision');
+                        response = await fetch(`${API_BASE_URL}/vision`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                image: imageData.base64.replace(/^data:image\/\w+;base64,/, ''),
+                                features: [
+                                    {
+                                        type: 'TEXT_DETECTION',
+                                        maxResults: 1
+                                    }
+                                ]
+                            })
+                        });
+                    } else {
+                        // Call Google Vision API directly (may have CORS issues in some browsers)
+                        console.log('🌐 Using direct API call to Google Vision');
+                        response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                requests: [
+                                    {
+                                        image: {
+                                            content: imageData.base64.replace(/^data:image\/\w+;base64,/, '')
+                                        },
+                                        features: [
+                                            {
+                                                type: 'TEXT_DETECTION',
+                                                maxResults: 1
+                                            }
+                                        ]
+                                    }
+                                ]
+                            })
+                        });
+                    }
 
                     if (!response.ok) {
                         let errorData;
@@ -11078,7 +10683,16 @@ Incluye:
 
             } catch (error) {
                 console.error('❌ Google Vision extraction failed:', error);
-                throw error;
+                console.error('Error details:', error.message);
+
+                // Check if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    console.error('🚫 CORS Error: Google Vision API bloqueada por el navegador');
+                    console.error('💡 Solución: Necesitas usar un proxy/backend para llamar a Google Vision');
+                }
+
+                // Return null to try fallback methods
+                return null;
             }
         }
 
@@ -17678,9 +17292,8 @@ END:VCARD`;
 
         // Hide hexagonal loading animation after page loads
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                hideHexLoader();
-            }, 2000); // Show for 2 seconds after page loads
+            // Initialize app view immediately on load
+            initializeAppView();
         });
 
         // Copy message to clipboard function
