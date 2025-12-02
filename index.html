@@ -2609,6 +2609,12 @@
             color-scheme: dark;
         }
 
+        /* Force white text on name input (manual typing and OCR) */
+        #name {
+            color: rgba(255, 255, 255, 0.95) !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
+        }
+
         /* Date input calendar icon white */
         .form-group input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
@@ -3235,11 +3241,15 @@
             touch-action: manipulation;
             accent-color: #10a37f;
             transform: scale(1.1);
+            appearance: auto !important;
+            -webkit-appearance: checkbox !important;
+            -moz-appearance: checkbox !important;
         }
-        
+
         .dropdown-item input[type="checkbox"]:checked {
-            background-color: var(--brand-primary);
-            border-color: var(--brand-primary);
+            background-color: var(--brand-primary) !important;
+            border-color: var(--brand-primary) !important;
+            accent-color: #10a37f !important;
         }
         
         .dropdown-item input[type="checkbox"]:checked + label {
