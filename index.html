@@ -10336,8 +10336,17 @@ Incluye:
             console.log(`🔄 Processing ${imagesData.length} images for data extraction...`);
 
             try {
-                // Try Google Cloud Vision first (most accurate OCR)
-                console.log('📸 Attempting Google Cloud Vision OCR (highest accuracy)...');
+                // Try OpenAI GPT-4 Vision first (best for WhatsApp/Messenger screenshots)
+                console.log('🤖 Attempting OpenAI GPT-4 Vision OCR (optimized for screenshots)...');
+                const openaiResult = await extractDataWithOpenAI(imagesData);
+                if (openaiResult && Object.keys(openaiResult).length > 0) {
+                    console.log('✅ OpenAI extraction successful:', openaiResult);
+                    return openaiResult;
+                }
+                console.log('⚠️ OpenAI extraction failed, trying next method...');
+
+                // Try Google Cloud Vision as fallback
+                console.log('📸 Attempting Google Cloud Vision OCR...');
                 const visionResult = await extractDataWithGoogleVision(imagesData);
                 if (visionResult && Object.keys(visionResult).length > 0) {
                     console.log('✅ Google Vision extraction successful:', visionResult);
@@ -10345,26 +10354,17 @@ Incluye:
                 }
                 console.log('⚠️ Google Vision extraction failed, trying next method...');
 
-                // Try Tesseract.js as fallback (free, runs in browser)
+                // Try Tesseract.js as third option (free, runs in browser)
                 console.log('📝 Attempting Tesseract.js OCR (free, browser-based)...');
                 const tesseractResult = await extractDataWithTesseract(imagesData);
                 if (tesseractResult && Object.keys(tesseractResult).length > 0) {
                     console.log('✅ Tesseract extraction successful:', tesseractResult);
                     return tesseractResult;
                 }
-                console.log('⚠️ Tesseract extraction failed, trying next method...');
+                console.log('⚠️ Tesseract extraction failed, trying manual extraction...');
 
-                // Try MCP-based extraction as third option
-                console.log('🔍 Attempting MCP-based image analysis...');
-                const mcpResult = await extractDataWithMCP(imagesData);
-                if (mcpResult && Object.keys(mcpResult).length > 0) {
-                    console.log('✅ MCP extraction successful:', mcpResult);
-                    return mcpResult;
-                }
-
-                // Fallback to OpenAI API if all methods fail
-                console.log('⚠️ MCP extraction failed, trying OpenAI API as fallback...');
-                return await extractDataWithOpenAI(imagesData);
+                // Final fallback to manual extraction
+                return await extractDataManuallyFromImages(imagesData);
 
             } catch (error) {
                 console.error('❌ All extraction methods failed:', error);
@@ -11024,43 +11024,47 @@ IMPORTANTE:
                 const imageData = imagesData[i];
                 console.log(`📷 Processing image ${i + 1}/${imagesData.length} with OpenAI...`);
 
-                // Create prompt for single image
-                const prompt = `Analiza esta imagen y extrae los siguientes datos: nombre completo, hora (formato HH:MM de 24h), ciudad, dirección completa, trabajo/profesión, precio, y día de la semana.
+                // Create prompt for single image - optimized for WhatsApp/Messenger screenshots
+                const prompt = `Eres un asistente experto en leer pantallazos de WhatsApp y Messenger. Analiza esta imagen de conversación y extrae TODOS los datos relevantes de la cita/trabajo.
 
-IMPORTANTE:
-- Busca CUIDADOSAMENTE la HORA en cualquier formato ('10:30', '2:00 PM', '14:00', '10.30', '2 PM', '3 de la tarde', etc.)
-- Busca el DÍA DE LA SEMANA ('lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo')
-- Responde SOLO en formato JSON con las claves: name, time, city, address, job, price, day
-- Si no encuentras algún dato, usa cadena vacía
-- Revisa TODO el texto de la imagen para encontrar cada campo`;
+CAMPOS A EXTRAER:
+1. NOMBRE COMPLETO del cliente (nombre y apellido si está disponible)
+2. HORA de la cita en formato 24h (ej: "14:30", "09:00")
+3. FECHA o DÍA DE LA SEMANA (lunes, martes, miércoles, jueves, viernes, sábado, domingo, o fecha específica)
+4. CIUDAD donde se realizará el trabajo
+5. DIRECCIÓN COMPLETA (número, calle, ciudad, código postal si está)
+6. TRABAJO/SERVICIO a realizar (limpieza, deep clean, carpet cleaning, office cleaning, etc.)
+7. PRECIO en dólares (solo el número, sin símbolo)
 
-                // Direct call to OpenAI API
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+INSTRUCCIONES IMPORTANTES:
+- Lee TODO el texto visible en la conversación, incluyendo mensajes del cliente y respuestas
+- La HORA puede estar en cualquier formato: "10:30", "2:00 PM", "14:00", "10.30", "2 PM", "3 de la tarde", "mañana a las 11", etc. Conviértela SIEMPRE a formato 24h (HH:MM)
+- La dirección puede estar en formato Utah (ej: "123 N 456 W") o formato estándar (ej: "123 Main Street")
+- El precio puede aparecer como "$150", "150 dólares", "ciento cincuenta", etc.
+- Si un dato NO está visible, deja ese campo con cadena vacía ""
+- NO inventes información que no esté en la imagen
+
+FORMATO DE RESPUESTA:
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
+{
+  "name": "nombre completo del cliente",
+  "time": "HH:MM en formato 24h",
+  "day": "día de la semana o fecha",
+  "city": "ciudad",
+  "address": "dirección completa",
+  "job": "descripción del trabajo/servicio",
+  "price": "precio en número"
+}`;
+
+                // Call backend OpenAI API proxy (secure)
+                const response = await fetch(`${API_BASE_URL}/openai`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: "gpt-4o",
-                        messages: [
-                            {
-                                role: "user",
-                                content: [
-                                    {
-                                        type: "text",
-                                        text: prompt
-                                    },
-                                    {
-                                        type: "image_url",
-                                        image_url: {
-                                            url: `data:image/jpeg;base64,${imageData.base64}`
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        max_tokens: 300
+                        images: [imageData.base64],
+                        prompt: prompt
                     })
                 });
 
@@ -11075,13 +11079,17 @@ IMPORTANTE:
                 const data = await response.json();
                 console.log(`Image ${i + 1} API Response:`, data);
 
-                // Process OpenAI response format
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    const content = data.choices[0].message.content;
-                    console.log(`Image ${i + 1} Raw content:`, content);
+                // Process backend response format
+                if (data.success && data.data) {
+                    // Backend successfully parsed the data
+                    console.log(`✅ Parsed data from image ${i + 1}:`, data.data);
+                    extractedDataArray.push(data.data);
+                } else if (data.content) {
+                    // Backend returned raw content, try to parse manually
+                    console.log(`Image ${i + 1} Raw content:`, data.content);
 
                     // Clean and parse the content
-                    let cleanContent = content.trim();
+                    let cleanContent = data.content.trim();
                     if (cleanContent.startsWith('```json')) {
                         cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
                     } else if (cleanContent.startsWith('```')) {
@@ -11090,12 +11098,12 @@ IMPORTANTE:
 
                     try {
                         const parsedData = JSON.parse(cleanContent);
-                        console.log(`✅ Parsed data from image ${i + 1}:`, parsedData);
+                        console.log(`✅ Manual parse successful for image ${i + 1}:`, parsedData);
                         extractedDataArray.push(parsedData);
                     } catch (e) {
                         console.error(`❌ Failed to parse JSON from image ${i + 1}:`, e);
                         // Try manual extraction as fallback
-                        const manualData = extractDataManually(content);
+                        const manualData = extractDataManually(data.content);
                         if (manualData && (manualData.name || manualData.time || manualData.city)) {
                             extractedDataArray.push(manualData);
                         }
@@ -11125,38 +11133,49 @@ IMPORTANTE:
 
         async function extractDataFromImage(base64Image) {
             try {
-                // Direct call to OpenAI API
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                // Call backend OpenAI API proxy (secure)
+                const response = await fetch(`${API_BASE_URL}/openai`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: "gpt-4o",
-                        messages: [
-                            {
-                                role: "user",
-                                content: [
-                                    {
-                                        type: "text",
-                                        text: "Analiza esta imagen y extrae los siguientes datos: nombre completo, hora (formato HH:MM de 24h), ciudad, dirección completa, trabajo/profesión, precio, y día de la semana. Busca CUIDADOSAMENTE: 1) La HORA en cualquier formato ('10:30', '2:00 PM', '14:00', '10.30', '2 PM', '3 de la tarde', etc.), 2) El DÍA DE LA SEMANA ('lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'). Responde SOLO en formato JSON con las claves: name, time, city, address, job, price, day. Si no encuentras algún dato, usa cadena vacía. IMPORTANTE: Revisa TODO el texto de la imagen para encontrar la hora y el día."
-                                    },
-                                    {
-                                        type: "image_url",
-                                        image_url: {
-                                            url: `data:image/jpeg;base64,${base64Image}`
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        max_tokens: 300
+                        images: [base64Image],
+                        prompt: `Eres un asistente experto en leer pantallazos de WhatsApp y Messenger. Analiza esta imagen de conversación y extrae TODOS los datos relevantes de la cita/trabajo.
+
+CAMPOS A EXTRAER:
+1. NOMBRE COMPLETO del cliente (nombre y apellido si está disponible)
+2. HORA de la cita en formato 24h (ej: "14:30", "09:00")
+3. FECHA o DÍA DE LA SEMANA (lunes, martes, miércoles, jueves, viernes, sábado, domingo, o fecha específica)
+4. CIUDAD donde se realizará el trabajo
+5. DIRECCIÓN COMPLETA (número, calle, ciudad, código postal si está)
+6. TRABAJO/SERVICIO a realizar (limpieza, deep clean, carpet cleaning, office cleaning, etc.)
+7. PRECIO en dólares (solo el número, sin símbolo)
+
+INSTRUCCIONES IMPORTANTES:
+- Lee TODO el texto visible en la conversación, incluyendo mensajes del cliente y respuestas
+- La HORA puede estar en cualquier formato: "10:30", "2:00 PM", "14:00", "10.30", "2 PM", "3 de la tarde", "mañana a las 11", etc. Conviértela SIEMPRE a formato 24h (HH:MM)
+- La dirección puede estar en formato Utah (ej: "123 N 456 W") o formato estándar (ej: "123 Main Street")
+- El precio puede aparecer como "$150", "150 dólares", "ciento cincuenta", etc.
+- Si un dato NO está visible, deja ese campo con cadena vacía ""
+- NO inventes información que no esté en la imagen
+
+FORMATO DE RESPUESTA:
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
+{
+  "name": "nombre completo del cliente",
+  "time": "HH:MM en formato 24h",
+  "day": "día de la semana o fecha",
+  "city": "ciudad",
+  "address": "dirección completa",
+  "job": "descripción del trabajo/servicio",
+  "price": "precio en número"
+}`
                     })
                 });
 
                 console.log('Response status:', response.status);
-                
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('API Error:', errorText);
@@ -11165,10 +11184,22 @@ IMPORTANTE:
 
                 const data = await response.json();
                 console.log('API Response:', data);
-                
-                const content = data.choices[0].message.content;
+
+                // Process backend response format
+                if (data.success && data.data) {
+                    // Backend successfully parsed the data
+                    console.log('✅ Successfully parsed JSON:', data.data);
+                    return data.data;
+                }
+
+                // Backend returned raw content, try to parse manually
+                const content = data.content || (data.raw && data.raw.choices && data.raw.choices[0] && data.raw.choices[0].message && data.raw.choices[0].message.content);
+                if (!content) {
+                    throw new Error('No content in response');
+                }
+
                 console.log('Raw content:', content);
-                
+
                 // Clean the content - remove markdown code blocks
                 let cleanContent = content.trim();
                 if (cleanContent.startsWith('```json')) {
