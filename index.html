@@ -8088,25 +8088,47 @@ Incluye:
                     return stored ? JSON.parse(stored) : [];
                 }
 
-                // ONLINE: Use Supabase as primary source
+                // ONLINE: Use Supabase as primary source, but merge with local-only fields
                 if (navigator.onLine) {
                     console.log('🔍 DEBUGGING: Taking online/Supabase path');
                     try {
                         const supabaseAppointments = await getAppointmentsFromSupabase();
                         if (supabaseAppointments && supabaseAppointments.length >= 0) {
-                            // Update local cache with latest data
+                            // Get local data to preserve notes and other local-only fields
+                            const localData = localStorage.getItem('appointments');
+                            const localAppointments = localData ? JSON.parse(localData) : [];
+
+                            // Create a map of local appointments for quick lookup
+                            const localMap = new Map();
+                            localAppointments.forEach(apt => {
+                                if (apt.id) localMap.set(apt.id, apt);
+                                else if (apt.timestamp) localMap.set(apt.timestamp, apt);
+                            });
+
+                            // Merge Supabase data with local-only fields (notes, phone)
+                            console.log('🔄 Merging Supabase data with local fields (notes, phones)');
+                            const mergedAppointments = supabaseAppointments.map(supabaseApt => {
+                                const localApt = localMap.get(supabaseApt.id) || localMap.get(supabaseApt.timestamp);
+                                return {
+                                    ...supabaseApt,
+                                    notes: localApt?.notes || '', // Preserve local notes!
+                                    phone: localApt?.phone || PhoneManager.get(supabaseApt.id) || ''
+                                };
+                            });
+
+                            // Update local cache with merged data
                             if (dbInstance) {
                                 const tx = dbInstance.transaction('appointments', 'readwrite');
                                 const store = tx.objectStore('appointments');
                                 await store.clear();
-                                for (const apt of supabaseAppointments) {
+                                for (const apt of mergedAppointments) {
                                     await store.put(apt);
                                 }
                             }
-                            localStorage.setItem('appointments', JSON.stringify(supabaseAppointments));
+                            localStorage.setItem('appointments', JSON.stringify(mergedAppointments));
 
-                            // Apply phone numbers before returning
-                            return PhoneManager.applyToAppointments(supabaseAppointments);
+                            // Apply phone numbers before returning (in case PhoneManager has updates)
+                            return PhoneManager.applyToAppointments(mergedAppointments);
                         }
                     } catch (error) {
                         console.warn('⚠️  Supabase failed, falling back to offline data:', error.message);
@@ -13939,16 +13961,29 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 // Get appointments from the same source as the calendar
                 let appointments = await OfflineDB.getAppointments();
 
-                // If online, try to get from Supabase, but merge with local data for phone numbers
+                // If online, try to get from Supabase, but merge with local data for phone numbers AND notes
                 if (navigator.onLine) {
                     try {
                         const supabaseAppointments = await getAppointmentsFromSupabase();
                         if (supabaseAppointments && supabaseAppointments.length > 0) {
-                            // Apply phone numbers using PhoneManager
-                            console.log('📞 Applying phones from PhoneManager to Supabase appointments');
-                            appointments = PhoneManager.applyToAppointments(supabaseAppointments);
-                            console.log('✅ Loaded client registry with merged data (Supabase + local phones):', appointments.length);
-                            console.log('✅ Final merged appointments:', appointments.map(a => ({id: a.id, name: a.name, phone: a.phone})));
+                            // Create a map of local appointments for quick lookup
+                            const localMap = new Map();
+                            appointments.forEach(apt => {
+                                if (apt.id) localMap.set(apt.id, apt);
+                                else if (apt.timestamp) localMap.set(apt.timestamp, apt);
+                            });
+
+                            // Merge Supabase data with local-only fields (phone, notes)
+                            console.log('🔄 Merging Supabase appointments with local data (phones + notes)');
+                            appointments = supabaseAppointments.map(supabaseApt => {
+                                const localApt = localMap.get(supabaseApt.id) || localMap.get(supabaseApt.timestamp);
+                                return {
+                                    ...supabaseApt,
+                                    phone: localApt?.phone || PhoneManager.get(supabaseApt.id) || '',
+                                    notes: localApt?.notes || '' // Preserve local notes!
+                                };
+                            });
+                            console.log('✅ Loaded client registry with merged data (Supabase + local phones + notes):', appointments.length);
                         }
                     } catch (error) {
                         console.log('⚠️ Supabase unavailable, using offline data for registry');
