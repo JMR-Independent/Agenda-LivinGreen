@@ -8643,8 +8643,9 @@ Incluye:
         // Supabase Functions
         async function saveAppointmentToSupabase(appointmentData) {
             try {
-                // Filter out phone field since it doesn't exist in Supabase schema
-                const { phone, ...supabaseData } = appointmentData;
+                // Filter out phone and notes fields since they don't exist in Supabase schema (yet)
+                // TODO: Add 'notes' column to Supabase appointments table
+                const { phone, notes, ...supabaseData } = appointmentData;
 
                 // Remove id from data if it's null/undefined so Supabase can auto-generate
                 if (!supabaseData.id) {
@@ -8700,8 +8701,9 @@ Incluye:
 
         async function updateAppointmentInSupabase(timestamp, updates) {
             try {
-                // Filter out phone field and originalTimestamp since they don't exist in Supabase schema
-                const { phone, originalTimestamp, ...supabaseUpdates } = updates;
+                // Filter out phone, notes, and originalTimestamp since they don't exist in Supabase schema
+                // TODO: Add 'notes' column to Supabase appointments table
+                const { phone, notes, originalTimestamp, ...supabaseUpdates } = updates;
 
                 const { data, error } = await supabaseClient
                     .from('appointments')
