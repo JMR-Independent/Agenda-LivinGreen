@@ -43,18 +43,34 @@ export default async function handler(req, res) {
 CAMPOS A EXTRAER:
 1. NOMBRE COMPLETO del cliente (nombre y apellido si está disponible)
 2. HORA de la cita en formato 24h (ej: "14:30", "09:00")
-3. FECHA o DÍA DE LA SEMANA (lunes, martes, miércoles, jueves, viernes, sábado, domingo, o fecha específica)
+3. DÍA DE LA SEMANA (lunes, martes, miércoles, jueves, viernes, sábado, domingo)
 4. CIUDAD donde se realizará el trabajo
 5. DIRECCIÓN COMPLETA (número, calle, ciudad, código postal si está)
 6. TRABAJO/SERVICIO a realizar (limpieza, deep clean, carpet cleaning, office cleaning, etc.)
 7. PRECIO en dólares (solo el número, sin símbolo)
 
-INSTRUCCIONES IMPORTANTES:
+INSTRUCCIONES CRÍTICAS PARA EL NOMBRE:
+- El NOMBRE puede estar en varios lugares. Busca en TODOS estos sitios:
+  * Nombre del contacto en la parte superior de WhatsApp/Messenger
+  * Firma al final de los mensajes (ej: "Gracias, Juan")
+  * Presentación en el mensaje (ej: "Hola, soy María", "Mi nombre es Pedro")
+  * Cualquier parte del texto donde se mencione un nombre propio
+- Si ves un nombre de contacto arriba (ej: "Juan Pérez", "Maria Garcia"), úsalo como el nombre
+- Si solo ves un nombre (ej: "Juan"), usa ese nombre
+- El nombre NUNCA debe estar vacío si hay un nombre de contacto visible
+
+INSTRUCCIONES PARA LA FECHA:
+- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), calcula qué día de la semana es
+- Asume que estamos en 2025 si no se especifica el año
+- Convierte la fecha al día de la semana en español: lunes, martes, miércoles, jueves, viernes, sábado, domingo
+- Si solo dice un día (ej: "el viernes", "el martes"), usa ese día directamente
+
+OTRAS INSTRUCCIONES:
 - Lee TODO el texto visible en la conversación, incluyendo mensajes del cliente y respuestas
 - La HORA puede estar en cualquier formato: "10:30", "2:00 PM", "14:00", "10.30", "2 PM", "3 de la tarde", "mañana a las 11", etc. Conviértela SIEMPRE a formato 24h (HH:MM)
 - La dirección puede estar en formato Utah (ej: "123 N 456 W") o formato estándar (ej: "123 Main Street")
 - El precio puede aparecer como "$150", "150 dólares", "ciento cincuenta", etc.
-- Si un dato NO está visible, deja ese campo con cadena vacía ""
+- Si un dato NO está visible después de buscar exhaustivamente, deja ese campo con cadena vacía ""
 - NO inventes información que no esté en la imagen
 
 FORMATO DE RESPUESTA:
@@ -62,7 +78,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 {
   "name": "nombre completo del cliente",
   "time": "HH:MM en formato 24h",
-  "day": "día de la semana o fecha",
+  "day": "día de la semana en español (lunes, martes, etc.)",
   "city": "ciudad",
   "address": "dirección completa",
   "job": "descripción del trabajo/servicio",
