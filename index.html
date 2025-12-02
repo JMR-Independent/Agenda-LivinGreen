@@ -11047,10 +11047,9 @@ INSTRUCCIONES CRÍTICAS PARA EL NOMBRE:
 - El nombre NUNCA debe estar vacío si hay un nombre de contacto visible
 
 INSTRUCCIONES PARA LA FECHA:
-- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), calcula qué día de la semana es
-- Asume que estamos en 2025 si no se especifica el año
-- Convierte la fecha al día de la semana en español: lunes, martes, miércoles, jueves, viernes, sábado, domingo
-- Si solo dice un día (ej: "el viernes", "el martes"), usa ese día directamente
+- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), devuélvela TAL CUAL sin convertir
+- Si solo dice un día de la semana (ej: "el viernes", "el martes"), devuelve ese día directamente
+- NO conviertas fechas específicas a días de la semana, déjalas como están
 
 OTRAS INSTRUCCIONES:
 - Lee TODO el texto visible en la conversación, incluyendo mensajes del cliente y respuestas
@@ -11179,10 +11178,9 @@ INSTRUCCIONES CRÍTICAS PARA EL NOMBRE:
 - El nombre NUNCA debe estar vacío si hay un nombre de contacto visible
 
 INSTRUCCIONES PARA LA FECHA:
-- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), calcula qué día de la semana es
-- Asume que estamos en 2025 si no se especifica el año
-- Convierte la fecha al día de la semana en español: lunes, martes, miércoles, jueves, viernes, sábado, domingo
-- Si solo dice un día (ej: "el viernes", "el martes"), usa ese día directamente
+- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), devuélvela TAL CUAL sin convertir
+- Si solo dice un día de la semana (ej: "el viernes", "el martes"), devuelve ese día directamente
+- NO conviertas fechas específicas a días de la semana, déjalas como están
 
 OTRAS INSTRUCCIONES:
 - Lee TODO el texto visible en la conversación, incluyendo mensajes del cliente y respuestas
@@ -11732,12 +11730,97 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             return normalizedTime;
         }
 
+        function parseSpecificDate(dateString) {
+            if (!dateString) return null;
+
+            console.log('🔍 Attempting to parse specific date:', dateString);
+
+            // Mapa de meses en español e inglés
+            const months = {
+                'enero': 0, 'january': 0, 'jan': 0,
+                'febrero': 1, 'february': 1, 'feb': 1,
+                'marzo': 2, 'march': 2, 'mar': 2,
+                'abril': 3, 'april': 3, 'apr': 3,
+                'mayo': 4, 'may': 4,
+                'junio': 5, 'june': 5, 'jun': 5,
+                'julio': 6, 'july': 6, 'jul': 6,
+                'agosto': 7, 'august': 7, 'aug': 7,
+                'septiembre': 8, 'september': 8, 'sep': 8, 'sept': 8,
+                'octubre': 9, 'october': 9, 'oct': 9,
+                'noviembre': 10, 'november': 10, 'nov': 10,
+                'diciembre': 11, 'december': 11, 'dec': 11
+            };
+
+            const cleanDate = dateString.toLowerCase().trim();
+
+            // Formato: "20 de diciembre", "December 20", "20 diciembre"
+            const monthDayPattern = /(\d{1,2})\s*(?:de\s+)?([a-záéíóúñ]+)/i;
+            const match = cleanDate.match(monthDayPattern);
+
+            if (match) {
+                const day = parseInt(match[1]);
+                const monthName = match[2].toLowerCase();
+                const month = months[monthName];
+
+                if (month !== undefined && day >= 1 && day <= 31) {
+                    // Asumir año actual o siguiente si ya pasó
+                    const today = new Date();
+                    let year = today.getFullYear();
+
+                    // Si la fecha ya pasó este año, usar el año siguiente
+                    const testDate = new Date(year, month, day);
+                    if (testDate < today) {
+                        year++;
+                    }
+
+                    const finalDate = new Date(year, month, day);
+                    const resultString = `${finalDate.getFullYear()}-${(finalDate.getMonth() + 1).toString().padStart(2, '0')}-${finalDate.getDate().toString().padStart(2, '0')}`;
+
+                    console.log(`✅ Parsed date: ${day} de ${monthName} → ${resultString}`);
+                    return resultString;
+                }
+            }
+
+            // Formato: "12/20", "12/20/2025", "12-20", "12-20-2025"
+            const numericPattern = /(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/;
+            const numMatch = cleanDate.match(numericPattern);
+
+            if (numMatch) {
+                const month = parseInt(numMatch[1]) - 1; // Mes (0-11)
+                const day = parseInt(numMatch[2]);
+                let year = numMatch[3] ? parseInt(numMatch[3]) : new Date().getFullYear();
+
+                // Si el año es de 2 dígitos, asumir 20xx
+                if (year < 100) {
+                    year += 2000;
+                }
+
+                if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+                    const finalDate = new Date(year, month, day);
+                    const resultString = `${finalDate.getFullYear()}-${(finalDate.getMonth() + 1).toString().padStart(2, '0')}-${finalDate.getDate().toString().padStart(2, '0')}`;
+
+                    console.log(`✅ Parsed numeric date: ${numMatch[0]} → ${resultString}`);
+                    return resultString;
+                }
+            }
+
+            console.log('❌ Could not parse as specific date');
+            return null;
+        }
+
         function getNextDayDate(dayName) {
             if (!dayName) return null;
-            
+
             console.log('=== CALCULATING DATE ===');
             console.log('Input day name:', dayName);
-            
+
+            // Primero intentar parsear como fecha específica (ej: "20 de diciembre", "December 20", "12/20")
+            const specificDate = parseSpecificDate(dayName);
+            if (specificDate) {
+                console.log('✅ Parsed as specific date:', specificDate);
+                return specificDate;
+            }
+
             const days = {
                 'lunes': 1, 'monday': 1,
                 'martes': 2, 'tuesday': 2,
@@ -11747,10 +11830,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 'sábado': 6, 'sabado': 6, 'saturday': 6,
                 'domingo': 0, 'sunday': 0
             };
-            
+
             const cleanDayName = dayName.toLowerCase().trim();
             console.log('Cleaned day name:', cleanDayName);
-            
+
             const targetDay = days[cleanDayName];
             if (targetDay === undefined) {
                 console.log('❌ Day not found in dictionary:', cleanDayName);

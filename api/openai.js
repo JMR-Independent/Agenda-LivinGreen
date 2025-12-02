@@ -60,10 +60,9 @@ INSTRUCCIONES CRÍTICAS PARA EL NOMBRE:
 - El nombre NUNCA debe estar vacío si hay un nombre de contacto visible
 
 INSTRUCCIONES PARA LA FECHA:
-- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), calcula qué día de la semana es
-- Asume que estamos en 2025 si no se especifica el año
-- Convierte la fecha al día de la semana en español: lunes, martes, miércoles, jueves, viernes, sábado, domingo
-- Si solo dice un día (ej: "el viernes", "el martes"), usa ese día directamente
+- Si encuentras una fecha específica (ej: "20 de diciembre", "December 20", "12/20"), devuélvela TAL CUAL sin convertir
+- Si solo dice un día de la semana (ej: "el viernes", "el martes"), devuelve ese día directamente
+- NO conviertas fechas específicas a días de la semana, déjalas como están
 
 OTRAS INSTRUCCIONES:
 - Lee TODO el texto visible en la conversación, incluyendo mensajes del cliente y respuestas
