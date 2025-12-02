@@ -6844,6 +6844,11 @@
                                 <input type="date" id="date" name="date" required>
                             </div>
                         </div>
+                        <!-- Notas - Full width -->
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="notes">Notas (Opcional)</label>
+                            <textarea id="notes" name="notes" rows="3" placeholder="Escribe notas adicionales sobre este trabajo..."></textarea>
+                        </div>
                         <button type="submit" class="submit-btn" id="submit-btn">Agendar Cita</button>
                     </form>
                 </div>
@@ -7159,9 +7164,14 @@
                             <input type="text" id="edit-appointment-job" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
+                        <div style="margin-bottom: 16px;">
                             <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Precio:</label>
                             <input type="number" id="edit-appointment-price" step="0.01" min="0" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Notas (Opcional):</label>
+                            <textarea id="edit-appointment-notes" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary); font-family: inherit; resize: vertical;" placeholder="Escribe notas adicionales sobre este trabajo..."></textarea>
                         </div>
 
                         <div style="display: flex; gap: 12px;">
@@ -11927,6 +11937,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 job: selectedJobs.join(', '), // Join multiple selections
                 price: formData.get('price'),
                 date: formData.get('date'),
+                notes: formData.get('notes') || '', // Add notes field
                 timestamp: now.getTime(), // Use numeric timestamp for consistency
                 created_at: now.toISOString(), // Add created_at for new appointments
                 // Let Supabase auto-generate ID for better persistence
@@ -14659,6 +14670,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                                         </svg>
                                         <span style="color: rgba(255, 255, 255, 0.7); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${appointment.city}</span>
                                     </div>
+                                    ${appointment.notes ? `<div style="margin-top: 6px; padding: 6px 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; border-left: 2px solid rgba(59, 130, 246, 0.5);"><span style="color: rgba(255, 255, 255, 0.6); font-size: 12px; font-style: italic;">${appointment.notes}</span></div>` : ''}
                                 </div>
                                 <span style="background: rgba(59, 130, 246, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; flex-shrink: 0; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);">${appointment.time}</span>
                             </div>
@@ -15079,8 +15091,14 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                         <strong style="color: #374151;">Precio:</strong>
                         <p style="margin: 4px 0; color: #666; font-size: 18px; font-weight: 600;">$${appointment.price}</p>
                     </div>
+                    ${appointment.notes ? `
+                        <div>
+                            <strong style="color: #374151;">Notas:</strong>
+                            <p style="margin: 4px 0; padding: 12px; background: rgba(59, 130, 246, 0.1); border-left: 3px solid rgba(59, 130, 246, 0.5); border-radius: 6px; color: #666; font-style: italic; white-space: pre-wrap;">${appointment.notes}</p>
+                        </div>
+                    ` : ''}
                 </div>
-                
+
                 <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #999;">
                     Creado: ${new Date(appointment.timestamp).toLocaleString('es-ES')}
                 </div>
@@ -15190,6 +15208,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             document.getElementById('edit-appointment-time').value = selectedAppointment.time || '';
             document.getElementById('edit-appointment-job').value = selectedAppointment.job || '';
             document.getElementById('edit-appointment-price').value = selectedAppointment.price || '';
+            document.getElementById('edit-appointment-notes').value = selectedAppointment.notes || '';
 
             // Show the edit modal
             document.getElementById('edit-appointment-modal').style.display = 'flex';
@@ -15219,6 +15238,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     time: document.getElementById('edit-appointment-time').value,
                     job: document.getElementById('edit-appointment-job').value.trim(),
                     price: parseFloat(document.getElementById('edit-appointment-price').value) || 0,
+                    notes: document.getElementById('edit-appointment-notes').value.trim() || '', // Add notes field
                     timestamp: selectedAppointment.timestamp, // Keep original timestamp
                     created_at: selectedAppointment.created_at // Keep original creation time
                 };
