@@ -264,6 +264,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.55) 0%, rgba(30, 41, 59, 0.55) 100%) !important;
             overscroll-behavior: none;
+            overflow: hidden;
             color: var(--text-primary);
             height: 100vh;
             /* iOS Safari specific optimizations */
@@ -3926,7 +3927,10 @@
            ================================ */
 
         .landing-view {
-            min-height: 100vh;
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(30, 41, 59, 0.45) 100%);
             padding: 48px 24px;
             display: flex;
