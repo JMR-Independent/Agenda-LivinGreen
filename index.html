@@ -2609,8 +2609,8 @@
             color-scheme: dark;
         }
 
-        /* Force white text on name input (manual typing and OCR) */
-        #name {
+        /* Force white text on all form inputs (manual typing and OCR) */
+        #name, #address, .form-group input, .form-group select, .form-group textarea {
             color: rgba(255, 255, 255, 0.95) !important;
             -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
         }
@@ -11585,7 +11585,9 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             console.log('🔄 Filling form with data:', data);
             
             if (data.name) {
-                document.getElementById('name').value = data.name;
+                const nameEl = document.getElementById('name');
+                nameEl.value = data.name;
+                nameEl.dispatchEvent(new Event('input', { bubbles: true }));
                 console.log('✅ Set name:', data.name);
             }
             
@@ -11633,7 +11635,9 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             }
             
             if (data.address) {
-                document.getElementById('address').value = data.address;
+                const addressEl = document.getElementById('address');
+                addressEl.value = data.address;
+                addressEl.dispatchEvent(new Event('input', { bubbles: true }));
                 console.log('✅ Set address:', data.address);
             }
             
@@ -11688,6 +11692,11 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 }
             }
             
+            // Force browser re-render of all form fields after OCR fill
+            document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
             console.log('🏁 Form filling completed');
         }
 
