@@ -250,11 +250,20 @@
             -webkit-user-select: text;
         }
 
+        /* Fixed wallpaper via ::before — funciona en iOS Safari (background-attachment:fixed no funciona en iOS) */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('./images/background.webp') center center / cover no-repeat;
+            z-index: -2;
+            pointer-events: none;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
-                        url('./images/background.webp') center center / cover no-repeat !important;
-            background-attachment: fixed !important;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.55) 0%, rgba(30, 41, 59, 0.55) 100%) !important;
+            overscroll-behavior: none;
             color: var(--text-primary);
             height: 100vh;
             /* iOS Safari specific optimizations */
@@ -283,9 +292,7 @@
         html {
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
-                        url('./images/background.webp') center center / cover no-repeat !important;
-            background-attachment: fixed !important;
+            overscroll-behavior: none;
         }
         
         /* Prevent zoom on input focus (iOS Safari) */
@@ -3920,9 +3927,7 @@
 
         .landing-view {
             min-height: 100vh;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
-                        url('./images/background.webp') center center / cover no-repeat;
-            background-attachment: fixed;
+            background: transparent;
             padding: 48px 24px;
             display: flex;
             flex-direction: column;
@@ -4687,6 +4692,7 @@
             .bento-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 16px;
+                grid-template-rows: 268px;
                 grid-auto-rows: 200px;
             }
 
@@ -6360,7 +6366,7 @@
         <div class="bento-grid">
             <!-- Mi Negocio - full-width, single row (para el dueño) -->
             <div class="bento-item" style="animation-delay: 0.05s; cursor:default; grid-column: span 2;">
-                <div class="bento-item-content" style="padding:13px 16px; justify-content:center; align-items:stretch; background:rgba(16,163,127,0.07); height:100%; box-sizing:border-box; flex-direction:column; gap:10px;">
+                <div class="bento-item-content" style="padding:22px 16px; justify-content:center; align-items:stretch; background:rgba(16,163,127,0.07); height:100%; box-sizing:border-box; flex-direction:column; gap:12px;">
 
                   <!-- Fila 1: Logo + nombre/tagline -->
                   <div style="display:flex; gap:13px; align-items:center;">
