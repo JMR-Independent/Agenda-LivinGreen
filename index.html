@@ -4559,6 +4559,60 @@
 
         /* Updated: 2025-11-26 - Enhanced visual effects */
 
+        /* Nueva cita button slider */
+        .nueva-cita-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+        .nueva-cita-slides.show-second {
+            transform: translateX(-50%);
+        }
+        .nueva-cita-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        /* Nueva cita button inside large card */
+        .nueva-cita-btn {
+            overflow: hidden;
+            background: rgba(16, 163, 127, 0.15);
+            border: 1px solid rgba(16, 163, 127, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 13px 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            margin-top: 14px;
+        }
+        .nueva-cita-btn:hover {
+            transform: translateY(-3px) scale(1.01);
+            background: rgba(16, 163, 127, 0.25);
+            border-color: rgba(16, 163, 127, 0.6);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+        }
+        .nueva-cita-btn:active {
+            transform: scale(0.97);
+            background: rgba(16, 163, 127, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        @media (max-width: 768px) {
+            .nueva-cita-btn {
+                padding: 14px 20px;
+                border-radius: 12px;
+                margin-top: 10px;
+            }
+            .nueva-cita-btn span {
+                font-size: 15px !important;
+            }
+        }
+
         .bento-item-large .bento-icon {
             width: 96px;
             height: 96px;
@@ -4571,6 +4625,18 @@
         .bento-item-large .bento-description {
             font-size: 16px;
         }
+
+        /* Business card action buttons breathing animation */
+        @keyframes biz-btn-breathe {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.30); box-shadow: 0 0 10px 2px rgba(255,255,255,0.10); }
+        }
+        .biz-action-btn {
+            animation: biz-btn-breathe 3.6s ease-in-out infinite;
+        }
+        .biz-action-btn:nth-child(1) { animation-delay: 0s; }
+        .biz-action-btn:nth-child(2) { animation-delay: 1.2s; }
+        .biz-action-btn:nth-child(3) { animation-delay: 2.4s; }
 
         @keyframes fadeInDown {
             from {
@@ -4621,7 +4687,7 @@
             .bento-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 16px;
-                grid-auto-rows: 180px;
+                grid-auto-rows: 200px;
             }
 
             .bento-item-large {
@@ -4723,9 +4789,13 @@
             }
 
             .bento-grid {
-                grid-auto-rows: 160px;
+                grid-auto-rows: 175px;
                 margin-bottom: 40px;
                 gap: 12px;
+            }
+
+            .bento-item-large {
+                grid-row: span 2;
             }
 
             /* Reduce padding for all cards */
@@ -4924,7 +4994,7 @@
 
         /* Add minimal logo/brand area */
         .header::before {
-            content: "LivinGreen";
+            content: var(--biz-name, "LivinGreen");
             font-size: 16px;
             font-weight: 600;
             color: var(--text-primary);
@@ -5314,83 +5384,104 @@
         }
 
         /* MESSAGES VIEW - FORCE CALENDAR STYLE WITH HIGH SPECIFICITY */
-        #messages-view .dashboard-header {
-            background: rgba(30, 41, 59, 0.4) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 20px !important;
-            padding: 32px !important;
-            margin-bottom: 32px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        /* Messages view — header */
+        #messages-view .msg-header {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        #messages-view .msg-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #10a37f;
+            margin-bottom: 6px;
+        }
+        #messages-view .msg-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0 0 4px 0;
+            letter-spacing: -0.3px;
+        }
+        #messages-view .msg-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            margin: 0;
+            font-weight: 400;
         }
 
-        #messages-view .dashboard-header:hover {
-            background: rgba(30, 41, 59, 0.5) !important;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
-        }
-
-        #messages-view .dashboard-title {
-            color: rgba(255, 255, 255, 0.95) !important;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        #messages-view .dashboard-subtitle {
-            color: rgba(255, 255, 255, 0.8) !important;
-        }
-
+        /* Message cards — bento style */
         #messages-view .message-card {
-            background: rgba(30, 41, 59, 0.4) !important;
+            border-radius: 20px !important;
+            overflow: hidden !important;
+            height: 90px !important;
+            position: relative !important;
+            cursor: pointer !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 16px !important;
-            padding: 24px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
-            transition: all 0.3s ease !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+            padding: 0 !important;
         }
-
         #messages-view .message-card:hover {
-            background: rgba(30, 41, 59, 0.5) !important;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
-            transform: translateY(-4px) !important;
+            transform: translateY(-3px) scale(1.01) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
         }
 
-        #messages-view .message-card h3 {
-            color: rgba(255, 255, 255, 0.95) !important;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        /* Slider inside message card */
+        #messages-view .msg-slides {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+        }
+        #messages-view .msg-slides.show-second {
+            transform: translateX(-50%);
+        }
+        #messages-view .msg-slide {
+            width: 50%;
+            flex-shrink: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
+        /* Copy button inside card */
         #messages-view .copy-btn {
-            background: linear-gradient(135deg, #10a37f, #059669) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            box-shadow: 0 4px 20px rgba(16, 163, 127, 0.3) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px !important;
+            padding: 7px 16px !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            transition: all 0.2s ease !important;
         }
-
         #messages-view .copy-btn:hover {
-            background: linear-gradient(135deg, #059669, #047857) !important;
-            box-shadow: 0 8px 32px rgba(16, 163, 127, 0.4) !important;
-            transform: translateY(-2px) !important;
+            background: rgba(255, 255, 255, 0.22) !important;
+            transform: none !important;
         }
-
-        #messages-view .message-content {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            border-radius: 12px !important;
-            padding: 20px !important;
-            color: rgba(255, 255, 255, 0.95) !important;
+        #messages-view .copy-btn:active {
+            transform: scale(0.96) !important;
         }
 
         #messages-view #copy-notification {
-            background: rgba(30, 41, 59, 0.95) !important;
+            background: rgba(15, 23, 42, 0.96) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(16, 163, 127, 0.4) !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+            border-radius: 10px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
         }
 
         /* Force all text inside messages-view to be white */
@@ -5534,12 +5625,19 @@
             -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 16px !important;
-            padding: 24px !important;
+            padding: 18px !important;
+            margin-bottom: 12px !important;
+            min-height: 0 !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
         }
 
         #settings-view .form-section h3 {
             color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Carousel section: sin padding lateral para que llegue al borde */
+        #settings-view #theme-section {
+            padding: 14px 0 14px 0 !important;
         }
 
         #settings-view .form-section > div {
@@ -6181,23 +6279,17 @@
            ================================ */
 
         .view-enter {
-            animation: viewEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: viewEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes viewEnter {
             0% {
                 opacity: 0;
-                transform: translateY(20px) scale(0.98);
-                filter: blur(8px);
-            }
-            50% {
-                opacity: 0.5;
-                filter: blur(4px);
+                transform: translateY(10px);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
+                transform: translateY(0);
             }
         }
 
@@ -6207,38 +6299,22 @@
 
         /* Smooth exit for landing page */
         .landing-exit {
-            animation: landingExit 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+            animation: landingExit 0.15s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
 
         @keyframes landingExit {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-                filter: blur(0);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.95);
-                filter: blur(4px);
-            }
+            0%   { opacity: 1; }
+            100% { opacity: 0; }
         }
 
         /* Back to grid entrance */
         .landing-enter {
-            animation: landingEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: landingEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes landingEnter {
-            0% {
-                opacity: 0;
-                transform: scale(1.05);
-                filter: blur(8px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-                filter: blur(0);
-            }
+            0%   { opacity: 0; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* Reduce motion for accessibility */
@@ -6258,12 +6334,94 @@
                 }
             }
         }
+
+        /* === BACKGROUND THEMES === */
+        /* Target .main-content (which has its own !important bg) + body */
+        body.bg-midnight .main-content,
+        body.bg-midnight { background: linear-gradient(135deg, #0a0f2e 0%, #1a237e 50%, #0a0f2e 100%) !important; animation: none !important; }
+
+        body.bg-violeta .main-content,
+        body.bg-violeta  { background: linear-gradient(135deg, #1a0033 0%, #2d1b69 50%, #1a0033 100%) !important; animation: none !important; }
+
+        body.bg-carbon .main-content,
+        body.bg-carbon   { background: linear-gradient(135deg, #111111 0%, #2d2d2d 50%, #111111 100%) !important; animation: none !important; }
+
+        body.bg-oceano .main-content,
+        body.bg-oceano   { background: linear-gradient(135deg, #001f3f 0%, #0d4f5e 50%, #001f3f 100%) !important; animation: none !important; }
+
+        body.bg-bosque2 .main-content,
+        body.bg-bosque2  { background: linear-gradient(135deg, #0d1f1a 0%, #1a3a2a 50%, #0d1f1a 100%) !important; animation: none !important; }
+        /* bosque = default, no class needed */
     </style>
 </head>
 <body>
     <!-- Landing Page with Bento Grid -->
     <div class="landing-view" id="landing-view">
         <div class="bento-grid">
+            <!-- Mi Negocio - full-width, single row (para el dueño) -->
+            <div class="bento-item" style="animation-delay: 0.05s; cursor:default; grid-column: span 2;">
+                <div class="bento-item-content" style="padding:13px 16px; justify-content:center; align-items:stretch; background:rgba(16,163,127,0.07); height:100%; box-sizing:border-box; flex-direction:column; gap:10px;">
+
+                  <!-- Fila 1: Logo + nombre/tagline -->
+                  <div style="display:flex; gap:13px; align-items:center;">
+                    <!-- Logo con aro blanco -->
+                    <img class="biz-logo-dynamic" src="./images/livingreen-icon.png"
+                         style="width:46px;height:46px;object-fit:cover;border-radius:50%;flex-shrink:0;
+                                box-shadow: 0 0 0 2px rgba(255,255,255,0.72), 0 0 0 4px rgba(255,255,255,0.12), 0 2px 10px rgba(0,0,0,0.35);">
+                    <!-- Nombre + tagline -->
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);
+                                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                           data-biz="name">LivinGreen</div>
+                      <div style="font-size:10.5px;color:rgba(255,255,255,0.42);margin-top:2px;
+                                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                           id="bento-biz-tagline">Experience the pleasure of walking on clean carpets</div>
+                    </div>
+                  </div>
+
+                  <!-- Fila 2: 3 botones pill con icono + texto -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;">
+                    <a class="biz-action-btn" id="bento-ig-link" href="https://www.instagram.com/livingreen_life/" target="_blank"
+                       style="display:flex;align-items:center;justify-content:center;gap:5px;
+                              padding:8px 6px;border-radius:9px;text-decoration:none;
+                              background:rgba(225,48,108,0.22);border:1px solid rgba(225,48,108,0.65);
+                              color:rgba(255,130,160,1);font-size:11px;font-weight:600;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                      Instagram
+                    </a>
+                    <a class="biz-action-btn" id="bento-web-link" href="https://www.livingreen.life/" target="_blank"
+                       style="display:flex;align-items:center;justify-content:center;gap:5px;
+                              padding:8px 6px;border-radius:9px;text-decoration:none;
+                              background:rgba(96,165,250,0.22);border:1px solid rgba(96,165,250,0.65);
+                              color:rgba(147,197,253,1);font-size:11px;font-weight:600;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                      Sitio web
+                    </a>
+                    <button class="biz-action-btn" onclick="navigateToView('settings')"
+                       style="display:flex;align-items:center;justify-content:center;gap:5px;
+                              padding:8px 6px;border-radius:9px;cursor:pointer;
+                              background:rgba(99,102,241,0.22);border:1px solid rgba(99,102,241,0.65);
+                              color:rgba(165,167,255,1);font-size:11px;font-weight:600;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                      Editar
+                    </button>
+                  </div>
+
+                  <!-- Botón compartir tarjeta (ancho completo) -->
+                  <button onclick="shareBizCard()"
+                     style="display:flex;align-items:center;justify-content:space-between;width:100%;
+                            padding:10px 14px;border-radius:10px;box-sizing:border-box;
+                            background:rgba(16,163,127,0.16);border:1px solid rgba(16,163,127,0.38);
+                            color:rgba(255,255,255,0.95);cursor:pointer;text-align:left;">
+                    <div>
+                      <div style="font-size:12.5px;font-weight:600;">Compartir tarjeta digital</div>
+                      <div style="font-size:10px;opacity:0.48;margin-top:1px;" id="bento-biz-website">livingreen.life/card</div>
+                    </div>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  </button>
+                </div>
+            </div>
+
             <!-- Agendar Citas - LARGE -->
             <div class="bento-item bento-item-large" onclick="navigateToView('schedule')" style="animation-delay: 0.1s">
                 <div class="bento-item-content bento-item-image" style="padding: 24px; justify-content: flex-start; align-items: flex-start;">
@@ -6291,6 +6449,29 @@
                             <span style="font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.95);">Mañana trabajas en:</span>
                             <span id="tomorrow-cities" style="display: block; margin-top: 10px; font-size: 18px; font-weight: 600; color: rgba(180, 220, 255, 0.95);">Cargando...</span>
                         </p>
+                    </div>
+                    <!-- Tap to schedule button -->
+                    <div class="nueva-cita-btn" id="nueva-cita-btn">
+                        <div class="nueva-cita-slides" id="nueva-cita-slides">
+                            <!-- Slide 1: texto -->
+                            <div class="nueva-cita-slide" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span style="font-size: 15px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;">Nueva cita</span>
+                            </div>
+                            <!-- Slide 2: icono calendario -->
+                            <div class="nueva-cita-slide" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span style="font-size: 15px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;">Agendar</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6770,55 +6951,12 @@
                                         </svg>
                                     </div>
                                     <div class="dropdown-list" id="job-list">
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-alfombras" value="alfombras">
-                                            <label for="job-alfombras">Alfombras</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-sillones" value="sillones">
-                                            <label for="job-sillones">Sillones</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-escaleras" value="escaleras">
-                                            <label for="job-escaleras">Escaleras</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-cuartos" value="cuartos">
-                                            <label for="job-cuartos">Cuartos</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-sala" value="sala">
-                                            <label for="job-sala">Sala</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-pasillo" value="pasillo">
-                                            <label for="job-pasillo">Pasillo</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-sillas" value="sillas">
-                                            <label for="job-sillas">Sillas</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-colchon" value="colchon">
-                                            <label for="job-colchon">Colchón</label>
-                                        </div>
-                                        <div class="dropdown-item">
-                                            <input type="checkbox" id="job-auto" value="auto">
-                                            <label for="job-auto">Auto</label>
-                                        </div>
+                                        <!-- Populated dynamically by initServicesConfig() -->
                                     </div>
                                 </div>
                                 <!-- Hidden select for form submission -->
                                 <select id="job" name="job" multiple style="display: none;">
-                                    <option value="alfombras">Alfombras</option>
-                                    <option value="sillones">Sillones</option>
-                                    <option value="escaleras">Escaleras</option>
-                                    <option value="cuartos">Cuartos</option>
-                                    <option value="sala">Sala</option>
-                                    <option value="pasillo">Pasillo</option>
-                                    <option value="sillas">Sillas</option>
-                                    <option value="colchon">Colchón</option>
-                                    <option value="auto">Auto</option>
+                                    <!-- Populated dynamically by initServicesConfig() -->
                                 </select>
                             </div>
                             <div class="form-group">
@@ -6945,6 +7083,44 @@
                 </div>
             </div>
 
+            <!-- Reusable Confirm Modal -->
+            <div id="confirm-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 1020; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg, #fff); border-radius: 14px; padding: 28px 24px; max-width: 360px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.22); text-align: center;">
+                    <div id="confirm-icon" style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+                    <p id="confirm-message" style="margin: 0 0 22px 0; color: var(--text-primary, #1a202c); font-size: 15px; line-height: 1.5;"></p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="confirm-cancel-btn" onclick="closeConfirmModal()" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 11px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">Cancelar</button>
+                        <button id="confirm-ok-btn" style="flex: 1; background: #ef4444; color: white; border: none; padding: 11px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Edit Modal -->
+            <div id="service-edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 1010; align-items: center; justify-content: center;">
+                <div style="background: #fff; border-radius: 12px; padding: 28px; max-width: 420px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+                    <h3 id="svc-modal-title" style="margin: 0 0 20px 0; color: #1a202c; font-size: 18px;">Agregar Servicio</h3>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div>
+                            <label style="font-size: 13px; color: #374151; font-weight: 500; display: block; margin-bottom: 5px;">Nombre del servicio *</label>
+                            <input id="svc-name" type="text" placeholder="Ej: Alfombras, Sillones..." style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; color: #374151; font-weight: 500; display: block; margin-bottom: 5px;">Precio base ($)</label>
+                            <input id="svc-price" type="number" min="0" step="1" placeholder="Ej: 30" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; color: #374151; font-weight: 500; display: block; margin-bottom: 5px;">Descripción de precio</label>
+                            <input id="svc-price-range" type="text" placeholder="Ej: $30 cada una, $45 - $55" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                            <small style="color: #9ca3af; font-size: 12px;">Se muestra en el recibo como sugerencia de precio</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 22px;">
+                        <button onclick="saveServiceModal()" style="flex: 1; background: #10a37f; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Guardar</button>
+                        <button onclick="closeServiceModal()" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Appointment Details Modal -->
             <div id="appointment-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
                 <div style="background: var(--modal-bg); border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
@@ -6993,17 +7169,7 @@
                                 <div>
                                     <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Service Type:</label>
                                     <select id="service-type" onchange="updateServicePrice()" style="width: 100%; padding: 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-input); color: var(--text-tertiary);">
-                                        <option value="">Select service</option>
-                                        <option value="Carpet Cleaning - Bedroom">Carpet Cleaning - Bedroom - $30 each</option>
-                                        <option value="Carpet Cleaning - Hallway">Carpet Cleaning - Hallway - $10 - $30</option>
-                                        <option value="Carpet Cleaning - Living Room">Carpet Cleaning - Living Room - $30 - $60</option>
-                                        <option value="Carpet Cleaning - Stairs">Carpet Cleaning - Stairs - $45 - $55</option>
-                                        <option value="Odor Removal">Odor Removal - $20 per area</option>
-                                        <option value="Chair Cleaning (1-Seat)">Chair Cleaning (1-Seat) - $35</option>
-                                        <option value="Loveseat Cleaning (2-Seat)">Loveseat Cleaning (2-Seat) - $65</option>
-                                        <option value="Sofa Cleaning (3-Seat)">Sofa Cleaning (3-Seat) - $85</option>
-                                        <option value="Sectional Cleaning">Sectional Cleaning - From $100</option>
-                                        <option value="Dining Chair Cleaning">Dining Chair Cleaning - $10 each</option>
+                                        <!-- Populated dynamically by initServicesConfig() -->
                                     </select>
                                 </div>
                                 <div>
@@ -7468,23 +7634,36 @@
 
             <!-- Messages View -->
             <div class="content-area" id="messages-view" style="display: none;">
-                <div class="dashboard-header">
-                    <h2 class="dashboard-title">💬 Mensajes para Clientes</h2>
-                    <p class="dashboard-subtitle">Mensajes predefinidos listos para copiar y enviar</p>
+
+                <div class="msg-header" style="padding-left: 4px;">
+                    <p class="msg-label">Plantillas</p>
+                    <h2 class="msg-title">Respuestas rápidas</h2>
+                    <p class="msg-subtitle">Toca una tarjeta para copiar al portapapeles</p>
                 </div>
 
-                <div style="display: grid; gap: 24px; max-width: 800px;">
-                    <!-- Message 1: Alfombras -->
-                    <div class="message-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="margin: 0; color: #2d333a; font-size: 18px; display: flex; align-items: center; gap: 8px;">
-                                🏠 Limpieza de Alfombras
-                            </h3>
-                            <button onclick="copyMessage('carpet')" class="copy-btn" style="background: #10a37f; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-                                📋 Copiar
-                            </button>
+                <div style="display: grid; gap: 14px; max-width: 600px;">
+
+                    <!-- Card 1: Alfombras — azul -->
+                    <div class="message-card" style="background: rgba(59, 130, 246, 0.15);">
+                        <div class="msg-slides" id="msg-slides-carpet">
+                            <!-- Slide 1: icono -->
+                            <div class="msg-slide" style="flex-direction: column; gap: 8px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+                                </svg>
+                                <span style="font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Alfombras</span>
+                            </div>
+                            <!-- Slide 2: título -->
+                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 22px;">
+                                <div>
+                                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.7); display: block; margin-bottom: 4px;">Tarifa</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.95);">Limpieza de alfombras</span>
+                                </div>
+                            </div>
                         </div>
-                        <div id="carpet-message" class="message-content" style="background: #f9fafb; padding: 20px; border-radius: 8px; font-size: 15px; line-height: 1.8; color: #374151; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">El costo del lavado de alfombras varía según el área que necesite limpiar:
+                        <!-- Botón fijo -->
+                        <button onclick="copyMessage('carpet')" class="copy-btn" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); z-index:10;">Copiar</button>
+                        <div id="carpet-message" style="display:none;">El costo del lavado de alfombras varía según el área que necesite limpiar:
 
 • Cuartos: $30 c/u
 • Pasillos: $10 a $30
@@ -7499,17 +7678,27 @@
 🛠 Trabajamos desde Santaquin hasta Salt Lake City.</div>
                     </div>
 
-                    <!-- Message 2: Sillones -->
-                    <div class="message-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="margin: 0; color: #2d333a; font-size: 18px; display: flex; align-items: center; gap: 8px;">
-                                🛋️ Limpieza de Sillones
-                            </h3>
-                            <button onclick="copyMessage('furniture')" class="copy-btn" style="background: #10a37f; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-                                📋 Copiar
-                            </button>
+                    <!-- Card 2: Sillones — púrpura -->
+                    <div class="message-card" style="background: rgba(139, 92, 246, 0.15);">
+                        <div class="msg-slides" id="msg-slides-furniture">
+                            <!-- Slide 1: icono -->
+                            <div class="msg-slide" style="flex-direction: column; gap: 8px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
+                                </svg>
+                                <span style="font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sillones</span>
+                            </div>
+                            <!-- Slide 2: título -->
+                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 22px;">
+                                <div>
+                                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.7); display: block; margin-bottom: 4px;">Tarifa</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.95);">Limpieza de sillones</span>
+                                </div>
+                            </div>
                         </div>
-                        <div id="furniture-message" class="message-content" style="background: #f9fafb; padding: 20px; border-radius: 8px; font-size: 15px; line-height: 1.8; color: #374151; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">El valor por la limpieza de sillones depende del tamaño:
+                        <!-- Botón fijo -->
+                        <button onclick="copyMessage('furniture')" class="copy-btn" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); z-index:10;">Copiar</button>
+                        <div id="furniture-message" style="display:none;">El valor por la limpieza de sillones depende del tamaño:
 
 • Sillón de 1 puesto: $35
 • Sillón de 2 puestos o loveseat: $65
@@ -7528,17 +7717,27 @@ Incluye:
 💨 Secado rápido asegurado con ventiladores.</div>
                     </div>
 
-                    <!-- Message 3: Cotización Específica -->
-                    <div class="message-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="margin: 0; color: #2d333a; font-size: 18px; display: flex; align-items: center; gap: 8px;">
-                                💬 Cotización Específica
-                            </h3>
-                            <button onclick="copyMessage('general')" class="copy-btn" style="background: #10a37f; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-                                📋 Copiar
-                            </button>
+                    <!-- Card 3: Cotización específica sillones — verde -->
+                    <div class="message-card" style="background: rgba(16, 163, 127, 0.15);">
+                        <div class="msg-slides" id="msg-slides-general">
+                            <!-- Slide 1: icono -->
+                            <div class="msg-slide" style="flex-direction: column; gap: 8px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
+                                </svg>
+                                <span style="font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Cotización sillones</span>
+                            </div>
+                            <!-- Slide 2: título -->
+                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 22px;">
+                                <div>
+                                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.7); display: block; margin-bottom: 4px;">Precio a medida</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.95);">Cotización específica sillones</span>
+                                </div>
+                            </div>
                         </div>
-                        <div id="general-message" class="message-content" style="background: #f9fafb; padding: 20px; border-radius: 8px; font-size: 15px; line-height: 1.8; color: #374151; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">El valor por la limpieza de un sillón como ese es $
+                        <!-- Botón fijo -->
+                        <button onclick="copyMessage('general')" class="copy-btn" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); z-index:10;">Copiar</button>
+                        <div id="general-message" style="display:none;">El valor por la limpieza de un sillón como ese es $
 
 Incluye:
 ✨ Aspirado y eliminación de polvo
@@ -7552,6 +7751,7 @@ Incluye:
 
 *La protección de telas es un tratamiento especial que crea una barrera invisible contra líquidos, manchas y suciedad. Mantiene sus muebles como nuevos por más tiempo.</div>
                     </div>
+
                 </div>
 
                 <!-- Notification Toast -->
@@ -7567,7 +7767,193 @@ Incluye:
                 <!-- Settings Header -->
                 <div class="dashboard-header">
                     <h2 class="dashboard-title">Configuración</h2>
-                    <p class="dashboard-subtitle">Administra backups y configuración del sistema</p>
+                    <p class="dashboard-subtitle">Configura tu negocio y sistema</p>
+                </div>
+
+                <!-- ─── BUSINESS PROFILE CARD ─── -->
+                <div class="form-section" id="business-profile-card" style="margin-bottom: 16px;">
+
+                  <!-- Logo + nombre + tagline en fila -->
+                  <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+                    <div onclick="triggerLogoUpload()" style="
+                        flex-shrink:0; width:58px; height:58px; border-radius:50%;
+                        background:rgba(16,163,127,0.15); border:2px solid rgba(16,163,127,0.5);
+                        cursor:pointer; position:relative; overflow:hidden;
+                        display:flex; align-items:center; justify-content:center;">
+                      <img id="biz-logo-img" src="./images/livingreen-icon.png" class="biz-logo-dynamic"
+                           style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);border-radius:50%;
+                                  display:flex;align-items:center;justify-content:center;
+                                  opacity:0;transition:opacity 0.2s;pointer-events:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      </div>
+                    </div>
+                    <input type="file" id="biz-logo-input" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+                    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
+                      <input id="biz-name" type="text" placeholder="Nombre del negocio"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.2);
+                                    background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.95);font-size:14px;
+                                    font-weight:700;box-sizing:border-box;outline:none;">
+                      <input id="biz-tagline" type="text" placeholder="Tagline / slogan"
+                             style="width:100%;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.15);
+                                    background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.65);font-size:11.5px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                  </div>
+
+                  <!-- Fields 2-col -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Sitio web</label>
+                      <input id="biz-website" type="text" placeholder="tudominio.com"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Instagram</label>
+                      <input id="biz-instagram" type="text" placeholder="@usuario"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Teléfono</label>
+                      <input id="biz-phone" type="tel" placeholder="+1 (000) 000-0000"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">WhatsApp</label>
+                      <input id="biz-whatsapp" type="tel" placeholder="+1 (000) 000-0000"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div style="grid-column:span 2;">
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Email</label>
+                      <input id="biz-email" type="email" placeholder="info@negocio.com"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <input id="biz-emoji" type="hidden" value="🌿">
+                  </div>
+
+                  <button onclick="saveBusinessConfig()"
+                          style="background:#10a37f;color:white;border:none;padding:9px 20px;
+                                 border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                    Guardar
+                  </button>
+                </div>
+
+                <!-- ─── BACKGROUND THEME CAROUSEL ─── -->
+                <div class="form-section" id="theme-section" style="overflow:hidden;">
+                    <div style="padding:0 16px; margin-bottom:12px;">
+                        <h3 style="margin:0 0 2px;font-size:14px;font-weight:600;">Tema de fondo</h3>
+                        <p style="font-size:11.5px;opacity:0.45;margin:0;">Desliza y toca para elegir</p>
+                    </div>
+                    <!-- Carousel: scroll-snap horizontal -->
+                    <div id="theme-carousel" style="
+                        display:flex; gap:10px;
+                        overflow-x:auto; overflow-y:hidden;
+                        scroll-snap-type:x mandatory;
+                        -webkit-overflow-scrolling:touch;
+                        padding: 4px 16px 10px;
+                        scrollbar-width:none;">
+
+                        <!-- BOSQUE (default) -->
+                        <div class="bg-swatch" data-theme="bosque" onclick="applyBgTheme('bosque')" style="
+                            flex:0 0 62%; scroll-snap-align:start; height:90px; border-radius:14px; cursor:pointer;
+                            background:linear-gradient(135deg,#0f1117 0%,#1a2332 60%,#0f1117 100%);
+                            border:2px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;
+                            display:flex; flex-direction:column; justify-content:flex-end; padding:12px;">
+                          <span style="font-size:13px;font-weight:700;color:white;display:block;">Bosque</span>
+                          <span style="font-size:10px;color:rgba(255,255,255,0.4);">Por defecto</span>
+                          <div class="theme-check" style="display:none;position:absolute;top:10px;right:10px;
+                               width:22px;height:22px;border-radius:50%;background:#10a37f;
+                               align-items:center;justify-content:center;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <!-- NOCHE -->
+                        <div class="bg-swatch" data-theme="midnight" onclick="applyBgTheme('midnight')" style="
+                            flex:0 0 62%; scroll-snap-align:start; height:90px; border-radius:14px; cursor:pointer;
+                            background:linear-gradient(135deg,#0a0f2e 0%,#1a237e 60%,#0a0f2e 100%);
+                            border:2px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;
+                            display:flex; flex-direction:column; justify-content:flex-end; padding:12px;">
+                          <span style="font-size:13px;font-weight:700;color:white;display:block;">Noche</span>
+                          <span style="font-size:10px;color:rgba(255,255,255,0.4);">Azul medianoche</span>
+                          <div class="theme-check" style="display:none;position:absolute;top:10px;right:10px;
+                               width:22px;height:22px;border-radius:50%;background:#10a37f;
+                               align-items:center;justify-content:center;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <!-- VIOLETA -->
+                        <div class="bg-swatch" data-theme="violeta" onclick="applyBgTheme('violeta')" style="
+                            flex:0 0 62%; scroll-snap-align:start; height:90px; border-radius:14px; cursor:pointer;
+                            background:linear-gradient(135deg,#1a0033 0%,#2d1b69 60%,#1a0033 100%);
+                            border:2px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;
+                            display:flex; flex-direction:column; justify-content:flex-end; padding:12px;">
+                          <span style="font-size:13px;font-weight:700;color:white;display:block;">Violeta</span>
+                          <span style="font-size:10px;color:rgba(255,255,255,0.4);">Deep purple</span>
+                          <div class="theme-check" style="display:none;position:absolute;top:10px;right:10px;
+                               width:22px;height:22px;border-radius:50%;background:#10a37f;
+                               align-items:center;justify-content:center;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <!-- CARBÓN -->
+                        <div class="bg-swatch" data-theme="carbon" onclick="applyBgTheme('carbon')" style="
+                            flex:0 0 62%; scroll-snap-align:start; height:90px; border-radius:14px; cursor:pointer;
+                            background:linear-gradient(135deg,#111111 0%,#2d2d2d 60%,#111111 100%);
+                            border:2px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;
+                            display:flex; flex-direction:column; justify-content:flex-end; padding:12px;">
+                          <span style="font-size:13px;font-weight:700;color:white;display:block;">Carbón</span>
+                          <span style="font-size:10px;color:rgba(255,255,255,0.4);">Gris antracita</span>
+                          <div class="theme-check" style="display:none;position:absolute;top:10px;right:10px;
+                               width:22px;height:22px;border-radius:50%;background:#10a37f;
+                               align-items:center;justify-content:center;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <!-- OCÉANO -->
+                        <div class="bg-swatch" data-theme="oceano" onclick="applyBgTheme('oceano')" style="
+                            flex:0 0 62%; scroll-snap-align:start; height:90px; border-radius:14px; cursor:pointer;
+                            background:linear-gradient(135deg,#001f3f 0%,#0d4f5e 60%,#001f3f 100%);
+                            border:2px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;
+                            display:flex; flex-direction:column; justify-content:flex-end; padding:12px;">
+                          <span style="font-size:13px;font-weight:700;color:white;display:block;">Océano</span>
+                          <span style="font-size:10px;color:rgba(255,255,255,0.4);">Azul profundo</span>
+                          <div class="theme-check" style="display:none;position:absolute;top:10px;right:10px;
+                               width:22px;height:22px;border-radius:50%;background:#10a37f;
+                               align-items:center;justify-content:center;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <!-- ESMERALDA -->
+                        <div class="bg-swatch" data-theme="bosque2" onclick="applyBgTheme('bosque2')" style="
+                            flex:0 0 62%; scroll-snap-align:start; height:90px; border-radius:14px; cursor:pointer;
+                            background:linear-gradient(135deg,#0d1f1a 0%,#1a3a2a 60%,#0d1f1a 100%);
+                            border:2px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;
+                            display:flex; flex-direction:column; justify-content:flex-end; padding:12px;">
+                          <span style="font-size:13px;font-weight:700;color:white;display:block;">Esmeralda</span>
+                          <span style="font-size:10px;color:rgba(255,255,255,0.4);">Verde oscuro</span>
+                          <div class="theme-check" style="display:none;position:absolute;top:10px;right:10px;
+                               width:22px;height:22px;border-radius:50%;background:#10a37f;
+                               align-items:center;justify-content:center;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                    </div>
                 </div>
 
                 <!-- Backup Management Section -->
@@ -7615,13 +8001,26 @@ Incluye:
                     </div>
                 </div>
 
+                <!-- Services Management Section -->
+                <div class="form-section" style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 8px; color: #2d333a;">🛠️ Mis Servicios</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 16px;">Los servicios y precios que aparecen en toda la aplicación.</p>
+                    <div id="services-list-settings" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <button onclick="openAddServiceModal()"
+                            style="background: #10a37f; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">
+                        ＋ Agregar servicio
+                    </button>
+                </div>
+
                 <!-- System Info Section -->
                 <div class="form-section">
                     <h3 style="margin-bottom: 16px; color: #2d333a;">ℹ️ Información del Sistema</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                         <div style="padding: 12px; background: #f9fafb; border-radius: 6px;">
                             <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Aplicación</div>
-                            <div style="font-size: 14px; font-weight: 500;">RIZE Professional Cleaning v1.0</div>
+                            <div id="biz-name-version" style="font-size: 14px; font-weight: 500;">LivinGreen v2.1</div>
                         </div>
                         <div style="padding: 12px; background: #f9fafb; border-radius: 6px;">
                             <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Base de Datos</div>
@@ -8381,7 +8780,7 @@ Incluye:
                 const now = new Date();
                 const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
                 const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
-                return `RIZE-backup-${type}-${dateStr}-${timeStr}.json`;
+                return `${getBC().name.replace(/\s+/g,'-')}-backup-${type}-${dateStr}-${timeStr}.json`;
             },
             
             // Create full backup of all business data
@@ -8395,7 +8794,7 @@ Incluye:
                             version: '1.0',
                             created: new Date().toISOString(),
                             type: 'full_backup',
-                            app: 'RIZE Professional Cleaning',
+                            app: getBC().name,
                             totalAppointments: appointments.length,
                             syncStatus: syncStatus
                         },
@@ -8576,7 +8975,7 @@ Incluye:
                     const backupText = await backupFile.text();
                     const backupData = JSON.parse(backupText);
                     
-                    if (!backupData.metadata || backupData.metadata.app !== 'RIZE Professional Cleaning') {
+                    if (!backupData.metadata || !backupData.metadata.app) {
                         throw new Error('Invalid backup file format');
                     }
                     
@@ -9658,10 +10057,10 @@ Incluye:
             header.innerHTML = `
                 <div style="display: ${isMobile ? 'block' : 'flex'}; ${isMobile ? '' : 'justify-content: space-between;'}">
                     <div style="${isMobile ? 'text-align: center; margin-bottom: 20px;' : ''}">
-                        <h1 style="margin: 0; color: #00bfff; font-size: ${isMobile ? '18px' : '24px'};">🧽 RIZE PROFESSIONAL CLEANING</h1>
-                        <p style="margin: 5px 0; font-size: ${isMobile ? '12px' : '14px'};">Professional Cleaning Services</p>
-                        <p style="margin: 2px 0; font-size: ${isMobile ? '11px' : '14px'};">📞 (801) 739-0700</p>
-                        ${isMobile ? '' : '<p style="margin: 2px 0; font-size: 14px;">📧 info@rizecleaning.com</p>'}
+                        <h1 style="margin: 0; color: #00bfff; font-size: ${isMobile ? '18px' : '24px'};">${getBC().emoji} ${getBC().name.toUpperCase()}</h1>
+                        <p style="margin: 5px 0; font-size: ${isMobile ? '12px' : '14px'};">${getBC().tagline}</p>
+                        <p style="margin: 2px 0; font-size: ${isMobile ? '11px' : '14px'};">📞 ${getBC().phone}</p>
+                        ${isMobile ? '' : `<p style="margin: 2px 0; font-size: 14px;">✉️ ${getBC().email}</p>`}
                     </div>
                     <div style="text-align: ${isMobile ? 'center' : 'right'};">
                         <h2 style="margin: 0; font-size: ${isMobile ? '24px' : '32px'}; color: #333;">INVOICE</h2>
@@ -9959,6 +10358,11 @@ Incluye:
                 console.log('5. Enable error reporting');
             };
             
+            // Initialize services config (must be before UI renders)
+            initServicesConfig();
+            applyBusinessBranding();
+            initBgTheme();
+
             // Initialize backup system
             console.log('📦 Initializing backup system...');
             updateBackupStatusUI();
@@ -11960,7 +12364,19 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             }
 
             console.log('📝 Form data collected');
-            
+
+            // Duplicate detection: same name + same date
+            const allForDupCheck = await OfflineDB.getAppointments();
+            const clientName = formData.get('name')?.trim().toLowerCase();
+            const duplicate = allForDupCheck.find(apt =>
+                apt.date === selectedDate &&
+                apt.name?.trim().toLowerCase() === clientName
+            );
+            if (duplicate) {
+                showError(`Ya existe una cita para "${formData.get('name')}" el ${new Date(selectedDate + 'T12:00:00').toLocaleDateString('es-ES')} a las ${duplicate.time}.`);
+                return;
+            }
+
             // Get selected job types from multi-select dropdown
             const jobSelect = document.getElementById('job');
             const selectedJobs = Array.from(jobSelect.selectedOptions).map(option => option.value);
@@ -12035,6 +12451,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         }
 
         async function saveAppointment(data) {
+            // Invalidar caché para que las secciones recarguen datos frescos
+            window._cacheLoaded = {};
             console.log('✅ saveAppointment called with:', data);
             console.log('🌐 Online status:', navigator.onLine);
             console.log('🗄️ Supabase client available:', !!window.supabase);
@@ -14467,13 +14885,16 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     // Show the selected view
                     showView(viewName);
 
-                    // Load view-specific data
-                    if (viewName === 'history') {
+                    // Load view-specific data (only if not already loaded)
+                    if (viewName === 'history' && !window._cacheLoaded?.history) {
                         loadClientRegistry();
-                    } else if (viewName === 'datos') {
+                        (window._cacheLoaded = window._cacheLoaded || {}).history = true;
+                    } else if (viewName === 'datos' && !window._cacheLoaded?.datos) {
                         loadDatosAnalytics();
-                    } else if (viewName === 'finance') {
+                        (window._cacheLoaded = window._cacheLoaded || {}).datos = true;
+                    } else if (viewName === 'finance' && !window._cacheLoaded?.finance) {
                         loadFinanceData();
+                        (window._cacheLoaded = window._cacheLoaded || {}).finance = true;
                     }
 
                     // Show mobile menu button (back arrow)
@@ -14487,7 +14908,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     if (header) {
                         header.style.display = 'flex';
                     }
-                }, 300); // Match landing-exit duration
+                }, 150); // Match landing-exit duration
             }
 
             // Ensure mobile menu is closed
@@ -15169,47 +15590,341 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         }
 
         // Service Pricing Configuration
-        const SERVICE_PRICES = {
-            'Carpet Cleaning - Bedroom': { basePrice: 30, priceRange: '$30 each' },
-            'Carpet Cleaning - Hallway': { basePrice: 20, minPrice: 10, maxPrice: 30, priceRange: '$10 - $30' },
-            'Carpet Cleaning - Living Room': { basePrice: 45, minPrice: 30, maxPrice: 60, priceRange: '$30 - $60' },
-            'Carpet Cleaning - Stairs': { basePrice: 50, minPrice: 45, maxPrice: 55, priceRange: '$45 - $55' },
-            'Odor Removal': { basePrice: 20, priceRange: '$20 per area' },
-            'Chair Cleaning (1-Seat)': { basePrice: 35, priceRange: '$35 each' },
-            'Loveseat Cleaning (2-Seat)': { basePrice: 65, priceRange: '$65 each' },
-            'Sofa Cleaning (3-Seat)': { basePrice: 85, priceRange: '$85 each' },
-            'Sectional Cleaning': { basePrice: 100, priceRange: 'From $100' },
-            'Dining Chair Cleaning': { basePrice: 10, priceRange: '$10 each' }
+        // ─── SERVICES CONFIG (dynamic, persisted in localStorage) ───────────────
+        const SERVICES_STORAGE_KEY = 'rize_services_config';
+        const DEFAULT_SERVICES_CONFIG = [
+            { id: 'alfombras',  name: 'Alfombras',  basePrice: 30,  priceRange: '$30 cada una' },
+            { id: 'sillones',   name: 'Sillones',   basePrice: 85,  priceRange: '$85 cada uno' },
+            { id: 'escaleras',  name: 'Escaleras',  basePrice: 50,  priceRange: '$45 - $55' },
+            { id: 'cuartos',    name: 'Cuartos',    basePrice: 30,  priceRange: '$30 cada uno' },
+            { id: 'sala',       name: 'Sala',       basePrice: 45,  priceRange: '$30 - $60' },
+            { id: 'pasillo',    name: 'Pasillo',    basePrice: 20,  priceRange: '$10 - $30' },
+            { id: 'sillas',     name: 'Sillas',     basePrice: 10,  priceRange: '$10 cada una' },
+            { id: 'colchon',    name: 'Colchón',    basePrice: 65,  priceRange: '$65 cada uno' },
+            { id: 'auto',       name: 'Auto',       basePrice: 100, priceRange: 'Desde $100' },
+        ];
+        let servicesConfig = [];
+
+        function initServicesConfig() {
+            try {
+                const stored = localStorage.getItem(SERVICES_STORAGE_KEY);
+                servicesConfig = stored ? JSON.parse(stored) : [...DEFAULT_SERVICES_CONFIG];
+            } catch(e) {
+                servicesConfig = [...DEFAULT_SERVICES_CONFIG];
+            }
+            renderJobDropdown();
+            renderServiceTypeSelect();
+            renderServicesSettings();
+        }
+
+        function saveServicesConfig() {
+            localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(servicesConfig));
+            renderJobDropdown();
+            renderServiceTypeSelect();
+            renderServicesSettings();
+        }
+
+        function renderJobDropdown() {
+            const jobList = document.getElementById('job-list');
+            const jobSelect = document.getElementById('job');
+            if (!jobList || !jobSelect) return;
+            jobList.innerHTML = servicesConfig.map(svc =>
+                `<div class="dropdown-item">
+                    <input type="checkbox" id="job-${svc.id}" value="${svc.id}">
+                    <label for="job-${svc.id}">${svc.name}</label>
+                </div>`
+            ).join('');
+            jobSelect.innerHTML = servicesConfig.map(svc =>
+                `<option value="${svc.id}">${svc.name}</option>`
+            ).join('');
+        }
+
+        function renderServiceTypeSelect() {
+            const select = document.getElementById('service-type');
+            if (!select) return;
+            select.innerHTML = '<option value="">Seleccionar servicio</option>' +
+                servicesConfig.map(svc =>
+                    `<option value="${svc.id}">${svc.name} — ${svc.priceRange}</option>`
+                ).join('');
+        }
+
+        function renderServicesSettings() {
+            const container = document.getElementById('services-list-settings');
+            if (!container) return;
+            if (servicesConfig.length === 0) {
+                container.innerHTML = '<p style="color:#666; text-align:center; padding:20px;">No hay servicios configurados.</p>';
+                return;
+            }
+            container.innerHTML = servicesConfig.map((svc, idx) =>
+                `<div style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e5e7;">
+                    <div style="flex:1;">
+                        <div style="font-weight:600; font-size:14px; color:#1a202c;">${svc.name}</div>
+                        <div style="font-size:12px; color:#666; margin-top:3px;">Precio base: <strong>$${svc.basePrice}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;${svc.priceRange}</div>
+                    </div>
+                    <button onclick="editService(${idx})" style="background:#f3f4f6; border:1px solid #d1d5db; padding:7px 13px; border-radius:6px; cursor:pointer; font-size:13px; color:#374151; white-space:nowrap;">✏️ Editar</button>
+                    <button onclick="deleteService(${idx})" style="background:#fef2f2; border:1px solid #fecaca; padding:7px 11px; border-radius:6px; cursor:pointer; font-size:14px; color:#dc2626;">🗑️</button>
+                </div>`
+            ).join('');
+        }
+
+        let _editingServiceIdx = null;
+
+        function openAddServiceModal() {
+            _editingServiceIdx = null;
+            document.getElementById('svc-name').value = '';
+            document.getElementById('svc-price').value = '';
+            document.getElementById('svc-price-range').value = '';
+            document.getElementById('svc-modal-title').textContent = 'Agregar Servicio';
+            document.getElementById('service-edit-modal').style.display = 'flex';
+        }
+
+        function editService(idx) {
+            _editingServiceIdx = idx;
+            const svc = servicesConfig[idx];
+            document.getElementById('svc-name').value = svc.name;
+            document.getElementById('svc-price').value = svc.basePrice;
+            document.getElementById('svc-price-range').value = svc.priceRange;
+            document.getElementById('svc-modal-title').textContent = 'Editar Servicio';
+            document.getElementById('service-edit-modal').style.display = 'flex';
+        }
+
+        function closeServiceModal() {
+            document.getElementById('service-edit-modal').style.display = 'none';
+        }
+
+        function saveServiceModal() {
+            const name = document.getElementById('svc-name').value.trim();
+            const basePrice = parseFloat(document.getElementById('svc-price').value) || 0;
+            const priceRangeInput = document.getElementById('svc-price-range').value.trim();
+            const priceRange = priceRangeInput || `$${basePrice}`;
+            if (!name) { alert('El nombre del servicio es obligatorio'); return; }
+            const id = (_editingServiceIdx !== null)
+                ? servicesConfig[_editingServiceIdx].id
+                : name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+            const newSvc = { id, name, basePrice, priceRange };
+            if (_editingServiceIdx !== null) {
+                servicesConfig[_editingServiceIdx] = newSvc;
+            } else {
+                servicesConfig.push(newSvc);
+            }
+            saveServicesConfig();
+            closeServiceModal();
+            showToast('✅ Servicio guardado');
+        }
+
+        function deleteService(idx) {
+            const svc = servicesConfig[idx];
+            showConfirm(`¿Eliminar el servicio "${svc.name}"?`, () => {
+                servicesConfig.splice(idx, 1);
+                saveServicesConfig();
+                showToast('🗑️ Servicio eliminado');
+            });
+        }
+
+        // Legacy alias kept for receipt modal — now reads from servicesConfig
+        const SERVICE_PRICES = new Proxy({}, {
+            get(_, key) {
+                const svc = servicesConfig.find(s => s.id === key || s.name === key);
+                return svc ? { basePrice: svc.basePrice, priceRange: svc.priceRange } : undefined;
+            },
+            has(_, key) {
+                return servicesConfig.some(s => s.id === key || s.name === key);
+            },
+            ownKeys() { return servicesConfig.map(s => s.id); },
+        });
+
+        // ─── BUSINESS CONFIG SYSTEM ───────────────────────────────────────
+        const BUSINESS_CONFIG_KEY = 'rize_business_config';
+        const DEFAULT_BUSINESS_CONFIG = {
+            name:        'LivinGreen',
+            tagline:     'Experience the pleasure of walking on clean carpets',
+            website:     'livingreen.life',
+            websiteFull: 'https://www.livingreen.life/',
+            instagram:   '@livingreen_life',
+            phone:       '+1 (385) 482-5694',
+            whatsapp:    '+1 (385) 482-5694',
+            email:       'info@livingreen.com',
+            emoji:       '🌿',
+            logo:        null,
+            logoDefault: './images/livingreen-icon.png',
         };
+        let _businessConfig = null;
+        function getBC() {
+            if (!_businessConfig) {
+                try {
+                    const s = localStorage.getItem(BUSINESS_CONFIG_KEY);
+                    _businessConfig = s ? { ...DEFAULT_BUSINESS_CONFIG, ...JSON.parse(s) } : { ...DEFAULT_BUSINESS_CONFIG };
+                } catch { _businessConfig = { ...DEFAULT_BUSINESS_CONFIG }; }
+            }
+            return _businessConfig;
+        }
+        function saveBusinessConfig() {
+            const cfg = {
+                name:        document.getElementById('biz-name').value.trim() || getBC().name,
+                tagline:     document.getElementById('biz-tagline').value.trim(),
+                website:     document.getElementById('biz-website').value.trim(),
+                websiteFull: 'https://' + document.getElementById('biz-website').value.trim().replace(/^https?:\/\//,''),
+                instagram:   document.getElementById('biz-instagram').value.trim(),
+                phone:       document.getElementById('biz-phone').value.trim(),
+                whatsapp:    document.getElementById('biz-whatsapp').value.trim(),
+                email:       document.getElementById('biz-email').value.trim(),
+                emoji:       document.getElementById('biz-emoji').value.trim() || getBC().emoji,
+                logo:        getBC().logo,
+                logoDefault: getBC().logoDefault,
+            };
+            localStorage.setItem(BUSINESS_CONFIG_KEY, JSON.stringify(cfg));
+            _businessConfig = cfg;
+            applyBusinessBranding();
+            showToast('✅ Perfil guardado');
+        }
+        function applyBusinessBranding() {
+            const bc = getBC();
+            document.title = bc.name + ' - Agendamiento';
+            document.documentElement.style.setProperty('--biz-name', `"${bc.name}"`);
+            document.querySelectorAll('.biz-logo-dynamic').forEach(el => { el.src = bc.logo || bc.logoDefault; });
+            document.querySelectorAll('[data-biz="name"]').forEach(el => { el.textContent = bc.name; });
+            const verEl = document.getElementById('biz-name-version');
+            if (verEl) verEl.textContent = bc.name + ' v2.1';
+            // Update bento home card
+            const tagEl = document.getElementById('bento-biz-tagline');
+            if (tagEl) tagEl.textContent = bc.tagline;
+            const webLabel = document.getElementById('bento-biz-website');
+            if (webLabel) webLabel.textContent = bc.website + '/card';
+            const igLink = document.getElementById('bento-ig-link');
+            if (igLink) igLink.href = 'https://www.instagram.com/' + bc.instagram.replace('@','') + '/';
+            const webLink = document.getElementById('bento-web-link');
+            if (webLink) webLink.href = bc.websiteFull;
+            if (document.getElementById('biz-name')) renderBusinessProfileCard();
+        }
+
+        // Compartir tarjeta digital del negocio con clientes
+        async function shareBizCard() {
+            const bc = getBC();
+            const cardUrl = bc.websiteFull.replace(/\/$/, '') + '/card';
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: bc.name,
+                        text: bc.tagline,
+                        url: cardUrl,
+                    });
+                    return;
+                } catch(e) { /* fallthrough to copy */ }
+            }
+            // Fallback: copy to clipboard
+            try {
+                await navigator.clipboard.writeText(cardUrl);
+                showToast('🔗 Enlace copiado: ' + cardUrl);
+            } catch(e) {
+                showToast('📋 ' + cardUrl);
+            }
+        }
+        function triggerLogoUpload() {
+            document.getElementById('biz-logo-input').click();
+        }
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const cfg = { ...getBC(), logo: e.target.result };
+                localStorage.setItem(BUSINESS_CONFIG_KEY, JSON.stringify(cfg));
+                _businessConfig = cfg;
+                renderBusinessProfileCard();
+                document.querySelectorAll('.biz-logo-dynamic').forEach(el => { el.src = e.target.result; });
+                showToast('✅ Logo actualizado');
+            };
+            reader.readAsDataURL(file);
+        }
+        function renderBusinessProfileCard() {
+            const bc = getBC();
+            const logoEl = document.getElementById('biz-logo-img');
+            if (logoEl) logoEl.src = bc.logo || bc.logoDefault;
+            const fields = {
+                'biz-name': bc.name, 'biz-tagline': bc.tagline, 'biz-website': bc.website,
+                'biz-instagram': bc.instagram, 'biz-phone': bc.phone,
+                'biz-whatsapp': bc.whatsapp, 'biz-email': bc.email,
+            };
+            Object.entries(fields).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            });
+            // emoji hidden input
+            const emojiEl = document.getElementById('biz-emoji');
+            if (emojiEl) emojiEl.value = bc.emoji;
+        }
+
+        // ─── BACKGROUND THEME SYSTEM ──────────────────────────────────────
+        const BG_THEMES = {
+            bosque:   { name: 'Bosque',     color: '#1a2332', label: '🌑' },
+            midnight: { name: 'Medianoche', color: '#1a237e', label: '🌌' },
+            violeta:  { name: 'Violeta',    color: '#2d1b69', label: '🔮' },
+            carbon:   { name: 'Carbón',     color: '#2d2d2d', label: '⚫' },
+            oceano:   { name: 'Océano',     color: '#0d4f5e', label: '🌊' },
+            bosque2:  { name: 'Esmeralda',  color: '#1a3a2a', label: '🌿' },
+        };
+        function applyBgTheme(theme) {
+            Object.keys(BG_THEMES).forEach(t => document.body.classList.remove('bg-' + t));
+            if (theme !== 'bosque') document.body.classList.add('bg-' + theme);
+            localStorage.setItem('rize_bg_theme', theme);
+            // Update carousel cards
+            document.querySelectorAll('.bg-swatch').forEach(el => {
+                const selected = el.dataset.theme === theme;
+                el.style.border = selected ? '2px solid #10a37f' : '2px solid rgba(255,255,255,0.12)';
+                const check = el.querySelector('.theme-check');
+                if (check) check.style.display = selected ? 'flex' : 'none';
+            });
+        }
+        function initBgTheme() {
+            const saved = localStorage.getItem('rize_bg_theme') || 'bosque';
+            applyBgTheme(saved);
+        }
+
+        // Styled confirm modal (replaces browser confirm())
+        let _confirmCallback = null;
+        function showConfirm(message, onConfirm, { icon = '⚠️', okLabel = 'Eliminar', okColor = '#ef4444' } = {}) {
+            _confirmCallback = onConfirm;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-icon').textContent = icon;
+            const okBtn = document.getElementById('confirm-ok-btn');
+            okBtn.textContent = okLabel;
+            okBtn.style.background = okColor;
+            okBtn.onclick = () => { closeConfirmModal(); if (_confirmCallback) _confirmCallback(); };
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').style.display = 'none';
+            _confirmCallback = null;
+        }
+
+        // Generic toast notification helper
+        function showToast(msg, duration = 2200) {
+            const el = document.getElementById('copy-notification');
+            if (!el) return;
+            const span = el.querySelector('span:last-child');
+            if (span) span.textContent = msg;
+            el.style.display = 'flex';
+            clearTimeout(el._toastTimer);
+            el._toastTimer = setTimeout(() => { el.style.display = 'none'; }, duration);
+        }
 
         // Appointment Management Functions
         async function deleteAppointment() {
-            if (!selectedAppointment) {
-                alert('No appointment selected');
-                return;
-            }
-            
-            const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar la cita de ${selectedAppointment.name}?`);
-            if (!confirmDelete) return;
-            
-            try {
-                // Delete from both online and offline storage
-                await OfflineDB.deleteAppointment(selectedAppointment.id);
-                
-                // Close the details modal
-                closeAppointmentModal();
-                
-                // Refresh the calendar view
-                if (currentView === 'calendar') {
-                    await generateWeeklyCalendar();
+            if (!selectedAppointment) return;
+            showConfirm(
+                `¿Eliminar la cita de ${selectedAppointment.name}?`,
+                async () => {
+                    try {
+                        await OfflineDB.deleteAppointment(selectedAppointment.id);
+                        closeAppointmentModal();
+                        if (currentView === 'calendar') await generateWeeklyCalendar();
+                        showToast('🗑️ Cita eliminada');
+                    } catch (error) {
+                        console.error('❌ Error deleting appointment:', error);
+                        showError('Error al eliminar la cita. Inténtalo de nuevo.');
+                    }
                 }
-                
-                alert('✅ Cita eliminada exitosamente');
-                
-            } catch (error) {
-                console.error('❌ Error deleting appointment:', error);
-                alert('Error al eliminar la cita. Por favor intenta nuevamente.');
-            }
+            );
         }
         
         // Store appointment data for rescheduling
@@ -15337,11 +16052,11 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 }, 100);
 
                 // Show success message
-                alert('✅ Cita actualizada exitosamente');
+                showToast('✅ Cita actualizada');
 
             } catch (error) {
                 console.error('❌ Error updating appointment:', error);
-                alert('Error al actualizar la cita: ' + error.message);
+                showError('Error al actualizar la cita: ' + (error.message || 'Inténtalo de nuevo'));
             }
         }
         
@@ -15432,14 +16147,14 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 let serviceType = selectedAppointment.job;
                 let servicePrice = parseFloat(selectedAppointment.price);
 
-                // Check if job matches any of our service types
-                const matchedService = Object.keys(SERVICE_PRICES).find(service =>
-                    serviceType.toLowerCase().includes(service.toLowerCase()) ||
-                    service.toLowerCase().includes(serviceType.toLowerCase())
+                // Check if job matches any configured service
+                const matchedSvc = servicesConfig.find(svc =>
+                    serviceType.toLowerCase().includes(svc.id) ||
+                    serviceType.toLowerCase().includes(svc.name.toLowerCase()) ||
+                    svc.name.toLowerCase().includes(serviceType.toLowerCase())
                 );
-
-                if (matchedService) {
-                    serviceType = matchedService;
+                if (matchedSvc) {
+                    serviceType = matchedSvc.name;
                 }
 
                 receiptServices.push({
@@ -15472,18 +16187,17 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         
         // Update service price based on selection
         function updateServicePrice() {
-            const serviceType = document.getElementById('service-type').value;
+            const serviceId = document.getElementById('service-type').value;
             const priceInput = document.getElementById('service-price');
             const priceSuggestion = document.getElementById('price-suggestion');
-            
-            if (serviceType && SERVICE_PRICES[serviceType]) {
-                const serviceData = SERVICE_PRICES[serviceType];
-                priceInput.value = serviceData.basePrice;
-                priceSuggestion.textContent = `Suggested price: ${serviceData.priceRange}`;
+            const svc = servicesConfig.find(s => s.id === serviceId);
+            if (svc) {
+                priceInput.value = svc.basePrice;
+                priceSuggestion.textContent = `Precio sugerido: ${svc.priceRange}`;
                 priceSuggestion.style.color = 'var(--brand-primary)';
             } else {
                 priceInput.value = '';
-                priceSuggestion.textContent = 'Adjust price based on actual work performed';
+                priceSuggestion.textContent = 'Ajustar precio según trabajo realizado';
                 priceSuggestion.style.color = '#6b7280';
             }
         }
@@ -15658,7 +16372,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     'Professional-grade cleaning with surface protection application',
                     'Advanced cleaning methodology with time-efficient processes',
                     'Specialized cleaning service with trained technicians',
-                    'Cleaning Services by RIZE Professional Cleaning',
+                    `Cleaning Services by ${getBC().name}`,
                     'Quality cleaning services with attention to detail',
                     'Professional cleaning solutions for your home or business'
                 ]
@@ -15682,7 +16396,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         // Generate professional HTML receipt content
         function generateReceiptHTML(receiptNumber, currentDate, totalAmount) {
             // Generate QR code for LivinGreen website
-            const qrData = `https://www.livingreen.life/`;
+            const qrData = getBC().websiteFull;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrData)}`;
 
             return `
@@ -15784,16 +16498,16 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                             <div style="font-size: 12px; color: #6c757d;">Visit our website</div>
                         </div>
 
-                        <!-- LivinGreen Logo -->
+                        <!-- Business Logo -->
                         <div style="text-align: center; margin: 12px 0 8px 0;">
-                            <img src="./images/livingreen-logo.png" alt="LivinGreen Logo" style="width: 120px; height: auto; display: block; margin: 0 auto; transform: scale(1.2); object-fit: contain; max-height: 60px; object-position: center;">
+                            <img src="${getBC().logo || getBC().logoDefault}" alt="${getBC().name} Logo" class="biz-logo-dynamic" style="width: 120px; height: auto; display: block; margin: 0 auto; transform: scale(1.2); object-fit: contain; max-height: 60px; object-position: center;">
                         </div>
 
                         <!-- Business Info -->
                         <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px;">
-                            <div style="font-size: 16px; font-weight: 600; color: #212529; margin-bottom: 8px; text-align: center;">LivinGreen</div>
+                            <div style="font-size: 16px; font-weight: 600; color: #212529; margin-bottom: 8px; text-align: center;">${getBC().name}</div>
                             <div style="font-size: 12px; color: #6c757d; text-align: center; line-height: 1.4;">
-                                <div>Web: www.livingreen.life</div>
+                                <div>Web: ${getBC().website}</div>
                             </div>
                         </div>
                     </div>
@@ -16160,7 +16874,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             yPos += 25;
 
             // QR Code data and placeholder
-            const qrData = `https://www.livingreen.life/`;
+            const qrData = getBC().websiteFull;
             pdf.setTextColor(...secondaryText);
             pdf.setFontSize(10);
             pdf.setFont(undefined, 'normal');
@@ -16185,13 +16899,13 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             pdf.setTextColor(...primaryText);
             pdf.setFontSize(12);
             pdf.setFont(undefined, 'bold');
-            pdf.text('LivinGreen', pageWidth / 2, yPos, { align: 'center' });
+            pdf.text(getBC().name, pageWidth / 2, yPos, { align: 'center' });
 
             yPos += 8;
             pdf.setTextColor(...secondaryText);
             pdf.setFontSize(9);
             pdf.setFont(undefined, 'normal');
-            pdf.text('Web: www.livingreen.life', pageWidth / 2, yPos, { align: 'center' });
+            pdf.text('Web: ' + getBC().website, pageWidth / 2, yPos, { align: 'center' });
 
             // Download the PDF
             const fileName = `Invoice_${receiptNumber}_${clientName.replace(/\s+/g, '_')}.pdf`;
@@ -16209,8 +16923,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             const firstName = appointment.name.split(' ')[0];
 
             // Create share content
-            const shareTitle = `Factura ${receiptNumber} - LivinGreen`;
-            const shareText = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista - LivinGreen`;
+            const shareTitle = `Factura ${receiptNumber} - ${getBC().name}`;
+            const shareText = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista - ${getBC().name}`;
             const shareUrl = window.location.href; // Current page URL
 
             // Check if Web Share API is supported
@@ -16284,7 +16998,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 if (storedReceipt && storedReceipt.shortUrl) {
                     // Create professional SMS message (optimized for SMS length)
                     const firstName = appointment.name.split(' ')[0];
-                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${storedReceipt.shortUrl} - LivinGreen`;
+                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${storedReceipt.shortUrl} - ${getBC().name}`;
 
                     // Open SMS app
                     openSMSApp(appointment.phone, message);
@@ -16371,7 +17085,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
         // Generate receipt text for server storage
         function generateReceiptTextForStorage(receiptNumber, totalAmount, services, appointment) {
-            let receiptText = `🌿 LivinGreen\n`;
+            let receiptText = `${getBC().emoji} ${getBC().name}\n`;
             receiptText += `=====================================\n\n`;
             receiptText += `FACTURA #${receiptNumber}\n`;
             receiptText += `Fecha: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}\n`;
@@ -16397,7 +17111,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
             receiptText += `-------------------------------------\n`;
             receiptText += `TOTAL: $${totalAmount.toFixed(2)}\n\n`;
-            receiptText += `Gracias por elegir LivinGreen!\n`;
+            receiptText += `Gracias por elegir ${getBC().name}!\n`;
             receiptText += `¡Su satisfacción es nuestra prioridad!`;
 
             return receiptText;
@@ -16604,8 +17318,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             
             // Create complete professional SMS message (optimized for SMS length)
             const firstName = selectedAppointment.name.split(' ')[0]; // Solo primer nombre
-            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - LivinGreen`;
-            
+            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - ${getBC().name}`;
+
             // Try different SMS formats for better compatibility
             let smsUrl;
             
@@ -16790,13 +17504,12 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 pdf.setTextColor(0, 191, 255);
                 pdf.setFontSize(14);
                 pdf.setFont(undefined, 'bold');
-                pdf.text('🧽 RIZE PROFESSIONAL', 10, 25);
-                pdf.text('CLEANING', 10, 35);
-                
+                pdf.text(getBC().emoji + ' ' + getBC().name.toUpperCase(), 10, 25);
+
                 pdf.setTextColor(68, 68, 68);
                 pdf.setFontSize(32);
                 pdf.text('INVOICE', 145, 35);
-                
+
                 pdf.setFontSize(9);
                 pdf.text(`Invoice No   :  ${receiptNumber}`, 145, 48);
                 pdf.text(`Issue Date   :  ${new Date(data.date).toLocaleDateString('es-ES')}`, 145, 54);
@@ -16882,7 +17595,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 console.log('📱 Saving contact for:', clientName);
                 
                 // Method 1: Direct SMS to yourself with contact info
-                const contactSMS = `New RIZE Client Contact:\n\nName: ${clientName} (RIZE Client)\nPhone: ${phoneNumber}\nService Date: ${new Date().toLocaleDateString()}\n\nSave this contact for 6-month follow-up! 📱`;
+                const contactSMS = `New ${getBC().name} Client Contact:\n\nName: ${clientName} (${getBC().name} Client)\nPhone: ${phoneNumber}\nService Date: ${new Date().toLocaleDateString()}\n\nSave this contact for 6-month follow-up! 📱`;
                 const selfSMSUrl = `sms:?body=${encodeURIComponent(contactSMS)}`;
                 
                 // Method 2: Create easy-tap phone link
@@ -16891,10 +17604,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 // Method 3: Still create vCard as backup
                 const vCard = `BEGIN:VCARD
 VERSION:3.0
-FN:${clientName} (RIZE Client)
+FN:${clientName} (${getBC().name} Client)
 TEL:${phoneNumber}
-ORG:RIZE Professional Cleaning Client
-NOTE:Carpet/Upholstery cleaning client. Last service: ${new Date().toLocaleDateString()}
+ORG:${getBC().name} Client
+NOTE:Service client. Last service: ${new Date().toLocaleDateString()}
 END:VCARD`;
                 
                 // Show options to user
@@ -16914,7 +17627,7 @@ END:VCARD`;
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `${clientName.replace(/\s+/g, '_')}_RIZE_Contact.vcf`;
+                    link.download = `${clientName.replace(/\s+/g, '_')}_${getBC().name.replace(/\s+/g,'_')}_Contact.vcf`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -17004,7 +17717,7 @@ END:VCARD`;
             const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
             const totalAmount = receiptServices.reduce((sum, service) => sum + service.total, 0);
 
-            let receiptText = `🌿 LivinGreen\n`;
+            let receiptText = `${getBC().emoji} ${getBC().name}\n`;
             receiptText += `=====================================\n\n`;
             receiptText += `FACTURA #${receiptNumber}\n`;
             receiptText += `Fecha: ${currentDate}\n`;
@@ -17027,7 +17740,7 @@ END:VCARD`;
 
             receiptText += `-------------------------------------\n`;
             receiptText += `TOTAL: $${totalAmount.toFixed(2)}\n\n`;
-            receiptText += `Gracias por elegir LivinGreen!\n`;
+            receiptText += `Gracias por elegir ${getBC().name}!\n`;
             receiptText += `¡Su satisfacción es nuestra prioridad!`;
 
             return receiptText;
@@ -17117,31 +17830,29 @@ END:VCARD`;
                 pdf.setTextColor(0, 191, 255); // Blue text for logo
                 pdf.setFontSize(14);
                 pdf.setFont(undefined, 'bold');
-                pdf.text('🧽 RIZE PROFESSIONAL', 10, 25);
-                pdf.text('CLEANING', 10, 35);
-                
+                pdf.text(getBC().emoji + ' ' + getBC().name.toUpperCase(), 10, 25);
+
                 pdf.setTextColor(255, 255, 255);
                 pdf.setFontSize(9);
                 pdf.setFont(undefined, 'normal');
-                pdf.text('Professional Cleaning Services', 10, 45);
-                pdf.text('📞 (801) 739-0700', 10, 52);
-                pdf.text('📧 info@rizecleaning.com', 10, 58);
-                pdf.text('🌐 www.rizecleaning.com', 10, 64);
-                pdf.text('📍 1128 S 820 E Apt 2304, Heber City, Utah', 10, 70);
-                
+                pdf.text(getBC().tagline, 10, 45);
+                pdf.text('📞 ' + getBC().phone, 10, 52);
+                pdf.text('✉️ ' + getBC().email, 10, 58);
+                pdf.text('🌐 ' + getBC().website, 10, 64);
+
                 // INVOICE title in blue section (large, dark text)
                 pdf.setTextColor(68, 68, 68); // Dark gray text on blue background
                 pdf.setFontSize(32);
                 pdf.setFont(undefined, 'bold');
                 pdf.text('INVOICE', 145, 35);
-                
+
                 // Invoice details in blue section
                 pdf.setTextColor(68, 68, 68);
                 pdf.setFontSize(9);
                 pdf.setFont(undefined, 'normal');
                 pdf.text(`Invoice No   :  ${receiptNumber}`, 145, 48);
                 pdf.text(`Issue Date   :  ${new Date().toLocaleDateString('es-ES')}`, 145, 54);
-                pdf.text(`Account No   :  RIZE-${new Date().getFullYear()}`, 145, 60);
+                pdf.text(`Account No   :  ${getBC().name.slice(0,4).toUpperCase()}-${new Date().getFullYear()}`, 145, 60);
                 
                 // DUES amount box (dark background)
                 pdf.setFillColor(...darkGray);
@@ -17357,11 +18068,11 @@ END:VCARD`;
                     localStorage.setItem('latestReceiptTimestamp', Date.now().toString());
                     
                     // Use simple Bitly link - no parameters needed!
-                    const shareableUrl = `https://bit.ly/RizeCleaning`;
+                    const shareableUrl = getBC().websiteFull;
                     console.log('Created simple receipt URL for WhatsApp:', shareableUrl);
-                    
+
                     const firstName = selectedAppointment.name.split(' ')[0];
-                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shareableUrl} - LivinGreen`;
+                    const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shareableUrl} - ${getBC().name}`;
                     const encodedMessage = encodeURIComponent(message);
                     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
                     
@@ -17403,7 +18114,7 @@ END:VCARD`;
                         if (result.success) {
                             const shortUrl = result.shortUrl || result.fullUrl;
                             const firstName = selectedAppointment.name.split(' ')[0];
-                            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - LivinGreen`;
+                            const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. Ver/Descargar: ${shortUrl} - ${getBC().name}`;
                             const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
                             window.open(smsUrl);
                         } else {
@@ -17423,7 +18134,7 @@ END:VCARD`;
                         document.body.removeChild(link);
                         
                         const firstName = selectedAppointment.name.split(' ')[0];
-                        const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. PDF descargado - adjunte a este mensaje. - LivinGreen`;
+                        const message = `Hola ${firstName}, su factura por $${totalAmount.toFixed(2)} está lista. PDF descargado - adjunte a este mensaje. - ${getBC().name}`;
                         const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
                         window.open(smsUrl);
                     }
@@ -17755,7 +18466,14 @@ END:VCARD`;
                 const appointmentsList = document.getElementById('today-appointments-list');
                 if (appointmentsList) {
                     if (todayAppointments.length === 0) {
-                        appointmentsList.innerHTML = '<div class="appointment-item" style="color: rgba(200, 200, 200, 0.6);">No hay citas para hoy</div>';
+                        appointmentsList.innerHTML = `
+                            <div style="text-align:center; padding: 18px 8px 10px; color: rgba(255,255,255,0.45);">
+                                <svg style="width:28px; height:28px; margin-bottom:8px; opacity:0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                <div style="font-size:13px; font-weight:500;">Día libre</div>
+                                <div style="font-size:11px; margin-top:2px; opacity:0.7;">Sin citas agendadas hoy</div>
+                            </div>`;
                     } else {
                         // Show up to 3 appointments
                         const displayAppointments = todayAppointments.slice(0, 3);
@@ -17964,17 +18682,49 @@ END:VCARD`;
             setTimeout(toggleSlide, getRandomInterval());
         }
 
+        // Message cards sliders
+        function initMessageSliders() {
+            ['msg-slides-carpet', 'msg-slides-furniture', 'msg-slides-general'].forEach((id, index) => {
+                const slides = document.getElementById(id);
+                if (!slides) return;
+                let isSecond = false;
+                function toggle() {
+                    isSecond = !isSecond;
+                    slides.classList.toggle('show-second', isSecond);
+                    setTimeout(toggle, Math.floor(Math.random() * 2000) + 3000 + index * 500);
+                }
+                setTimeout(toggle, 1500 + index * 800);
+            });
+        }
+
+        // Nueva cita button slider
+        function initNuevaCitaSlider() {
+            const slides = document.getElementById('nueva-cita-slides');
+            if (!slides) return;
+            let isSecond = false;
+            function toggle() {
+                isSecond = !isSecond;
+                slides.classList.toggle('show-second', isSecond);
+                setTimeout(toggle, Math.floor(Math.random() * 2000) + 3000);
+            }
+            setTimeout(toggle, 2500);
+        }
+
         // Initialize sliders and load data when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 initAnalyticsSlider();
                 initRegistrySlider();
+                initNuevaCitaSlider();
+                initMessageSliders();
                 loadBentoAnalytics();
                 loadTodayTotal();
             });
         } else {
             initAnalyticsSlider();
             initRegistrySlider();
+            initNuevaCitaSlider();
+            initMessageSliders();
             loadBentoAnalytics();
             loadTodayTotal();
         }
