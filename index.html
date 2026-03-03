@@ -262,7 +262,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.55) 0%, rgba(30, 41, 59, 0.55) 100%) !important;
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.75) 0%, rgba(20, 30, 50, 0.75) 100%) !important;
             overscroll-behavior: none;
             overflow: hidden;
             color: var(--text-primary);
@@ -3930,8 +3930,8 @@
             height: 100vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(30, 41, 59, 0.45) 100%);
+            overscroll-behavior: none;
+            background: transparent;
             padding: 48px 24px;
             display: flex;
             flex-direction: column;
@@ -6738,7 +6738,7 @@
     <!-- Mobile overlay -->
     <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
 
-    <div class="container">
+    <div class="container" style="display:none">
         <!-- Sidebar -->
         <div class="sidebar" id="mobile-sidebar">
             <div class="sidebar-header">
