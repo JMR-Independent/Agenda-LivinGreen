@@ -5658,8 +5658,8 @@
             transform: translateY(-2px) !important;
         }
 
-        /* Override ALL inline backgrounds in settings-view */
-        #settings-view [style*="background"] {
+        /* Override ALL inline backgrounds in settings-view (except theme swatches and their children) */
+        #settings-view [style*="background"]:not(.bg-swatch):not(.theme-check) {
             background: rgba(30, 41, 59, 0.4) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
@@ -5667,7 +5667,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
         }
 
-        #settings-view [style*="background"]:hover {
+        #settings-view [style*="background"]:not(.bg-swatch):not(.theme-check):hover {
             background: rgba(30, 41, 59, 0.5) !important;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
             border-color: rgba(255, 255, 255, 0.15) !important;
