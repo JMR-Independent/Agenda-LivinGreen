@@ -15890,35 +15890,18 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         }
 
         async function shareDigitalCard() {
-            const canvas = document.getElementById('biz-card-canvas');
             const bc = getBC();
             const cardUrl = bc.websiteFull.replace(/\/$/, '') + '/card';
-            // Try Web Share API with image file
-            if (navigator.canShare) {
-                try {
-                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-                    const file = new File([blob], bc.name.replace(/\s+/g, '-') + '-tarjeta.png', { type: 'image/png' });
-                    if (navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            title: bc.name,
-                            url: cardUrl,
-                            files: [file],
-                        });
-                        return;
-                    }
-                } catch(e) { /* fallthrough */ }
-            }
-            // Fallback: share URL only
+            // Share URL only — WhatsApp/iMessage generate a rich link preview
+            // using the OG image (card design). Tapping the preview opens the card page.
+            // PNG download is available via "Guardar imagen".
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: bc.name,
-                        url: cardUrl,
-                    });
+                    await navigator.share({ title: bc.name, url: cardUrl });
                     return;
                 } catch(e) { /* fallthrough */ }
             }
-            // Final fallback: copy URL to clipboard
+            // Fallback: copy URL to clipboard
             try {
                 await navigator.clipboard.writeText(cardUrl);
                 showToast('🔗 Enlace copiado al portapapeles');
