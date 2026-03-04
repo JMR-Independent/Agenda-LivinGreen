@@ -16103,6 +16103,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         // ─── AI ASSISTANT SYSTEM ─────────────────────────────────────────────
         let _aiHistory = [];
         let _aiThinking = false;
+        let _aiWelcomed = false;
 
         // ── Memoria persistente ───────────────────────────────────────────────
         const AI_MEMORY_KEY = 'rize_ai_memory';
@@ -16377,7 +16378,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             requestAnimationFrame(()=>{panel.style.transform='translateY(0)';});
             document.getElementById('ai-main-btn').classList.add('ai-open');
             document.getElementById('ai-panel-title').textContent=getBC().name+' IA';
-            if(_aiHistory.length===0){
+            if(!_aiWelcomed){
+                _aiWelcomed=true;
                 const mem=getAIMemory();
                 const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
                 _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
