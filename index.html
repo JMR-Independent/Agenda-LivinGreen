@@ -10437,6 +10437,8 @@ Incluye:
             initServicesConfig();
             applyBusinessBranding();
             initBgTheme();
+            // Save ElevenLabs key to localStorage on first load
+            if(!localStorage.getItem('elabs_key')) localStorage.setItem('elabs_key','sk_13183fc4f15eb3f848c408956b320ea92f4ebb184361d38c');
 
             // Initialize backup system
             console.log('📦 Initializing backup system...');
@@ -16343,6 +16345,9 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         // ── TTS (iOS PWA compatible) ──────────────────────────────────────────
         const _isIOSPWA=navigator.standalone===true;
         let _ttsAudio=null, _ttsKA=null;
+        // ElevenLabs config (stored in localStorage so it's not in source)
+        const _ELABS_VOICE='ErXwobaYiN019PkySvjV'; // Antoni – multilingual male
+        function _getElabsKey(){ return localStorage.getItem('elabs_key')||''; }
 
         function _pickVoice(){
             const voices=window.speechSynthesis.getVoices();
@@ -16356,20 +16361,53 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
         if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>{};
 
+        // Unlock iOS audio context synchronously in gesture handler
+        function _unlockIOSAudio(){
+            try{
+                const ctx=new(window.AudioContext||window.webkitAudioContext)();
+                const buf=ctx.createBuffer(1,1,22050);
+                const src=ctx.createBufferSource();
+                src.buffer=buf; src.connect(ctx.destination); src.start(0);
+                ctx.resume();
+            }catch(e){}
+        }
+
         function _aiSpeak(el, text) {
             const span=el.querySelector('span');
             const isSpeaking=_ttsAudio||(window.speechSynthesis&&window.speechSynthesis.speaking)||_ttsKA;
             if(isSpeaking){
-                if(_ttsAudio){_ttsAudio.pause();_ttsAudio=null;}
+                if(_ttsAudio){_ttsAudio.pause();URL.revokeObjectURL(_ttsAudio.src);_ttsAudio=null;}
                 clearInterval(_ttsKA);_ttsKA=null;
                 if(window.speechSynthesis)window.speechSynthesis.cancel();
                 span.textContent='🔊';span.style.color='rgba(255,255,255,0.7)';return;
             }
-            span.textContent='⏹';span.style.color='#10a37f';
             const reset=()=>{_ttsAudio=null;clearInterval(_ttsKA);_ttsKA=null;span.textContent='🔊';span.style.color='rgba(255,255,255,0.7)';};
 
-            if(_isIOSPWA){
-                // iOS PWA: speechSynthesis is silently blocked — use Audio element + Google TTS
+            const key=_getElabsKey();
+
+            if(_isIOSPWA && key){
+                // iOS PWA + ElevenLabs: unlock audio synchronously, then fetch
+                _unlockIOSAudio();
+                span.textContent='⏳';span.style.color='rgba(255,255,255,0.5)';
+                fetch('https://api.elevenlabs.io/v1/text-to-speech/'+_ELABS_VOICE,{
+                    method:'POST',
+                    headers:{'xi-api-key':key,'Content-Type':'application/json'},
+                    body:JSON.stringify({text:text,model_id:'eleven_multilingual_v2',voice_settings:{stability:0.45,similarity_boost:0.75,style:0.3,use_speaker_boost:true}})
+                })
+                .then(r=>{ if(!r.ok)throw r.status; return r.blob(); })
+                .then(blob=>{
+                    const url=URL.createObjectURL(blob);
+                    _ttsAudio=new Audio(url);
+                    _ttsAudio.onended=()=>{URL.revokeObjectURL(url);reset();};
+                    _ttsAudio.onerror=reset;
+                    span.textContent='⏹';span.style.color='#10a37f';
+                    _ttsAudio.play().catch(reset);
+                })
+                .catch(reset);
+
+            } else if(_isIOSPWA){
+                // iOS PWA fallback: Google TTS chunks
+                span.textContent='⏹';span.style.color='#10a37f';
                 const chunks=text.match(/.{1,190}(?:[.!?;,]|\s|$)/g)||[text];
                 let idx=0;
                 function playNext(){
@@ -16383,8 +16421,10 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                     _ttsAudio.play().catch(playNext);
                 }
                 playNext();
+
             } else {
-                // Browser (Safari/Desktop): use Web Speech API
+                // Browser (Safari/Desktop): Web Speech API
+                span.textContent='⏹';span.style.color='#10a37f';
                 const ss=window.speechSynthesis;
                 const utt=new SpeechSynthesisUtterance(text);
                 const voice=_pickVoice();
