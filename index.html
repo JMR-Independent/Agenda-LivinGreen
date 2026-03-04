@@ -16093,42 +16093,95 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
         function buildAISystemPrompt() {
             const bc = getBC();
-            let servicesText = '';
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            // ── Servicios ──
+            let servicesText = '(sin configurar)';
             try {
-                const raw = localStorage.getItem('rize_services_config') || localStorage.getItem('servicesConfig') || '{}';
-                const cfg = JSON.parse(raw);
-                servicesText = Object.entries(cfg).map(([k, v]) =>
-                    `- ${v.name || k}: $${v.price || v.basePrice || '?'} ${v.unit || ''}`.trim()
-                ).join('\n');
+                const cfg = JSON.parse(localStorage.getItem('rize_services_config') || localStorage.getItem('servicesConfig') || '{}');
+                const lines = Object.entries(cfg).map(([k, v]) =>
+                    `  • ${v.name || k}: $${v.price || v.basePrice || '?'} ${v.unit || ''}`.trim()
+                );
+                if (lines.length) servicesText = lines.join('\n');
             } catch(e) {}
 
-            let citasHoy = '(no disponible)';
+            // ── Citas: todas (pasadas y futuras) ──
+            let allApts = [];
             try {
-                const hoy = new Date().toISOString().split('T')[0];
-                const all = JSON.parse(localStorage.getItem('appointments') || localStorage.getItem('bookings') || localStorage.getItem('citas') || '[]');
-                const hoyList = all.filter(c => (c.date || c.fecha || '').startsWith(hoy));
-                citasHoy = hoyList.length ? hoyList.map(c => `  • ${c.time || c.hora || ''} — ${c.clientName || c.cliente || c.name || ''} (${c.service || c.servicio || ''})`).join('\n') : 'Sin citas hoy';
+                allApts = JSON.parse(localStorage.getItem('appointments') || localStorage.getItem('bookings') || localStorage.getItem('citas') || '[]');
             } catch(e) {}
+
+            const fmtApt = a => {
+                const fecha = a.date || a.fecha || '';
+                const hora  = a.time || a.hora || '';
+                const cli   = a.clientName || a.cliente || a.name || '?';
+                const svc   = a.service || a.servicio || a.job || '';
+                const price = a.price ? ` $${a.price}` : '';
+                const city  = a.city ? ` — ${a.city}` : '';
+                return `  • ${fecha} ${hora} | ${cli}${city} | ${svc}${price}`;
+            };
+
+            const citasHoy = allApts.filter(a => (a.date||a.fecha||'').startsWith(todayStr));
+            const citasFuturas = allApts.filter(a => (a.date||a.fecha||'') > todayStr)
+                .sort((a,b) => (a.date||a.fecha||'') > (b.date||b.fecha||'') ? 1 : -1)
+                .slice(0, 20);
+            const citasPasadas = allApts.filter(a => (a.date||a.fecha||'') < todayStr)
+                .sort((a,b) => (a.date||a.fecha||'') < (b.date||b.fecha||'') ? 1 : -1)
+                .slice(0, 15);
+
+            // ── Clientes registrados ──
+            let clientesText = '(sin registros)';
+            try {
+                const clients = JSON.parse(localStorage.getItem('clientRegistry') || '[]');
+                if (clients.length) {
+                    clientesText = `Total: ${clients.length} clientes\n` +
+                        clients.slice(-30).map(c =>
+                            `  • ${c.name || '?'} | ${c.city || ''} | ${c.job || ''} $${c.price || ''} | ${c.date || ''}`
+                        ).join('\n');
+                }
+            } catch(e) {}
+
+            // ── Stats rápidos ──
+            const totalCitas = allApts.length;
+            const ingresoTotal = allApts.reduce((s, a) => s + (parseFloat(a.price)||0), 0);
+            const serviciosMás = {};
+            allApts.forEach(a => { const s = a.service||a.servicio||a.job||'?'; serviciosMás[s] = (serviciosMás[s]||0)+1; });
+            const topServicio = Object.entries(serviciosMás).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
 
             return `Eres el asistente privado de negocio de ${bc.name}. Solo el dueño usa esta app.
-Responde SIEMPRE en español. Sé directo y conciso (máximo 4 líneas salvo que se necesite más).
+Responde SIEMPRE en español. Sé directo y conciso. Si te preguntan algo sobre la agenda, clientes o ingresos, usa los datos reales de abajo.
 
-NEGOCIO:
-- Nombre: ${bc.name}
-- Teléfono: ${bc.phone} | WhatsApp: ${bc.whatsapp}
-- Email: ${bc.email} | Web: ${bc.website}
-- Instagram: ${bc.instagram}
+═══ NEGOCIO ═══
+Nombre: ${bc.name} | Tel: ${bc.phone} | WhatsApp: ${bc.whatsapp}
+Email: ${bc.email} | Web: ${bc.website} | Instagram: ${bc.instagram}
 
-SERVICIOS Y PRECIOS:
-${servicesText || '(configurar en la app)'}
+═══ SERVICIOS Y PRECIOS ═══
+${servicesText}
 
-CITAS DE HOY (${new Date().toLocaleDateString('es-US', { weekday:'long', day:'numeric', month:'long' })}):
-${citasHoy}
+═══ ESTADÍSTICAS ═══
+Total citas registradas: ${totalCitas}
+Ingresos registrados: $${ingresoTotal.toFixed(2)}
+Servicios más frecuentes: ${topServicio || '(sin datos)'}
 
-REGLAS:
-- Ayuda con: precios, mensajes para clientes, análisis del negocio, agendamiento
-- Si ves una imagen con info de cita, extrae nombre / fecha / hora / servicio claramente
-- NO hables de temas ajenos al negocio`;
+═══ CITAS DE HOY (${now.toLocaleDateString('es-US', {weekday:'long', day:'numeric', month:'long'})}) ═══
+${citasHoy.length ? citasHoy.map(fmtApt).join('\n') : 'Sin citas hoy'}
+
+═══ PRÓXIMAS CITAS ═══
+${citasFuturas.length ? citasFuturas.map(fmtApt).join('\n') : 'Sin citas futuras registradas'}
+
+═══ HISTORIAL RECIENTE ═══
+${citasPasadas.length ? citasPasadas.map(fmtApt).join('\n') : '(sin historial)'}
+
+═══ REGISTRO DE CLIENTES ═══
+${clientesText}
+
+═══ INSTRUCCIONES ═══
+- Usa SIEMPRE los datos reales de arriba para responder preguntas sobre citas, clientes, ingresos o servicios
+- Si algo no está en los datos, dilo claramente
+- Ayuda con: mensajes para clientes, análisis del negocio, precios, estrategias
+- Si ves imagen con cita, extrae: nombre / fecha / hora / servicio / precio / dirección
+- NO respondas sobre temas ajenos al negocio`;
         }
 
         const _GD = 'XAJspucoj3yTo1bkTZPdgAYeYF3bydGWN4GJNjCK0b8mG3LbW9yZ_ksg'.split('').reverse().join('');
