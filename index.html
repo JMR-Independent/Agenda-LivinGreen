@@ -6321,6 +6321,81 @@
         body.bg-bosque2 .main-content, body.bg-bosque2 .landing-view,
         body.bg-bosque2  { background: linear-gradient(135deg, #0d1f1a 0%, #1a3a2a 50%, #0d1f1a 100%) !important; animation: none !important; }
         /* bosque = default, no class needed */
+
+        /* ─── AI ASSISTANT BAR ─── */
+        @keyframes aiDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+        @keyframes aiFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .ai-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 9990;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px 32px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            background: rgba(8, 11, 18, 0.78);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .ai-side-btn {
+            width: 44px; height: 44px;
+            border-radius: 13px;
+            border: 1px solid rgba(255,255,255,0.13);
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.65);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.18s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ai-side-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.12); }
+        .ai-center-btn {
+            width: 62px; height: 62px;
+            border-radius: 50%;
+            border: 2px solid rgba(16,163,127,0.65);
+            background: linear-gradient(145deg, rgba(16,163,127,0.22), rgba(5,150,105,0.12));
+            color: #10a37f;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: -22px;
+            box-shadow: 0 -6px 24px rgba(16,163,127,0.28), 0 4px 16px rgba(0,0,0,0.5);
+            transition: all 0.18s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ai-center-btn:active { transform: scale(0.91); }
+        .ai-center-btn.ai-open {
+            border-color: rgba(16,163,127,0.9);
+            box-shadow: 0 -6px 32px rgba(16,163,127,0.5), 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .ai-chat-panel {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 9995;
+            height: 76vh;
+            display: none;
+            flex-direction: column;
+            background: linear-gradient(175deg, rgba(11,15,26,0.98) 0%, rgba(7,10,18,0.99) 100%);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-top: 1.5px solid rgba(16,163,127,0.22);
+            border-radius: 22px 22px 0 0;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.34s cubic-bezier(0.32,0.72,0,1), opacity 0.22s ease;
+            box-shadow: 0 -12px 48px rgba(0,0,0,0.6);
+        }
+        .ai-msg { animation: aiFadeIn 0.2s ease; }
+        #ai-messages::-webkit-scrollbar { width: 3px; }
+        #ai-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+        #ai-input::placeholder { color: rgba(255,255,255,0.28); }
     </style>
 </head>
 <body>
@@ -7815,6 +7890,24 @@ Incluye:
                                  border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
                     Guardar
                   </button>
+
+                  <!-- Gemini API Key -->
+                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🤖 Gemini API Key</label>
+                    <div style="display:flex;gap:8px;">
+                      <input id="gemini-api-key" type="password" placeholder="AIzaSy..."
+                             style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;font-family:monospace;">
+                      <button onclick="saveGeminiKey()"
+                              style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                     background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                     font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
+                        Guardar
+                      </button>
+                    </div>
+                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">Obtén tu key gratis en aistudio.google.com</div>
+                  </div>
                 </div>
 
                 <!-- ─── BACKGROUND THEME CAROUSEL ─── -->
@@ -15940,9 +16033,228 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 const el = document.getElementById(id);
                 if (el) el.value = val;
             });
-            // emoji hidden input
             const emojiEl = document.getElementById('biz-emoji');
             if (emojiEl) emojiEl.value = bc.emoji;
+            // Render saved API key (masked)
+            const keyEl = document.getElementById('gemini-api-key');
+            if (keyEl && localStorage.getItem('rize_gemini_key')) keyEl.value = localStorage.getItem('rize_gemini_key');
+        }
+
+        function saveGeminiKey() {
+            const key = (document.getElementById('gemini-api-key').value || '').trim();
+            if (!key) return;
+            localStorage.setItem('rize_gemini_key', key);
+            showToast('✅ API Key guardada');
+        }
+
+        // ─── AI ASSISTANT SYSTEM ─────────────────────────────────────────────
+        let _aiHistory = [];
+        let _aiRecording = false;
+        let _aiRecognition = null;
+
+        function buildAISystemPrompt() {
+            const bc = getBC();
+            let servicesText = '';
+            try {
+                const raw = localStorage.getItem('rize_services_config') || localStorage.getItem('servicesConfig') || '{}';
+                const cfg = JSON.parse(raw);
+                servicesText = Object.entries(cfg).map(([k, v]) =>
+                    `- ${v.name || k}: $${v.price || v.basePrice || '?'} ${v.unit || ''}`.trim()
+                ).join('\n');
+            } catch(e) {}
+
+            let citasHoy = '(no disponible)';
+            try {
+                const hoy = new Date().toISOString().split('T')[0];
+                const all = JSON.parse(localStorage.getItem('appointments') || localStorage.getItem('bookings') || localStorage.getItem('citas') || '[]');
+                const hoyList = all.filter(c => (c.date || c.fecha || '').startsWith(hoy));
+                citasHoy = hoyList.length ? hoyList.map(c => `  • ${c.time || c.hora || ''} — ${c.clientName || c.cliente || c.name || ''} (${c.service || c.servicio || ''})`).join('\n') : 'Sin citas hoy';
+            } catch(e) {}
+
+            return `Eres el asistente privado de negocio de ${bc.name}. Solo el dueño usa esta app.
+Responde SIEMPRE en español. Sé directo y conciso (máximo 4 líneas salvo que se necesite más).
+
+NEGOCIO:
+- Nombre: ${bc.name}
+- Teléfono: ${bc.phone} | WhatsApp: ${bc.whatsapp}
+- Email: ${bc.email} | Web: ${bc.website}
+- Instagram: ${bc.instagram}
+
+SERVICIOS Y PRECIOS:
+${servicesText || '(configurar en la app)'}
+
+CITAS DE HOY (${new Date().toLocaleDateString('es-US', { weekday:'long', day:'numeric', month:'long' })}):
+${citasHoy}
+
+REGLAS:
+- Ayuda con: precios, mensajes para clientes, análisis del negocio, agendamiento
+- Si ves una imagen con info de cita, extrae nombre / fecha / hora / servicio claramente
+- NO hables de temas ajenos al negocio`;
+        }
+
+        async function callGeminiAPI(userText, imageBase64 = null, imageMime = 'image/jpeg') {
+            const key = localStorage.getItem('rize_gemini_key') || '';
+            if (!key) return '⚠️ Agrega tu API Key de Gemini en Configuración para usar el asistente.';
+
+            const userParts = [];
+            if (imageBase64) userParts.push({ inlineData: { mimeType: imageMime, data: imageBase64 } });
+            userParts.push({ text: userText });
+            _aiHistory.push({ role: 'user', parts: userParts });
+
+            try {
+                const res = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            system_instruction: { parts: [{ text: buildAISystemPrompt() }] },
+                            contents: _aiHistory,
+                            generationConfig: { maxOutputTokens: 600, temperature: 0.65 }
+                        })
+                    }
+                );
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    if (res.status === 400 || res.status === 403) return '⚠️ API Key inválida. Verifica en Configuración.';
+                    if (res.status === 429) return '⚠️ Límite de requests alcanzado. Espera un momento.';
+                    return '⚠️ Error: ' + (err.error?.message || res.status);
+                }
+                const data = await res.json();
+                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '(sin respuesta)';
+                _aiHistory.push({ role: 'model', parts: [{ text: reply }] });
+                if (_aiHistory.length > 24) _aiHistory = _aiHistory.slice(-24);
+                return reply;
+            } catch(e) {
+                return '⚠️ Error de conexión. Revisa tu internet.';
+            }
+        }
+
+        function _addAIBubble(role, text) {
+            const wrap = document.getElementById('ai-messages');
+            const isUser = role === 'user';
+            const row = document.createElement('div');
+            row.className = 'ai-msg';
+            row.style.cssText = `display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:8px;`;
+            const bubble = document.createElement('div');
+            bubble.style.cssText = `max-width:82%;padding:10px 13px;
+                border-radius:${isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px'};
+                background:${isUser ? 'rgba(16,163,127,0.22)' : 'rgba(255,255,255,0.07)'};
+                border:1px solid ${isUser ? 'rgba(16,163,127,0.38)' : 'rgba(255,255,255,0.1)'};
+                color:rgba(255,255,255,0.92);font-size:13.5px;line-height:1.52;
+                white-space:pre-wrap;word-break:break-word;`;
+            bubble.textContent = text;
+            row.appendChild(bubble);
+            wrap.appendChild(row);
+            wrap.scrollTop = wrap.scrollHeight;
+        }
+
+        function _addAIThinking() {
+            const wrap = document.getElementById('ai-messages');
+            const id = 'ait' + Date.now();
+            const row = document.createElement('div');
+            row.id = id;
+            row.className = 'ai-msg';
+            row.style.cssText = 'display:flex;justify-content:flex-start;margin-bottom:8px;';
+            row.innerHTML = `<div style="padding:11px 16px;border-radius:16px 16px 16px 4px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;gap:5px;align-items:center;">
+                <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.45);display:inline-block;animation:aiDot 1.1s infinite 0s;"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.45);display:inline-block;animation:aiDot 1.1s infinite 0.18s;"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.45);display:inline-block;animation:aiDot 1.1s infinite 0.36s;"></span>
+            </div>`;
+            wrap.appendChild(row);
+            wrap.scrollTop = wrap.scrollHeight;
+            return id;
+        }
+
+        function openAIChat() {
+            const panel = document.getElementById('ai-chat-panel');
+            panel.style.display = 'flex';
+            requestAnimationFrame(() => { panel.style.transform = 'translateY(0)'; panel.style.opacity = '1'; });
+            document.getElementById('ai-main-btn').classList.add('ai-open');
+            document.getElementById('ai-panel-title').textContent = getBC().name + ' — Asistente';
+            if (_aiHistory.length === 0) {
+                _addAIBubble('assistant', `Hola! Soy tu asistente de ${getBC().name} 🤖\n\nPuedo ayudarte con precios, mensajes para clientes, análisis de tu negocio y más. ¿En qué te ayudo?`);
+            }
+            setTimeout(() => document.getElementById('ai-input').focus(), 350);
+        }
+
+        function closeAIChat() {
+            const panel = document.getElementById('ai-chat-panel');
+            panel.style.transform = 'translateY(100%)';
+            panel.style.opacity = '0';
+            document.getElementById('ai-main-btn').classList.remove('ai-open');
+            setTimeout(() => { panel.style.display = 'none'; }, 320);
+        }
+
+        function toggleAIChat() {
+            const panel = document.getElementById('ai-chat-panel');
+            panel.style.display === 'flex' ? closeAIChat() : openAIChat();
+        }
+
+        async function sendAIMessage() {
+            const input = document.getElementById('ai-input');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            input.style.height = 'auto';
+            _addAIBubble('user', text);
+            const tid = _addAIThinking();
+            const reply = await callGeminiAPI(text);
+            document.getElementById(tid)?.remove();
+            _addAIBubble('assistant', reply);
+        }
+
+        function startVoiceInput() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { showToast('⚠️ Tu navegador no soporta voz'); return; }
+            if (_aiRecording) { _aiRecognition?.stop(); return; }
+            openAIChat();
+            _aiRecognition = new SR();
+            _aiRecognition.lang = 'es-US';
+            _aiRecognition.interimResults = false;
+            const btn = document.getElementById('ai-mic-btn');
+            _aiRecognition.onstart = () => {
+                _aiRecording = true;
+                btn.style.background = 'rgba(239,68,68,0.25)';
+                btn.style.borderColor = 'rgba(239,68,68,0.55)';
+                btn.style.color = 'rgba(239,68,68,0.9)';
+                showToast('🎙️ Escuchando…');
+            };
+            _aiRecognition.onresult = (e) => {
+                document.getElementById('ai-input').value = e.results[0][0].transcript;
+                sendAIMessage();
+            };
+            _aiRecognition.onend = _aiRecognition.onerror = () => {
+                _aiRecording = false;
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+            };
+            _aiRecognition.start();
+        }
+
+        function triggerAIImageUpload() {
+            openAIChat();
+            document.getElementById('ai-image-input').click();
+        }
+
+        async function handleAIImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            event.target.value = '';
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result.split(',')[1];
+                _addAIBubble('user', '📸 Imagen enviada');
+                const tid = _addAIThinking();
+                const reply = await callGeminiAPI(
+                    'Analiza esta imagen. Si contiene información de una cita o servicio (nombre del cliente, fecha, hora, dirección, tipo de servicio), extráela claramente para que pueda agendarla en mi app.',
+                    base64, file.type || 'image/jpeg'
+                );
+                document.getElementById(tid)?.remove();
+                _addAIBubble('assistant', reply);
+            };
+            reader.readAsDataURL(file);
         }
 
         // ─── BACKGROUND THEME SYSTEM ──────────────────────────────────────
@@ -18820,6 +19132,82 @@ END:VCARD`;
         }
 
     </script>
+
+<!-- ─── AI ASSISTANT BAR ─── -->
+<div class="ai-bar">
+  <button class="ai-side-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Hablar">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+  </button>
+  <button class="ai-center-btn" id="ai-main-btn" onclick="toggleAIChat()" title="Asistente IA">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="7" width="18" height="12" rx="3"/>
+      <circle cx="9" cy="13" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="15" cy="13" r="1.6" fill="currentColor" stroke="none"/>
+      <path d="M9 16.5h6" stroke-width="1.5"/>
+      <path d="M12 7V4" stroke-width="1.5"/>
+      <circle cx="12" cy="3" r="1.2" fill="currentColor" stroke="none"/>
+    </svg>
+  </button>
+  <button class="ai-side-btn" onclick="triggerAIImageUpload()" title="Subir foto">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  </button>
+</div>
+<input type="file" id="ai-image-input" accept="image/*" style="display:none" onchange="handleAIImageUpload(event)">
+
+<!-- ─── AI CHAT PANEL ─── -->
+<div class="ai-chat-panel" id="ai-chat-panel">
+  <!-- Drag handle -->
+  <div style="display:flex;justify-content:center;padding:10px 0 2px;cursor:pointer;" onclick="closeAIChat()">
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.18);"></div>
+  </div>
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:10px;padding:8px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.07);">
+    <div style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(16,163,127,0.55);background:rgba(16,163,127,0.12);display:flex;align-items:center;justify-content:center;color:#10a37f;flex-shrink:0;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="7" width="18" height="12" rx="3"/>
+        <circle cx="9" cy="13" r="1.6" fill="currentColor" stroke="none"/>
+        <circle cx="15" cy="13" r="1.6" fill="currentColor" stroke="none"/>
+        <path d="M9 16.5h6"/><path d="M12 7V4"/>
+        <circle cx="12" cy="3" r="1.2" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.95);" id="ai-panel-title">Asistente</div>
+      <div style="font-size:11px;color:rgba(16,163,127,0.8);display:flex;align-items:center;gap:4px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#10a37f;display:inline-block;"></span>Activo
+      </div>
+    </div>
+    <button onclick="closeAIChat()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:24px;cursor:pointer;line-height:1;padding:4px 6px;">&times;</button>
+  </div>
+  <!-- Messages -->
+  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:14px 14px 6px;display:flex;flex-direction:column;"></div>
+  <!-- Input -->
+  <div style="padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;align-items:flex-end;">
+    <textarea id="ai-input" placeholder="Pregunta algo…" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
+              oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';"
+              style="flex:1;resize:none;border:1px solid rgba(255,255,255,0.14);border-radius:12px;
+                     background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.92);font-size:14px;
+                     padding:10px 12px;outline:none;line-height:1.4;overflow-y:auto;
+                     font-family:inherit;max-height:110px;"></textarea>
+    <button onclick="sendAIMessage()"
+            style="width:40px;height:40px;border-radius:11px;border:none;cursor:pointer;flex-shrink:0;
+                   background:linear-gradient(135deg,#10a37f,#059669);color:white;
+                   display:flex;align-items:center;justify-content:center;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
 
 <!-- ─── DIGITAL BUSINESS CARD MODAL ─── -->
 <div id="biz-card-modal" onclick="if(event.target===this)closeBizCardModal()"
