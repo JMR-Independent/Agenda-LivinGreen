@@ -16382,22 +16382,33 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
                 _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
             }
-            // Adjust panel height when keyboard opens (iOS PWA)
+            // Lock body scroll so iOS can't shift the fixed panel
+            document.body.style.overflow='hidden';
+            document.body.scrollTop=0;
+            document.documentElement.scrollTop=0;
+            // Adjust panel for iOS keyboard: correct both height AND top offset
             if(window.visualViewport){
-                window._aiVVHandler=()=>{panel.style.height=window.visualViewport.height+'px';};
+                window._aiVVHandler=()=>{
+                    panel.style.height=window.visualViewport.height+'px';
+                    panel.style.top=window.visualViewport.offsetTop+'px';
+                };
                 window.visualViewport.addEventListener('resize',window._aiVVHandler);
-                panel.style.height=window.visualViewport.height+'px';
+                window.visualViewport.addEventListener('scroll',window._aiVVHandler);
+                window._aiVVHandler();
             }
-            setTimeout(()=>document.getElementById('ai-input').focus(),350);
+            // No auto-focus: let user tap the input to open keyboard
         }
 
         function closeAIChat() {
             const panel=document.getElementById('ai-chat-panel');
+            if(document.activeElement) document.activeElement.blur();
             panel.style.transform='translateY(100%)';
-            panel.style.height='';
+            panel.style.height=''; panel.style.top='';
             document.getElementById('ai-main-btn').classList.remove('ai-open');
+            document.body.style.overflow='';
             if(window.visualViewport&&window._aiVVHandler){
                 window.visualViewport.removeEventListener('resize',window._aiVVHandler);
+                window.visualViewport.removeEventListener('scroll',window._aiVVHandler);
                 window._aiVVHandler=null;
             }
             setTimeout(()=>{panel.style.display='none';},320);
