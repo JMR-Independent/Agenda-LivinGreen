@@ -16114,16 +16114,20 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 const lines=Object.entries(cfg).map(([k,v])=>`${v.name||k}:$${v.price||v.basePrice||'?'}`);
                 if(lines.length) svcTxt=lines.join(' | ');
             } catch {}
-            // Solo citas de hoy + próximas 7 (no historial — usar tool search_appointments si hace falta)
+            // Citas: appointments + dayEvents mergeados
             let allApts=[];
             try { allApts=JSON.parse(localStorage.getItem('appointments')||'[]'); } catch {}
+            try { const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]'); dv.forEach(e=>{if(!allApts.find(a=>a.id===e.id))allApts.push(e);}); } catch {}
             const fmt=a=>`${a.date||a.fecha||''} ${a.time||a.hora||''} ${a.clientName||a.cliente||a.name||'?'} — ${a.service||a.servicio||a.job||''}${a.price?' $'+a.price:''}`;
             const hoy=allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
             const prox=allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>((a.date||a.fecha||'')>(b.date||b.fecha||''))?1:-1).slice(0,7);
-            // Stats compactos
+            // Stats: contar clientes únicos en appointments + clientRegistry
             const total=allApts.length;
             const ingresos=allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
-            let nClients=0; try{nClients=JSON.parse(localStorage.getItem('clientRegistry')||'[]').length;}catch{}
+            const uniqueNames=new Set();
+            allApts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});
+            try{JSON.parse(localStorage.getItem('clientRegistry')||'[]').forEach(c=>{const n=(c.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});}catch{}
+            const nClients=uniqueNames.size;
             // Memoria
             const memBlock=(mem.notes.length>0||mem.summary)
                 ?`\nMemoria: ${mem.summary||''} ${mem.notes.slice(-5).map(n=>n.content).join(' | ')}\n`:'';
@@ -16184,6 +16188,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         function _toolGetStats(args) {
             const p=args.period||'all'; const now=new Date();
             let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+            try{const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]');dv.forEach(e=>{if(!apts.find(a=>a.id===e.id))apts.push(e);});}catch{}
             const f=apts.filter(a=>{const d=new Date(a.date||a.fecha||'');
                 if(p==='today')return d.toDateString()===now.toDateString();
                 if(p==='week')return d>=new Date(now-7*86400000);
@@ -16191,8 +16196,11 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 return true;});
             const rev=f.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
             const bySvc={}; f.forEach(a=>{const s=a.service||a.servicio||a.job||'?';bySvc[s]=(bySvc[s]||0)+1;});
-            let cli=[]; try{cli=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
-            return {period:p,appointments:f.length,revenue:'$'+rev.toFixed(2),total_clients:cli.length,by_service:bySvc};
+            // Clientes únicos: nombres en citas + clientRegistry
+            const names=new Set();
+            apts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim().toLowerCase();if(n)names.add(n);});
+            try{JSON.parse(localStorage.getItem('clientRegistry')||'[]').forEach(c=>{const n=(c.name||'').trim().toLowerCase();if(n)names.add(n);});}catch{}
+            return {period:p,appointments:f.length,revenue:'$'+rev.toFixed(2),unique_clients:names.size,by_service:bySvc};
         }
         function _toolSearchClients(args) {
             const q=(args.query||'').toLowerCase();
