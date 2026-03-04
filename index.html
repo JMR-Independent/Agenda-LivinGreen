@@ -16376,7 +16376,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                     if(idx>=chunks.length){reset();return;}
                     const chunk=chunks[idx++].trim();
                     if(!chunk){playNext();return;}
-                    const url='https://translate.google.com/translate_tts?ie=UTF-8&tl=es&client=tw-ob&q='+encodeURIComponent(chunk);
+                    const url='https://api.streamelements.com/kappa/v2/speech?voice=Enrique&text='+encodeURIComponent(chunk);
                     _ttsAudio=new Audio(url);
                     _ttsAudio.onended=playNext;
                     _ttsAudio.onerror=playNext;
