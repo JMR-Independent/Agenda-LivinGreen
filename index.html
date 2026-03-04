@@ -6369,14 +6369,23 @@
             height: 80vh;
             display: none;
             flex-direction: column;
-            background: #212121;
-            border-radius: 20px 20px 0 0;
+            background: rgba(18, 18, 22, 0.86);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-radius: 24px 24px 0 0;
             transform: translateY(100%);
             opacity: 0;
             transition: transform 0.32s cubic-bezier(0.32,0.72,0,1), opacity 0.2s ease;
-            box-shadow: 0 -8px 40px rgba(0,0,0,0.7);
+            box-shadow: 0 -12px 60px rgba(0,0,0,0.6);
             overflow: hidden;
+            mask-image: linear-gradient(to bottom, transparent 0px, black 28px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 28px);
         }
+        #ai-input {
+            color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
+        }
+        #ai-input::placeholder { color: rgba(255,255,255,0.38); }
         .ai-msg { animation: aiFadeIn 0.18s ease; }
         /* User bubble */
         .ai-bubble-user {
