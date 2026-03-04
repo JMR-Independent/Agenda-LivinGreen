@@ -16456,7 +16456,12 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             return bar;
         }
 
+        function _hideEmptyState(){
+            const e=document.getElementById('ai-empty-state');
+            if(e) e.style.display='none';
+        }
         function _addAIBubble(role, text) {
+            _hideEmptyState();
             const wrap=document.getElementById('ai-messages'); const isUser=role==='user';
             const row=document.createElement('div'); row.className='ai-msg';
             row.style.cssText=`display:flex;align-items:flex-start;justify-content:${isUser?'flex-end':'flex-start'};margin-bottom:${isUser?'8':'16'}px;gap:10px;`;
@@ -16476,6 +16481,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
 
         async function _streamAIBubble(text) {
+            _hideEmptyState();
             const wrap=document.getElementById('ai-messages');
             const row=document.createElement('div'); row.className='ai-msg';
             row.style.cssText='display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:16px;gap:10px;';
@@ -16537,12 +16543,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             requestAnimationFrame(()=>{panel.style.transform='translateY(0)';});
             document.getElementById('ai-main-btn').classList.add('ai-open');
             document.getElementById('ai-panel-title').textContent=getBC().name+' IA';
-            if(!_aiWelcomed){
-                _aiWelcomed=true;
-                const mem=getAIMemory();
-                const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
-                _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
-            }
+            if(!_aiWelcomed) _aiWelcomed=true;
             // Block ALL touchmove on document except inside messages/input
             document.addEventListener('touchmove',_aiBlockScroll,{passive:false});
             // Also lock body position
@@ -19630,7 +19631,14 @@ END:VCARD`;
   </div>
 
   <!-- Messages -->
-  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:20px 16px 12px;display:flex;flex-direction:column;"></div>
+  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:20px 16px 12px;display:flex;flex-direction:column;">
+    <div id="ai-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding-bottom:60px;pointer-events:none;">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.85">
+        <path d="M22 4L24.5 17.5L38 15L27.5 22L38 29L24.5 26.5L22 40L19.5 26.5L6 29L16.5 22L6 15L19.5 17.5Z" fill="#10a37f"/>
+      </svg>
+      <p id="ai-empty-text" style="font-size:22px;font-weight:600;color:rgba(255,255,255,0.88);text-align:center;margin:0;line-height:1.35;">¿En qué puedo<br>ayudarte hoy?</p>
+    </div>
+  </div>
 
   <!-- Input bar -->
   <div class="ai-input-row">
