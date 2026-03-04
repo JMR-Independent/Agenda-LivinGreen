@@ -16122,22 +16122,27 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 return `  • ${fecha} ${hora} | ${cli}${city} | ${svc}${price}`;
             };
 
+            // Incluir también dayEvents si existen
+            try {
+                const dv = JSON.parse(localStorage.getItem('dayEvents') || '[]');
+                dv.forEach(e => { if (!allApts.find(a => a.id === e.id)) allApts.push(e); });
+            } catch(e) {}
+
             const citasHoy = allApts.filter(a => (a.date||a.fecha||'').startsWith(todayStr));
             const citasFuturas = allApts.filter(a => (a.date||a.fecha||'') > todayStr)
-                .sort((a,b) => (a.date||a.fecha||'') > (b.date||b.fecha||'') ? 1 : -1)
-                .slice(0, 20);
+                .sort((a,b) => (a.date||a.fecha||'') > (b.date||b.fecha||'') ? 1 : -1);
             const citasPasadas = allApts.filter(a => (a.date||a.fecha||'') < todayStr)
-                .sort((a,b) => (a.date||a.fecha||'') < (b.date||b.fecha||'') ? 1 : -1)
-                .slice(0, 15);
+                .sort((a,b) => (a.date||a.fecha||'') < (b.date||b.fecha||'') ? 1 : -1);
 
-            // ── Clientes registrados ──
+            // ── Clientes registrados — TODOS ──
+            let allClients = [];
             let clientesText = '(sin registros)';
             try {
-                const clients = JSON.parse(localStorage.getItem('clientRegistry') || '[]');
-                if (clients.length) {
-                    clientesText = `Total: ${clients.length} clientes\n` +
-                        clients.slice(-30).map(c =>
-                            `  • ${c.name || '?'} | ${c.city || ''} | ${c.job || ''} $${c.price || ''} | ${c.date || ''}`
+                allClients = JSON.parse(localStorage.getItem('clientRegistry') || '[]');
+                if (allClients.length) {
+                    clientesText = `Total: ${allClients.length} clientes\n` +
+                        allClients.map((c, i) =>
+                            `  ${i+1}. ${c.name || '?'} | ${c.city || ''} | ${c.job || ''} $${c.price || ''} | ${c.date || ''} ${c.time || ''}`
                         ).join('\n');
                 }
             } catch(e) {}
@@ -16147,7 +16152,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             const ingresoTotal = allApts.reduce((s, a) => s + (parseFloat(a.price)||0), 0);
             const serviciosMás = {};
             allApts.forEach(a => { const s = a.service||a.servicio||a.job||'?'; serviciosMás[s] = (serviciosMás[s]||0)+1; });
-            const topServicio = Object.entries(serviciosMás).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
+            const topServicio = Object.entries(serviciosMás).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
 
             return `Eres el asistente privado de negocio de ${bc.name}. Solo el dueño usa esta app.
 Responde SIEMPRE en español. Sé directo y conciso. Si te preguntan algo sobre la agenda, clientes o ingresos, usa los datos reales de abajo.
@@ -16249,7 +16254,7 @@ ${clientesText}
             if (!isUser) {
                 const avatar = document.createElement('div');
                 avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;';
-                avatar.innerHTML = '<svg width="14" height="14" viewBox="0 0 41 41" fill="#10a37f"><path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.99-3.768 10.079 10.079 0 0 0-9.562 4.936 9.964 9.964 0 0 0-6.65 3.498 10.079 10.079 0 0 0-2.48 10.582 9.964 9.964 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.99 3.768 10.079 10.079 0 0 0 9.563-4.936 9.965 9.965 0 0 0 6.65-3.498 10.079 10.079 0 0 0 2.479-10.582zm-14.46 20.184a7.482 7.482 0 0 1-4.806-1.73c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.482 7.665zM6.031 33.317a7.482 7.482 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103L16.443 36.5a7.505 7.505 0 0 1-10.412-3.183zm-2.64-17.428A7.482 7.482 0 0 1 7.29 11.67c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L6.849 25.289a7.505 7.505 0 0 1-3.458-9.4zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l7.336 4.235a7.504 7.504 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.935-1.317zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l7.882-4.551a7.504 7.504 0 0 1 11.302 7.669zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.505 7.505 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.5v4.999l-4.331 2.5-4.331-2.5V20.27z"/></svg>';
+                avatar.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
                 row.appendChild(avatar);
             }
             const bubble = document.createElement('div');
@@ -16269,7 +16274,7 @@ ${clientesText}
             row.style.cssText = 'display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:16px;gap:10px;';
             row.innerHTML = `
                 <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
-                    <svg width="14" height="14" viewBox="0 0 41 41" fill="#10a37f"><path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.99-3.768 10.079 10.079 0 0 0-9.562 4.936 9.964 9.964 0 0 0-6.65 3.498 10.079 10.079 0 0 0-2.48 10.582 9.964 9.964 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.99 3.768 10.079 10.079 0 0 0 9.563-4.936 9.965 9.965 0 0 0 6.65-3.498 10.079 10.079 0 0 0 2.479-10.582zm-14.46 20.184a7.482 7.482 0 0 1-4.806-1.73c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.482 7.665zM6.031 33.317a7.482 7.482 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103L16.443 36.5a7.505 7.505 0 0 1-10.412-3.183zm-2.64-17.428A7.482 7.482 0 0 1 7.29 11.67c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L6.849 25.289a7.505 7.505 0 0 1-3.458-9.4zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l7.336 4.235a7.504 7.504 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.935-1.317zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l7.882-4.551a7.504 7.504 0 0 1 11.302 7.669zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.505 7.505 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.5v4.999l-4.331 2.5-4.331-2.5V20.27z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>
                 </div>
                 <div style="display:flex;gap:5px;align-items:center;padding:12px 0;margin-top:4px;">
                     <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0s;"></span>
@@ -19238,7 +19243,7 @@ END:VCARD`;
   <!-- Header -->
   <div class="ai-chat-header">
     <button class="ai-chat-header-btn" onclick="closeAIChat()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)">
         <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
       </svg>
     </button>
@@ -19258,17 +19263,18 @@ END:VCARD`;
   <div class="ai-input-row">
     <div class="ai-input-pill">
       <button class="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Adjuntar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.75)">
           <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
                 oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';
-                         var btn=document.getElementById('ai-send-btn');
-                         btn.classList.toggle('active',this.value.trim().length>0);"></textarea>
+                         var hasText=this.value.trim().length>0;
+                         document.getElementById('ai-send-btn').classList.toggle('active',hasText);
+                         document.getElementById('ai-send-icon').setAttribute('fill',hasText?'#000':'rgba(255,255,255,0.35)');"></textarea>
       <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <svg id="ai-send-icon" width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.35)">
           <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
         </svg>
       </button>
