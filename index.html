@@ -16334,23 +16334,32 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         const _BTN_STYLE = 'display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;cursor:pointer;background:transparent;border:none;padding:0;';
         const _ICON_STYLE = 'font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);';
 
-        function _getBestVoice() {
-            const voices=window.speechSynthesis.getVoices();
-            // iOS Premium/Enhanced male voices first (much more natural)
-            const premium=voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos/i.test(v.name)&&/premium|enhanced/i.test(v.name));
-            const male=voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos|andr[eé]s|miguel|pablo/i.test(v.name));
-            return premium||male||voices.find(v=>v.lang.startsWith('es'))||null;
-        }
-
         function _aiCopy(el, text) {
             const copy=()=>{ el.querySelector('span').textContent='✓'; el.querySelector('span').style.color='#10a37f'; setTimeout(()=>{ el.querySelector('span').textContent='⧉'; el.querySelector('span').style.color='rgba(255,255,255,0.7)';},1500); };
             if(navigator.clipboard){ navigator.clipboard.writeText(text).then(copy).catch(copy); }
             else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
         }
-        // Pre-load voices as soon as possible (iOS loads them async)
+
+        // Voice cache — populated on first load and whenever voices change
+        let _aiVoiceCache=[];
+        function _loadVoiceCache(){
+            const v=window.speechSynthesis.getVoices();
+            if(v.length) _aiVoiceCache=v;
+        }
+        function _pickVoice(){
+            const voices=_aiVoiceCache.length ? _aiVoiceCache : window.speechSynthesis.getVoices();
+            const isEs=v=>/^es/i.test(v.lang);
+            return voices.find(v=>/siri voz 1/i.test(v.name))||
+                   voices.find(v=>/siri voz/i.test(v.name))||
+                   voices.find(v=>isEs(v)&&/siri/i.test(v.name))||
+                   voices.find(v=>isEs(v)&&/premium|enhanced/i.test(v.name))||
+                   voices.find(v=>isEs(v)&&/jorge|diego|carlos|andr[eé]s/i.test(v.name))||
+                   voices.find(v=>isEs(v))||
+                   null;
+        }
         if(window.speechSynthesis){
-            window.speechSynthesis.getVoices();
-            window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+            _loadVoiceCache();
+            window.speechSynthesis.onvoiceschanged=_loadVoiceCache;
         }
 
         function _aiSpeak(el, text) {
@@ -16361,24 +16370,26 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             }
             span.textContent='⏹'; span.style.color='#10a37f';
             const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; };
-            const utt=new SpeechSynthesisUtterance(text);
-            const voices=window.speechSynthesis.getVoices();
-            // Log available voices for debugging
-            console.log('🔊 Voces disponibles:', voices.map(v=>v.name+'|'+v.lang).join(', '));
-            // Pick best Spanish voice: Siri by exact name first (any lang), then lang-restricted
-            const isEs=v=>/^es/i.test(v.lang)||/^es/.test(v.lang);
-            const voice=
-                voices.find(v=>/siri voz 1/i.test(v.name))||
-                voices.find(v=>/siri voz/i.test(v.name))||
-                voices.find(v=>isEs(v)&&/siri/i.test(v.name))||
-                voices.find(v=>isEs(v)&&/premium|enhanced/i.test(v.name))||
-                voices.find(v=>isEs(v)&&/jorge|diego|carlos|andr[eé]s/i.test(v.name))||
-                voices.find(v=>isEs(v));
-            console.log('🔊 Usando voz:', voice ? voice.name+'|'+voice.lang : 'ninguna (default es-US)');
-            if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
-            utt.rate=0.97; utt.pitch=1.0; utt.volume=1.0;
-            utt.onend=reset; utt.onerror=reset;
-            window.speechSynthesis.speak(utt);
+
+            const doSpeak=()=>{
+                const utt=new SpeechSynthesisUtterance(text);
+                const voice=_pickVoice();
+                console.log('🔊 cache:', _aiVoiceCache.length, 'voz:', voice?voice.name+'|'+voice.lang:'default');
+                if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
+                utt.rate=0.97; utt.pitch=1.0; utt.volume=1.0;
+                utt.onend=reset; utt.onerror=reset;
+                // iOS PWA: cancel() before speak() prevents silent failures
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utt);
+            };
+
+            // iOS PWA: getVoices() returns [] on first call — retry once after brief delay
+            if(!_aiVoiceCache.length){
+                _loadVoiceCache();
+                setTimeout(()=>{ _loadVoiceCache(); doSpeak(); }, 100);
+            } else {
+                doSpeak();
+            }
         }
 
         function _makeActionBar(text, isUser) {
