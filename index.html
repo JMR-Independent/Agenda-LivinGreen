@@ -16372,6 +16372,13 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
         function _updateThinkingStatus(text) { const el=document.querySelector('.ai-thinking-text'); if(el)el.textContent=text; }
 
+        // Prevent body scroll on iOS when chat is open
+        // passive:false is required so preventDefault() works on iOS
+        function _aiBlockScroll(e){
+            if(e.target.closest('#ai-messages')||e.target.closest('#ai-input'))return;
+            e.preventDefault();
+        }
+
         function openAIChat() {
             const panel=document.getElementById('ai-chat-panel');
             panel.style.display='flex';
@@ -16384,12 +16391,13 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
                 _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
             }
-            // Lock body scroll (iOS-safe: position:fixed is the only reliable method)
+            // Block ALL touchmove on document except inside messages/input
+            document.addEventListener('touchmove',_aiBlockScroll,{passive:false});
+            // Also lock body position
             const scrollY=window.scrollY||0;
             document.body.style.position='fixed';
             document.body.style.top='-'+scrollY+'px';
             document.body.style.width='100%';
-            document.body.style.overflow='hidden';
             document.body.dataset.aiScrollY=scrollY;
             // Adjust panel for iOS keyboard: correct both height AND top offset
             if(window.visualViewport){
@@ -16401,7 +16409,6 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 window.visualViewport.addEventListener('scroll',window._aiVVHandler);
                 window._aiVVHandler();
             }
-            // No auto-focus: let user tap the input to open keyboard
         }
 
         function closeAIChat() {
@@ -16410,11 +16417,11 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             panel.style.transform='translateY(100%)';
             panel.style.height=''; panel.style.top='';
             document.getElementById('ai-main-btn').classList.remove('ai-open');
+            document.removeEventListener('touchmove',_aiBlockScroll,{passive:false});
             const savedY=parseInt(document.body.dataset.aiScrollY||'0');
             document.body.style.position='';
             document.body.style.top='';
             document.body.style.width='';
-            document.body.style.overflow='';
             window.scrollTo(0,savedY);
             if(window.visualViewport&&window._aiVVHandler){
                 window.visualViewport.removeEventListener('resize',window._aiVVHandler);
