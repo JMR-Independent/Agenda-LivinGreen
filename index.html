@@ -5009,7 +5009,7 @@
         input[type="tel"],
         input[type="number"],
         input[type="date"],
-        textarea,
+        textarea:not(#ai-input),
         select {
             background: rgba(0, 0, 0, 0.03) !important;
             border: none !important;
@@ -5028,14 +5028,14 @@
         [data-theme="dark"] input[type="tel"],
         [data-theme="dark"] input[type="number"],
         [data-theme="dark"] input[type="date"],
-        [data-theme="dark"] textarea,
+        [data-theme="dark"] textarea:not(#ai-input),
         [data-theme="dark"] select {
             background: rgba(255, 255, 255, 0.05) !important;
         }
 
         /* Focus state - minimal accent */
         input:focus,
-        textarea:focus,
+        textarea:not(#ai-input):focus,
         select:focus {
             outline: none !important;
             background: rgba(16, 163, 127, 0.05) !important;
@@ -5043,7 +5043,7 @@
         }
 
         [data-theme="dark"] input:focus,
-        [data-theme="dark"] textarea:focus,
+        [data-theme="dark"] textarea:not(#ai-input):focus,
         [data-theme="dark"] select:focus {
             background: rgba(16, 163, 127, 0.1) !important;
         }
@@ -6362,7 +6362,9 @@
         /* ── Chat panel — ChatGPT full screen ── */
         .ai-chat-panel {
             position: fixed;
-            inset: 0;
+            top: 0; left: 0; right: 0;
+            height: 100dvh;
+            height: 100vh; /* fallback */
             z-index: 10003;
             display: none;
             flex-direction: column;
@@ -6385,8 +6387,7 @@
             cursor: pointer; flex-shrink: 0;
         }
         .ai-input-row {
-            padding: 10px 12px;
-            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            padding: 10px 12px 10px;
             background: #212121;
             flex-shrink: 0;
         }
@@ -6410,10 +6411,18 @@
         }
         .ai-send-btn.active { background: #fff; color: #000; }
         #ai-input {
-            flex: 1; resize: none; border: none; background: transparent;
+            flex: 1; resize: none; border: none !important; border-bottom: none !important;
+            background: transparent !important;
             color: #fff !important; -webkit-text-fill-color: #fff !important;
-            font-size: 15px; line-height: 1.45; outline: none;
+            font-size: 15px; line-height: 1.45; outline: none !important;
             font-family: inherit; max-height: 130px; padding: 6px 0;
+            box-shadow: none !important;
+        }
+        #ai-input:focus {
+            border: none !important; border-bottom: none !important;
+            border-bottom-color: transparent !important;
+            background: transparent !important;
+            outline: none !important; box-shadow: none !important;
         }
         #ai-input::placeholder { color: rgba(255,255,255,0.35); }
         .ai-msg { animation: aiFadeIn 0.18s ease; }
@@ -16131,37 +16140,31 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             // Memoria
             const memBlock=(mem.notes.length>0||mem.summary)
                 ?`\nMemoria: ${mem.summary||''} ${mem.notes.slice(-5).map(n=>n.content).join(' | ')}\n`:'';
-            return `Eres el asistente de ${bc.name}. Responde en español, sé breve y directo.
-USA las herramientas para buscar datos específicos. Para agregar/crear: confirma antes.
-${memBlock}Negocio: ${bc.name} | ${bc.phone} | ${bc.email}
+            return `Asistente de ${bc.name}. Español. Breve.
+TOOLS: úsalas SOLO si el usuario pide datos concretos. Saludos/preguntas generales: responde SIN tools.
+Para add_client/create_appointment: confirma datos antes de ejecutar.
+${memBlock}${bc.name}|${bc.phone}|${bc.email}
 Servicios: ${svcTxt}
-Stats: ${total} citas | $${ingresos.toFixed(0)} ingresos | ${nClients} clientes
-Hoy (${todayStr}): ${hoy.length?hoy.map(fmt).join(' / '):'sin citas'}
+Stats: ${total} citas|$${ingresos.toFixed(0)}|${nClients} clientes únicos
+Hoy(${todayStr}): ${hoy.length?hoy.map(fmt).join(' / '):'sin citas'}
 Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
 
-        // ── Herramientas (Tool Calling) ────────────────────────────────────────
+        // ── Herramientas (Tool Calling) — descripciones mínimas para ahorrar tokens ──
         const AI_TOOLS = [
-            {type:'function',function:{name:'search_appointments',
-                description:'Busca citas en la agenda por cliente, fecha (YYYY-MM-DD), servicio o cualquier texto.',
+            {type:'function',function:{name:'search_appointments',description:'Busca citas por texto/fecha/cliente.',
                 parameters:{type:'object',properties:{query:{type:'string'},limit:{type:'number'}},required:['query']}}},
-            {type:'function',function:{name:'get_stats',
-                description:'Calcula ingresos, número de citas y clientes para un período.',
+            {type:'function',function:{name:'get_stats',description:'Ingresos y totales. period: today|week|month|all',
                 parameters:{type:'object',properties:{period:{type:'string',enum:['today','week','month','all']}},required:['period']}}},
-            {type:'function',function:{name:'search_clients',
-                description:'Busca clientes en el registro por nombre, teléfono, email o ciudad.',
+            {type:'function',function:{name:'search_clients',description:'Busca cliente por nombre/tel/email.',
                 parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}}},
-            {type:'function',function:{name:'add_client',
-                description:'Agrega un nuevo cliente al registro. Confirma con el usuario primero.',
+            {type:'function',function:{name:'add_client',description:'Agrega cliente. Confirma antes.',
                 parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
-            {type:'function',function:{name:'create_appointment',
-                description:'Crea una nueva cita en la agenda. Confirma todos los datos con el usuario primero.',
-                parameters:{type:'object',properties:{date:{type:'string',description:'YYYY-MM-DD'},time:{type:'string',description:'HH:MM'},client_name:{type:'string'},service:{type:'string'},price:{type:'number'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
-            {type:'function',function:{name:'save_memory_note',
-                description:'Guarda una nota para recordar en futuras conversaciones. Úsalo cuando el usuario pida recordar algo.',
+            {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM',
+                parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'number'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
+            {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',
                 parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
-            {type:'function',function:{name:'get_memory',
-                description:'Recupera notas guardadas de conversaciones anteriores.',
+            {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',
                 parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}}
         ];
 
@@ -16265,8 +16268,12 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
 
         async function runAgentLoop(history) {
             const messages=[{role:'system',content:buildAISystemPrompt()},...history];
+            let hasToolResults=false;
             for(let i=0;i<5;i++){
-                const res=await _groqCall({model:'llama-3.1-8b-instant',messages,tools:AI_TOOLS,tool_choice:'auto',max_tokens:700,temperature:0.65});
+                // After tool results are in messages, omit tools (~500 tokens saved on synthesis call)
+                const body={model:'llama-3.1-8b-instant',messages,max_tokens:700,temperature:0.65};
+                if(!hasToolResults){body.tools=AI_TOOLS;body.tool_choice='auto';}
+                const res=await _groqCall(body);
                 if(!res.ok){const err=await res.json().catch(()=>({}));
                     if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración.');
                     if(res.status===429)throw new Error('⚠️ Límite de Groq agotado. Espera 1 minuto e intenta de nuevo.');
@@ -16283,8 +16290,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                     const result=executeTool(tc.function.name,args);
                     messages.push({role:'tool',tool_call_id:tc.id,name:tc.function.name,content:JSON.stringify(result)});
                 }
-                // Pausa entre iteraciones para no saturar rate limit
-                if(i<4) await new Promise(r=>setTimeout(r,600));
+                hasToolResults=true;
+                if(i<4) await new Promise(r=>setTimeout(r,300));
             }
             return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
         }
@@ -16375,13 +16382,24 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
                 _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
             }
+            // Adjust panel height when keyboard opens (iOS PWA)
+            if(window.visualViewport){
+                window._aiVVHandler=()=>{panel.style.height=window.visualViewport.height+'px';};
+                window.visualViewport.addEventListener('resize',window._aiVVHandler);
+                panel.style.height=window.visualViewport.height+'px';
+            }
             setTimeout(()=>document.getElementById('ai-input').focus(),350);
         }
 
         function closeAIChat() {
             const panel=document.getElementById('ai-chat-panel');
             panel.style.transform='translateY(100%)';
+            panel.style.height='';
             document.getElementById('ai-main-btn').classList.remove('ai-open');
+            if(window.visualViewport&&window._aiVVHandler){
+                window.visualViewport.removeEventListener('resize',window._aiVVHandler);
+                window._aiVVHandler=null;
+            }
             setTimeout(()=>{panel.style.display='none';},320);
         }
 
@@ -16514,7 +16532,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 document.getElementById(tid)?.remove();
                 await _streamAIBubble(reply);
                 _aiHistory.push({role:'assistant',content:reply});
-                if(_aiHistory.length>40)_aiHistory=_aiHistory.slice(-40);
+                if(_aiHistory.length>8)_aiHistory=_aiHistory.slice(-8);
                 // Auto-resumen cada 15 mensajes — espera 8s para no competir con rate limit
                 if(_aiHistory.length%15===0) setTimeout(()=>{if(!_aiThinking)_autoSummarize();},8000);
             } catch(e) {
