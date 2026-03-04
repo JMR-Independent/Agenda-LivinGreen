@@ -7962,6 +7962,23 @@ Incluye:
                     </div>
                     <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en console.groq.com — sin tarjeta</div>
                   </div>
+                  <!-- OpenAI TTS Key -->
+                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🔊 OpenAI API Key (voz IA)</label>
+                    <div style="display:flex;gap:8px;">
+                      <input id="openai-tts-key" type="password" placeholder="sk-..."
+                             style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;font-family:monospace;">
+                      <button onclick="saveOpenAITTSKey()"
+                              style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                     background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                     font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
+                        Guardar
+                      </button>
+                    </div>
+                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">platform.openai.com · voz masculina natural (tts-1-hd)</div>
+                  </div>
                 </div>
 
                 <!-- ─── BACKGROUND THEME CAROUSEL ─── -->
@@ -16106,6 +16123,18 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             localStorage.setItem('rize_gemini_key', key);
             showToast('✅ API Key guardada');
         }
+        function saveOpenAITTSKey() {
+            const key = (document.getElementById('openai-tts-key').value || '').trim();
+            if (!key) return;
+            localStorage.setItem('rize_openai_tts_key', key);
+            showToast('✅ OpenAI Key guardada');
+        }
+        // Load saved OpenAI key on init
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const k=localStorage.getItem('rize_openai_tts_key');
+            const el=document.getElementById('openai-tts-key');
+            if(k&&el) el.value=k;
+        });
 
         // ─── AI ASSISTANT SYSTEM ─────────────────────────────────────────────
         let _aiHistory = [];
@@ -16335,18 +16364,44 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             if(navigator.clipboard){ navigator.clipboard.writeText(text).then(copy).catch(copy); }
             else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
         }
-        function _aiSpeak(el, text) {
+        async function _aiSpeak(el, text) {
+            const span=el.querySelector('span');
+            // Stop if already playing
+            if(window._aiAudioObj&&!window._aiAudioObj.paused){
+                window._aiAudioObj.pause(); window._aiAudioObj=null;
+                span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
+            }
             if(window.speechSynthesis.speaking){
                 window.speechSynthesis.cancel();
-                el.querySelector('span').textContent='🔊'; el.querySelector('span').style.color='rgba(255,255,255,0.7)'; return;
+                span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
             }
+            span.textContent='⏹'; span.style.color='#10a37f';
+            const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; window._aiAudioObj=null; };
+            const openaiKey=localStorage.getItem('rize_openai_tts_key');
+            if(openaiKey){
+                try{
+                    const res=await fetch('https://api.openai.com/v1/audio/speech',{
+                        method:'POST',
+                        headers:{'Authorization':'Bearer '+openaiKey,'Content-Type':'application/json'},
+                        body:JSON.stringify({model:'tts-1-hd',input:text,voice:'onyx',speed:1.0})
+                    });
+                    if(!res.ok) throw new Error('tts fail');
+                    const blob=await res.blob();
+                    const url=URL.createObjectURL(blob);
+                    const audio=new Audio(url);
+                    window._aiAudioObj=audio;
+                    audio.onended=()=>{ reset(); URL.revokeObjectURL(url); };
+                    audio.onerror=()=>{ reset(); URL.revokeObjectURL(url); };
+                    audio.play();
+                    return;
+                }catch(e){ reset(); return; }
+            }
+            // Fallback: Web Speech API with best available voice
             const utt=new SpeechSynthesisUtterance(text);
             const voice=_getBestVoice();
             if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
             utt.rate=1.0; utt.pitch=1.0;
-            const reset=()=>{ el.querySelector('span').textContent='🔊'; el.querySelector('span').style.color='rgba(255,255,255,0.7)'; };
             utt.onend=reset; utt.onerror=reset;
-            el.querySelector('span').textContent='⏹'; el.querySelector('span').style.color='#10a37f';
             window.speechSynthesis.speak(utt);
         }
 
