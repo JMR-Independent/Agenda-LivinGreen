@@ -16637,14 +16637,22 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             panel.style.display==='flex'?closeAIChat():openAIChat();
         }
 
+        function _setMicIcon(active){
+            const svg=document.getElementById('ai-mic-icon');
+            if(!svg)return;
+            const color=active?'#ff5555':'rgba(255,255,255,0.65)';
+            svg.querySelectorAll('rect,path,line').forEach(el=>{
+                if(el.hasAttribute('fill')&&el.getAttribute('fill')!=='none') el.setAttribute('fill',color);
+                if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none') el.setAttribute('stroke',color);
+            });
+        }
         function startVoiceInput() {
             const btn=document.getElementById('ai-mic-btn');
-            const span=btn.querySelector('span');
             // Si ya está grabando, detener
             if(window._aiRecorder){window._aiRecorder.stop();return;}
             // Intentar Whisper (MediaRecorder) primero, fallback a Web Speech API
             if(!navigator.mediaDevices||!window.MediaRecorder){
-                _startWebSpeech(btn,span); return;
+                _startWebSpeech(btn); return;
             }
             navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
                 const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
@@ -16653,12 +16661,12 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 const recorder=new MediaRecorder(stream,opts);
                 const chunks=[];
                 window._aiRecorder=recorder;
-                span.textContent='■'; span.style.color='#ff5555';
+                _setMicIcon(true);
                 recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
                 recorder.onstop=async()=>{
                     stream.getTracks().forEach(t=>t.stop());
                     window._aiRecorder=null;
-                    span.textContent='♪'; span.style.color='rgba(255,255,255,0.6)';
+                    _setMicIcon(false);
                     if(!chunks.length)return;
                     const ext=mimeType.includes('mp4')?'mp4':'webm';
                     const blob=new Blob(chunks,{type:mimeType||'audio/webm'});
@@ -16689,21 +16697,21 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 recorder.start();
                 // Auto-stop 60s
                 setTimeout(()=>{if(window._aiRecorder)window._aiRecorder.stop();},60000);
-            }).catch(()=>_startWebSpeech(btn,span));
+            }).catch(()=>_startWebSpeech(btn));
         }
-        function _startWebSpeech(btn,span) {
+        function _startWebSpeech(btn) {
             const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
             if(!SR){showToast('Micrófono no disponible');return;}
             const rec=new SR(); rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
-            span.textContent='●'; span.style.color='#ff5555';
+            _setMicIcon(true);
             rec.onresult=(e)=>{
                 const text=e.results[0][0].transcript;
                 document.getElementById('ai-input').value=text;
                 document.getElementById('ai-send-btn').classList.add('active');
                 document.getElementById('ai-send-icon').style.color='#000';
             };
-            rec.onend=()=>{span.textContent='♪';span.style.color='rgba(255,255,255,0.6)';};
-            rec.onerror=()=>{span.textContent='♪';span.style.color='rgba(255,255,255,0.6)';};
+            rec.onend=()=>{ _setMicIcon(false); };
+            rec.onerror=()=>{ _setMicIcon(false); };
             rec.start();
         }
 
@@ -19672,7 +19680,12 @@ END:VCARD`;
         <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
       </button>
       <button class="ai-attach-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Voz">
-        <span style="font-size:18px;color:rgba(255,255,255,0.6);line-height:1;display:flex;align-items:center;justify-content:center;">🎤</span>
+        <svg id="ai-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill="rgba(255,255,255,0.65)"/>
+          <path d="M5 10a7 7 0 0 0 14 0" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <line x1="12" y1="17" x2="12" y2="21" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"/>
+          <line x1="9" y1="21" x2="15" y2="21" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
