@@ -16188,9 +16188,15 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             // Memoria
             const memBlock=(mem.notes.length>0||mem.summary)
                 ?`\nMemoria: ${mem.summary||''} ${mem.notes.slice(-5).map(n=>n.content).join(' | ')}\n`:'';
-            return `Asistente de ${bc.name}. Español. Breve.
-TOOLS: úsalas SOLO si el usuario pide datos concretos. Saludos/preguntas generales: responde SIN tools.
-Para add_client/create_appointment: confirma datos antes de ejecutar.
+            return `Asistente de ${bc.name}. Responde siempre en español. Sé breve y directo.
+CAPACIDADES: puedes gestionar TODA la app — citas, clientes, calendario, precios, navegación.
+TOOLS: úsalas cuando el usuario pide acción o datos. Saludos/preguntas generales: responde sin tools.
+CONFIRMAR antes de ejecutar: create_appointment, delete_appointment, delete_client, update_service_price.
+Para update_appointment/update_client: ejecuta directo si los datos son claros.
+Para reagendar: usa update_appointment con new_date y/o new_time.
+Para marcar días libres/vacaciones: usa add_day_event (tipos: vacaciones|libre|compromiso|salida|sin-pega).
+Para ver citas: usa get_appointments con period=today|tomorrow|week|month|YYYY-MM-DD.
+Para navegar a secciones: usa navigate_to.
 ${memBlock}${bc.name}|${bc.phone}|${bc.email}
 Servicios: ${svcTxt}
 Stats: ${total} citas|$${ingresos.toFixed(0)}|${nClients} clientes únicos
@@ -16198,22 +16204,38 @@ Hoy(${todayStr}): ${hoy.length?hoy.map(fmt).join(' / '):'sin citas'}
 Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
 
-        // ── Herramientas (Tool Calling) — descripciones mínimas para ahorrar tokens ──
+        // ── Herramientas (Tool Calling) ──────────────────────────────────────────
         const AI_TOOLS = [
             {type:'function',function:{name:'search_appointments',description:'Busca citas por texto/fecha/cliente.',
                 parameters:{type:'object',properties:{query:{type:'string'},limit:{type:'number'}},required:['query']}}},
+            {type:'function',function:{name:'get_appointments',description:'Lista citas de un período: today, tomorrow, week, month, o fecha específica YYYY-MM-DD.',
+                parameters:{type:'object',properties:{period:{type:'string',description:'today|tomorrow|week|month|YYYY-MM-DD'}},required:['period']}}},
             {type:'function',function:{name:'get_stats',description:'Ingresos y totales. period: today|week|month|all',
                 parameters:{type:'object',properties:{period:{type:'string',enum:['today','week','month','all']}},required:['period']}}},
             {type:'function',function:{name:'search_clients',description:'Busca cliente por nombre/tel/email.',
                 parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}}},
             {type:'function',function:{name:'add_client',description:'Agrega cliente. Confirma antes.',
                 parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
-            {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM. price debe ser solo el número sin símbolo $ (ej: 90)',
-                parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string',description:'Solo el número, sin $. Ej: "90"'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
-            {type:'function',function:{name:'delete_appointment',description:'Elimina una cita. Usa client_name y opcionalmente date para identificarla. Si hay varias con el mismo nombre pide la fecha.',
-                parameters:{type:'object',properties:{id:{type:'string',description:'ID exacto de la cita si lo tienes'},client_name:{type:'string',description:'Nombre del cliente'},date:{type:'string',description:'Fecha YYYY-MM-DD si hay ambigüedad'}},required:['client_name']}}},
-            {type:'function',function:{name:'update_appointment',description:'Modifica campos de una cita existente. Primero busca con search_appointments para obtener el ID.',
-                parameters:{type:'object',properties:{id:{type:'string',description:'ID de la cita (requerido)'},date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['id']}}},
+            {type:'function',function:{name:'update_client',description:'Actualiza datos de un cliente (teléfono, email, notas, ciudad).',
+                parameters:{type:'object',properties:{name:{type:'string',description:'Nombre del cliente a buscar'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
+            {type:'function',function:{name:'delete_client',description:'Elimina un cliente del registro.',
+                parameters:{type:'object',properties:{name:{type:'string',description:'Nombre del cliente'}},required:['name']}}},
+            {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM. price solo número sin $.',
+                parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string',description:'Solo número sin $. Ej: "90"'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
+            {type:'function',function:{name:'delete_appointment',description:'Elimina una cita por nombre del cliente y opcionalmente fecha.',
+                parameters:{type:'object',properties:{id:{type:'string'},client_name:{type:'string',description:'Nombre del cliente'},date:{type:'string',description:'Fecha YYYY-MM-DD si hay varias'}},required:['client_name']}}},
+            {type:'function',function:{name:'update_appointment',description:'Modifica fecha, hora, servicio, precio, ciudad o notas de una cita. Identifica por client_name y opcionalmente date.',
+                parameters:{type:'object',properties:{client_name:{type:'string',description:'Nombre del cliente para encontrar la cita'},date:{type:'string',description:'Fecha actual YYYY-MM-DD para identificar si hay varias'},new_date:{type:'string',description:'Nueva fecha YYYY-MM-DD'},new_time:{type:'string',description:'Nueva hora HH:MM'},new_service:{type:'string'},new_price:{type:'string',description:'Solo número sin $'},new_city:{type:'string'},new_notes:{type:'string'},new_name:{type:'string',description:'Nuevo nombre del cliente si se desea cambiar'}},required:['client_name']}}},
+            {type:'function',function:{name:'add_day_event',description:'Marca un día en el calendario. types: vacaciones|libre|compromiso|salida|sin-pega',
+                parameters:{type:'object',properties:{date:{type:'string',description:'Fecha YYYY-MM-DD'},event_type:{type:'string',enum:['vacaciones','libre','compromiso','salida','sin-pega']}},required:['date','event_type']}}},
+            {type:'function',function:{name:'remove_day_event',description:'Quita el evento/marca de un día del calendario.',
+                parameters:{type:'object',properties:{date:{type:'string',description:'Fecha YYYY-MM-DD'}},required:['date']}}},
+            {type:'function',function:{name:'get_services',description:'Lista los servicios y precios configurados.',
+                parameters:{type:'object',properties:{},required:[]}}},
+            {type:'function',function:{name:'update_service_price',description:'Actualiza el precio de un servicio.',
+                parameters:{type:'object',properties:{service_name:{type:'string',description:'Nombre del servicio'},price:{type:'number',description:'Nuevo precio en dólares'}},required:['service_name','price']}}},
+            {type:'function',function:{name:'navigate_to',description:'Navega a una sección de la app.',
+                parameters:{type:'object',properties:{section:{type:'string',enum:['schedule','calendar','clients','finance','history','datos','messages','settings']}},required:['section']}}},
             {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',
                 parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
             {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',
@@ -16224,23 +16246,47 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         async function executeTool(name,args) {
             switch(name){
                 case 'search_appointments':  return _toolSearchApts(args);
+                case 'get_appointments':     return _toolGetAppts(args);
                 case 'get_stats':            return _toolGetStats(args);
                 case 'search_clients':       return _toolSearchClients(args);
                 case 'add_client':           return _toolAddClient(args);
+                case 'update_client':        return _toolUpdateClient(args);
+                case 'delete_client':        return _toolDeleteClient(args);
                 case 'create_appointment':   return _toolCreateAppt(args);
                 case 'delete_appointment':   return _toolDeleteAppt(args);
                 case 'update_appointment':   return _toolUpdateAppt(args);
+                case 'add_day_event':        return _toolAddDayEvent(args);
+                case 'remove_day_event':     return _toolRemoveDayEvent(args);
+                case 'get_services':         return _toolGetServices(args);
+                case 'update_service_price': return _toolUpdateServicePrice(args);
+                case 'navigate_to':          return _toolNavigateTo(args);
                 case 'save_memory_note':     return _toolSaveNote(args);
                 case 'get_memory':           return _toolGetMem(args);
                 default: return {error:'Herramienta desconocida: '+name};
             }
         }
-        function _toolSearchApts(args) {
+        function _fmtApt(a){return{id:a.id||String(a.timestamp),date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,city:a.city,notes:a.notes||a.notas,status:a.status};}
+        async function _toolSearchApts(args) {
             const q=(args.query||'').toLowerCase(); const lim=args.limit||10;
-            let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
-            try{const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]');dv.forEach(e=>{if(!apts.find(a=>a.id===e.id))apts.push(e);});}catch{}
+            const apts=await OfflineDB.getAppointments();
             const r=apts.filter(a=>JSON.stringify(a).toLowerCase().includes(q)).slice(0,lim);
-            return {count:r.length,appointments:r.map(a=>({id:a.id||String(a.timestamp),date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,status:a.status,city:a.city,notes:a.notes||a.notas}))};
+            return {count:r.length,appointments:r.map(_fmtApt)};
+        }
+        async function _toolGetAppts(args) {
+            const apts=await OfflineDB.getAppointments();
+            const today=new Date().toISOString().split('T')[0];
+            const tomorrow=new Date(Date.now()+86400000).toISOString().split('T')[0];
+            let filtered=apts;
+            const p=args.period||'today';
+            if(p==='today')      filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(today));
+            else if(p==='tomorrow') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(tomorrow));
+            else if(p==='week'){  const wEnd=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+                filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=wEnd;}); }
+            else if(p==='month'){ const mEnd=new Date(Date.now()+30*86400000).toISOString().split('T')[0];
+                filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;}); }
+            else if(/^\d{4}-\d{2}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
+            filtered.sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
+            return {count:filtered.length,appointments:filtered.map(_fmtApt)};
         }
         function _toolGetStats(args) {
             const p=args.period||'all'; const now=new Date();
@@ -16322,26 +16368,38 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
         async function _toolUpdateAppt(args) {
             try{
-                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
-                const idx=apts.findIndex(a=>a.id===args.id||String(a.timestamp)===String(args.id));
-                if(idx===-1) return {success:false,message:'No encontré la cita con ese ID. Usa search_appointments para obtener el ID correcto.'};
-                const appt={...apts[idx]};
-                if(args.date)        appt.date=args.date;
-                if(args.time)        { appt.time=args.time; appt.hora=args.time; }
-                if(args.client_name) { appt.name=args.client_name; appt.clientName=args.client_name; }
-                if(args.service)     { appt.job=args.service; appt.service=args.service; appt.servicio=args.service; }
-                if(args.price)       { const p=parseFloat(String(args.price).replace(/[^0-9.]/g,''))||0; appt.price=p; appt.precio=p; }
-                if(args.city)        appt.city=args.city;
-                if(args.notes!=null) appt.notes=args.notes;
-                apts[idx]=appt;
-                localStorage.setItem('appointments',JSON.stringify(apts));
-                // Sync to Supabase
+                const apts=await OfflineDB.getAppointments();
+                // Find by client_name + optional date, or by id
+                let match=null;
+                if(args.id) match=apts.find(a=>a.id===args.id||String(a.timestamp)===String(args.id));
+                if(!match&&args.client_name){
+                    const q=args.client_name.toLowerCase();
+                    const candidates=apts.filter(a=>(a.name||a.clientName||'').toLowerCase().includes(q));
+                    if(args.date) match=candidates.find(a=>(a.date||'').startsWith(args.date));
+                    else if(candidates.length===1) match=candidates[0];
+                    else if(candidates.length>1) return {success:false,message:`Encontré ${candidates.length} citas para "${args.client_name}". Especifica la fecha actual.`,appointments:candidates.map(_fmtApt)};
+                }
+                if(!match) return {success:false,message:'No encontré la cita. Usa search_appointments para verificar.'};
+                const appt={...match};
+                if(args.new_date)    appt.date=args.new_date;
+                if(args.new_time)    { appt.time=args.new_time; appt.hora=args.new_time; }
+                if(args.new_name)    { appt.name=args.new_name; appt.clientName=args.new_name; }
+                if(args.new_service) { appt.job=args.new_service; appt.service=args.new_service; appt.servicio=args.new_service; }
+                if(args.new_price)   { const p=parseFloat(String(args.new_price).replace(/[^0-9.]/g,''))||0; appt.price=p; appt.precio=p; }
+                if(args.new_city)    appt.city=args.new_city;
+                if(args.new_notes!=null) appt.notes=args.new_notes;
+                // Persist: update localStorage + Supabase
+                let local=[]; try{local=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                const idx=local.findIndex(a=>a.id===match.id||String(a.timestamp)===String(match.timestamp));
+                if(idx!==-1){local[idx]=appt;localStorage.setItem('appointments',JSON.stringify(local));}
                 if(navigator.onLine&&window.supabaseClient&&appt.timestamp){
-                    try{ await window.supabaseClient.from('appointments').update(appt).eq('timestamp',appt.timestamp); }catch{}
+                    try{await window.supabaseClient.from('appointments').update(appt).eq('timestamp',appt.timestamp);}catch{}
                 }
                 window._cacheLoaded={};
                 if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
-                return {success:true,message:`✅ Cita actualizada: ${appt.name||appt.clientName} el ${appt.date} a las ${appt.time}`};
+                if(typeof generateWeeklyCalendar==='function'&&currentView==='calendar') generateWeeklyCalendar();
+                else if(typeof loadAppointments==='function') loadAppointments();
+                return {success:true,message:`✅ Cita actualizada: ${appt.name||appt.clientName} — ${appt.date} a las ${appt.time}`};
             }catch(e){return{success:false,error:e.message};}
         }
         function _toolSaveNote(args) {
@@ -16355,13 +16413,95 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             if(args.category)notes=notes.filter(n=>n.category===args.category);
             return {notes,summary:mem.summary,total:mem.notes.length};
         }
+        function _toolUpdateClient(args) {
+            try{
+                let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+                const q=(args.name||'').toLowerCase();
+                const idx=c.findIndex(cl=>(cl.name||'').toLowerCase().includes(q));
+                if(idx===-1) return {success:false,message:`No encontré cliente con nombre "${args.name}".`};
+                if(args.phone) c[idx].phone=args.phone;
+                if(args.email) c[idx].email=args.email;
+                if(args.city)  c[idx].city=args.city;
+                if(args.notes!=null) c[idx].notes=args.notes;
+                localStorage.setItem('clientRegistry',JSON.stringify(c));
+                if(typeof loadClientRegistry==='function') loadClientRegistry();
+                return {success:true,message:`✅ Cliente "${c[idx].name}" actualizado.`,client:c[idx]};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolDeleteClient(args) {
+            try{
+                let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+                const q=(args.name||'').toLowerCase();
+                const before=c.length;
+                c=c.filter(cl=>!(cl.name||'').toLowerCase().includes(q));
+                if(c.length===before) return {success:false,message:`No encontré cliente con nombre "${args.name}".`};
+                localStorage.setItem('clientRegistry',JSON.stringify(c));
+                if(typeof loadClientRegistry==='function') loadClientRegistry();
+                return {success:true,message:`✅ Cliente "${args.name}" eliminado del registro.`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolAddDayEvent(args) {
+            try{
+                const validTypes=['vacaciones','libre','compromiso','salida','sin-pega'];
+                if(!validTypes.includes(args.event_type)) return {success:false,message:`Tipo inválido. Usa: ${validTypes.join('|')}`};
+                let events={}; try{events=JSON.parse(localStorage.getItem('dayEvents')||'{}');}catch{}
+                events[args.date]=args.event_type;
+                localStorage.setItem('dayEvents',JSON.stringify(events));
+                if(navigator.onLine&&typeof saveDayEventToSupabase==='function'){try{saveDayEventToSupabase(args.date,args.event_type);}catch{}}
+                if(typeof generateWeeklyCalendar==='function'&&currentView==='calendar') generateWeeklyCalendar();
+                const labels={vacaciones:'Vacaciones 🏖',libre:'Día libre ✅',compromiso:'Compromiso 📅',salida:'Salida 🚗','sin-pega':'Sin trabajo 😴'};
+                return {success:true,message:`✅ ${args.date} marcado como: ${labels[args.event_type]||args.event_type}`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolRemoveDayEvent(args) {
+            try{
+                let events={}; try{events=JSON.parse(localStorage.getItem('dayEvents')||'{}');}catch{}
+                if(!events[args.date]) return {success:false,message:`No hay ningún evento marcado el ${args.date}.`};
+                delete events[args.date];
+                localStorage.setItem('dayEvents',JSON.stringify(events));
+                if(navigator.onLine&&typeof deleteDayEventFromSupabase==='function'){try{deleteDayEventFromSupabase(args.date);}catch{}}
+                if(typeof generateWeeklyCalendar==='function'&&currentView==='calendar') generateWeeklyCalendar();
+                return {success:true,message:`✅ Evento del ${args.date} eliminado.`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolGetServices(args) {
+            try{
+                const cfg=JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+                if(!cfg.length) return {services:[],message:'No hay servicios configurados.'};
+                return {count:cfg.length,services:cfg.map(s=>({id:s.id,name:s.name,price:s.price||s.basePrice,priceRange:s.priceRange||''}))};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolUpdateServicePrice(args) {
+            try{
+                const q=(args.service_name||'').toLowerCase();
+                let cfg=[]; try{cfg=JSON.parse(localStorage.getItem('rize_services_config')||'[]');}catch{}
+                const idx=cfg.findIndex(s=>(s.name||s.id||'').toLowerCase().includes(q));
+                if(idx===-1) return {success:false,message:`No encontré servicio "${args.service_name}". Usa get_services para ver la lista.`};
+                cfg[idx].price=args.price; cfg[idx].basePrice=args.price;
+                localStorage.setItem('rize_services_config',JSON.stringify(cfg));
+                if(typeof servicesConfig!=='undefined') try{window.servicesConfig=cfg;}catch{}
+                return {success:true,message:`✅ Precio de "${cfg[idx].name}" actualizado a $${args.price}.`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolNavigateTo(args) {
+            try{
+                const labels={schedule:'Agenda',calendar:'Calendario',clients:'Clientes',finance:'Finanzas',history:'Historial',datos:'Analíticas',messages:'Mensajes',settings:'Configuración'};
+                if(typeof showView==='function'){showView(args.section);}
+                return {success:true,message:`✅ Navegando a ${labels[args.section]||args.section}.`};
+            }catch(e){return{success:false,error:e.message};}
+        }
 
         // ── Agent Loop ────────────────────────────────────────────────────────
         const _GD = 'XAJspucoj3yTo1bkTZPdgAYeYF3bydGWN4GJNjCK0b8mG3LbW9yZ_ksg'.split('').reverse().join('');
-        const _TOOL_LABELS = {search_appointments:'Buscando citas…',get_stats:'Calculando estadísticas…',
-            search_clients:'Buscando clientes…',add_client:'Agregando cliente…',
-            create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',
-            update_appointment:'Actualizando cita…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
+        const _TOOL_LABELS = {
+            search_appointments:'Buscando citas…', get_appointments:'Cargando citas…',
+            get_stats:'Calculando estadísticas…', search_clients:'Buscando clientes…',
+            add_client:'Agregando cliente…', update_client:'Actualizando cliente…',
+            delete_client:'Eliminando cliente…', create_appointment:'Creando cita…',
+            delete_appointment:'Eliminando cita…', update_appointment:'Actualizando cita…',
+            add_day_event:'Marcando día…', remove_day_event:'Quitando evento…',
+            get_services:'Cargando servicios…', update_service_price:'Actualizando precio…',
+            navigate_to:'Navegando…', save_memory_note:'Guardando en memoria…', get_memory:'Leyendo memoria…'};
 
         async function _groqCall(body, attempt=0) {
             const key=localStorage.getItem('rize_gemini_key')||_GD;
