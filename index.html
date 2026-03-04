@@ -16130,7 +16130,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             const ingresoTotal=allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
             const svcMap={}; allApts.forEach(a=>{const s=a.service||a.servicio||a.job||'?';svcMap[s]=(svcMap[s]||0)+1;});
             const topSvc=Object.entries(svcMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
-            const memBlock=mem.notes.length>0?`\n═══ MEMORIA ═══\n${mem.notes.map(n=>`  [${n.category}] ${n.content} (${n.date})`).join('\n')}\n`:'';
+            const memBlock=(mem.notes.length>0||mem.summary)?`\n═══ MEMORIA ═══\n${mem.summary?'Resumen conversaciones anteriores: '+mem.summary+'\n':''}${mem.notes.length>0?mem.notes.map(n=>`  [${n.category}] ${n.content} (${n.date})`).join('\n'):''}\n`:'';
             return `Eres el asistente inteligente de ${bc.name}. Solo el dueño usa esta app.
 Responde SIEMPRE en español. Sé directo y conciso.
 Tienes herramientas para buscar datos, agregar clientes y crear citas — ÚSALAS proactivamente.
@@ -16298,7 +16298,7 @@ ${clientesText}`;
             let uc=userText;
             if(imageBase64)uc=[{type:'image_url',image_url:{url:`data:${imageMime};base64,${imageBase64}`}},{type:'text',text:userText}];
             messages.push({role:'user',content:uc});
-            const model=imageBase64?'llama-3.2-11b-vision-preview':'llama-3.3-70b-versatile';
+            const model=imageBase64?'meta-llama/llama-4-scout-17b-16e-instruct':'llama-3.3-70b-versatile';
             try{
                 const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages,max_tokens:600,temperature:0.65})});
                 if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401)return'⚠️ API Key inválida';if(res.status===429)return'⚠️ Límite alcanzado';return'⚠️ Error '+(err.error?.message||res.status);}
@@ -16388,20 +16388,96 @@ ${clientesText}`;
         }
 
         function startVoiceInput() {
-            const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-            if(!SR){showToast('Voz no disponible en este dispositivo');return;}
-            const rec=new SR(); rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
             const btn=document.getElementById('ai-mic-btn');
-            btn.style.color='#ff5555'; btn.textContent='●';
+            const span=btn.querySelector('span');
+            // Si ya está grabando, detener
+            if(window._aiRecorder){window._aiRecorder.stop();return;}
+            // Intentar Whisper (MediaRecorder) primero, fallback a Web Speech API
+            if(!navigator.mediaDevices||!window.MediaRecorder){
+                _startWebSpeech(btn,span); return;
+            }
+            navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+                const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
+                               MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+                const opts=mimeType?{mimeType}:{};
+                const recorder=new MediaRecorder(stream,opts);
+                const chunks=[];
+                window._aiRecorder=recorder;
+                span.textContent='■'; span.style.color='#ff5555';
+                recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+                recorder.onstop=async()=>{
+                    stream.getTracks().forEach(t=>t.stop());
+                    window._aiRecorder=null;
+                    span.textContent='♪'; span.style.color='rgba(255,255,255,0.6)';
+                    if(!chunks.length)return;
+                    const ext=mimeType.includes('mp4')?'mp4':'webm';
+                    const blob=new Blob(chunks,{type:mimeType||'audio/webm'});
+                    const inputEl=document.getElementById('ai-input');
+                    const prevPlaceholder=inputEl.placeholder;
+                    inputEl.placeholder='Transcribiendo…';
+                    try{
+                        const fd=new FormData();
+                        fd.append('file',blob,'audio.'+ext);
+                        fd.append('model','whisper-large-v3-turbo');
+                        fd.append('language','es');
+                        fd.append('response_format','json');
+                        const key=localStorage.getItem('rize_gemini_key')||_GD;
+                        const res=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',
+                            {method:'POST',headers:{'Authorization':'Bearer '+key},body:fd});
+                        inputEl.placeholder=prevPlaceholder;
+                        if(res.ok){
+                            const data=await res.json();
+                            const text=(data.text||'').trim();
+                            if(text){
+                                inputEl.value=text;
+                                document.getElementById('ai-send-btn').classList.add('active');
+                                document.getElementById('ai-send-icon').style.color='#000';
+                            }
+                        } else { showToast('Error al transcribir'); }
+                    }catch(e){inputEl.placeholder=prevPlaceholder;showToast('Error de conexión');}
+                };
+                recorder.start();
+                // Auto-stop 60s
+                setTimeout(()=>{if(window._aiRecorder)window._aiRecorder.stop();},60000);
+            }).catch(()=>_startWebSpeech(btn,span));
+        }
+        function _startWebSpeech(btn,span) {
+            const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+            if(!SR){showToast('Micrófono no disponible');return;}
+            const rec=new SR(); rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
+            span.textContent='●'; span.style.color='#ff5555';
             rec.onresult=(e)=>{
                 const text=e.results[0][0].transcript;
                 document.getElementById('ai-input').value=text;
                 document.getElementById('ai-send-btn').classList.add('active');
                 document.getElementById('ai-send-icon').style.color='#000';
             };
-            rec.onend=()=>{btn.style.color='rgba(255,255,255,0.6)';btn.textContent='♪';};
-            rec.onerror=()=>{btn.style.color='rgba(255,255,255,0.6)';btn.textContent='♪';};
+            rec.onend=()=>{span.textContent='♪';span.style.color='rgba(255,255,255,0.6)';};
+            rec.onerror=()=>{span.textContent='♪';span.style.color='rgba(255,255,255,0.6)';};
             rec.start();
+        }
+
+        async function _autoSummarize() {
+            if(_aiHistory.length<6) return;
+            const key=localStorage.getItem('rize_gemini_key')||_GD;
+            const recent=_aiHistory.slice(-20);
+            const conv=recent.map(h=>`${h.role==='user'?'Usuario':'Asistente'}: ${h.content.slice(0,300)}`).join('\n');
+            try{
+                const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+                    body:JSON.stringify({model:'llama-3.1-8b-instant',
+                        messages:[
+                            {role:'system',content:'Resume esta conversación en 3-4 líneas en español. Destaca: datos de clientes mencionados, citas agendadas, preferencias del usuario, información importante del negocio. Solo el resumen, sin comentarios extra.'},
+                            {role:'user',content:conv}
+                        ],max_tokens:200,temperature:0.3})
+                });
+                if(res.ok){
+                    const data=await res.json();
+                    const summary=data.choices?.[0]?.message?.content||'';
+                    if(summary){const mem=getAIMemory();mem.summary=summary;mem.summary_date=new Date().toISOString().split('T')[0];saveAIMemory(mem);}
+                }
+            }catch{}
         }
 
         async function sendAIMessage() {
@@ -16420,6 +16496,8 @@ ${clientesText}`;
                 _addAIBubble('assistant',reply);
                 _aiHistory.push({role:'assistant',content:reply});
                 if(_aiHistory.length>40)_aiHistory=_aiHistory.slice(-40);
+                // Auto-resumen cada 15 mensajes (no bloquea)
+                if(_aiHistory.length%15===0) _autoSummarize();
             } catch(e) {
                 document.getElementById(tid)?.remove();
                 _addAIBubble('assistant',e.message||'⚠️ Error de conexión.');
