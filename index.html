@@ -16210,8 +16210,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
             {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM. price debe ser solo el número sin símbolo $ (ej: 90)',
                 parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string',description:'Solo el número, sin $. Ej: "90"'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
-            {type:'function',function:{name:'delete_appointment',description:'Elimina una cita por ID o por nombre+fecha. Primero busca con search_appointments para obtener el ID.',
-                parameters:{type:'object',properties:{id:{type:'string',description:'ID de la cita (preferido)'},client_name:{type:'string'},date:{type:'string'}},required:[]}}},
+            {type:'function',function:{name:'delete_appointment',description:'Elimina una cita. Usa client_name y opcionalmente date para identificarla. Si hay varias con el mismo nombre pide la fecha.',
+                parameters:{type:'object',properties:{id:{type:'string',description:'ID exacto de la cita si lo tienes'},client_name:{type:'string',description:'Nombre del cliente'},date:{type:'string',description:'Fecha YYYY-MM-DD si hay ambigüedad'}},required:['client_name']}}},
             {type:'function',function:{name:'update_appointment',description:'Modifica campos de una cita existente. Primero busca con search_appointments para obtener el ID.',
                 parameters:{type:'object',properties:{id:{type:'string',description:'ID de la cita (requerido)'},date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['id']}}},
             {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',
@@ -16360,7 +16360,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         const _GD = 'XAJspucoj3yTo1bkTZPdgAYeYF3bydGWN4GJNjCK0b8mG3LbW9yZ_ksg'.split('').reverse().join('');
         const _TOOL_LABELS = {search_appointments:'Buscando citas…',get_stats:'Calculando estadísticas…',
             search_clients:'Buscando clientes…',add_client:'Agregando cliente…',
-            create_appointment:'Creando cita…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
+            create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',
+            update_appointment:'Actualizando cita…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
 
         async function _groqCall(body, attempt=0) {
             const key=localStorage.getItem('rize_gemini_key')||_GD;
@@ -16383,7 +16384,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             let hasToolResults=false;
             for(let i=0;i<5;i++){
                 // After tool results are in messages, omit tools (~500 tokens saved on synthesis call)
-                const body={model:'llama-3.1-8b-instant',messages,max_tokens:700,temperature:0.65};
+                const body={model:'llama-3.3-70b-versatile',messages,max_tokens:700,temperature:0.65};
                 if(!hasToolResults){body.tools=AI_TOOLS;body.tool_choice='auto';}
                 const res=await _groqCall(body);
                 if(!res.ok){const err=await res.json().catch(()=>({}));
