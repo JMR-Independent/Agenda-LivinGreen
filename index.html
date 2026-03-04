@@ -16319,60 +16319,53 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             }catch(e){return'⚠️ Error de conexión: '+e.message;}
         }
 
-        const _IC = 'rgba(255,255,255,0.65)';
-        const _IC_ON = '#10a37f';
-        const _mkSVG = (d,col)=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${col||_IC}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-        const _COPY_D = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
-        const _SPEAK_D = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>';
-        const _STOP_D = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
-        const _OK_D = '<polyline points="20 6 9 17 4 12"/>';
+        const _BTN_STYLE = 'display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;cursor:pointer;background:transparent;border:none;padding:0;';
+        const _ICON_STYLE = 'font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);';
 
         function _getBestVoice() {
             const voices=window.speechSynthesis.getVoices();
-            // Prefer male Spanish voices (Jorge=iOS, Diego, Carlos, Andrés)
+            // iOS Premium/Enhanced male voices first (much more natural)
+            const premium=voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos/i.test(v.name)&&/premium|enhanced/i.test(v.name));
             const male=voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos|andr[eé]s|miguel|pablo/i.test(v.name));
-            return male||voices.find(v=>v.lang.startsWith('es'))||null;
+            return premium||male||voices.find(v=>v.lang.startsWith('es'))||null;
         }
 
-        function _aiCopy(text, btn) {
-            navigator.clipboard.writeText(text).then(()=>{
-                btn.innerHTML=_mkSVG(_OK_D,'#10a37f');
-                setTimeout(()=>{btn.innerHTML=_mkSVG(_COPY_D);},1500);
-            }).catch(()=>{
-                // fallback for http
-                const ta=document.createElement('textarea');
-                ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
-                document.body.appendChild(ta); ta.select();
-                document.execCommand('copy'); document.body.removeChild(ta);
-                btn.innerHTML=_mkSVG(_OK_D,'#10a37f');
-                setTimeout(()=>{btn.innerHTML=_mkSVG(_COPY_D);},1500);
-            });
+        function _aiCopy(el, text) {
+            const copy=()=>{ el.querySelector('span').textContent='✓'; el.querySelector('span').style.color='#10a37f'; setTimeout(()=>{ el.querySelector('span').textContent='⧉'; el.querySelector('span').style.color='rgba(255,255,255,0.7)';},1500); };
+            if(navigator.clipboard){ navigator.clipboard.writeText(text).then(copy).catch(copy); }
+            else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
         }
-        function _aiSpeak(text, btn) {
+        function _aiSpeak(el, text) {
             if(window.speechSynthesis.speaking){
                 window.speechSynthesis.cancel();
-                btn.innerHTML=_mkSVG(_SPEAK_D); btn.style.color=''; return;
+                el.querySelector('span').textContent='🔊'; el.querySelector('span').style.color='rgba(255,255,255,0.7)'; return;
             }
             const utt=new SpeechSynthesisUtterance(text);
             const voice=_getBestVoice();
             if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
-            utt.rate=0.95; utt.pitch=0.85;
-            utt.onend=()=>{btn.innerHTML=_mkSVG(_SPEAK_D); btn.style.color='';};
-            utt.onerror=()=>{btn.innerHTML=_mkSVG(_SPEAK_D); btn.style.color='';};
-            btn.innerHTML=_mkSVG(_STOP_D,_IC_ON); btn.style.color=_IC_ON;
+            utt.rate=1.0; utt.pitch=1.0;
+            const reset=()=>{ el.querySelector('span').textContent='🔊'; el.querySelector('span').style.color='rgba(255,255,255,0.7)'; };
+            utt.onend=reset; utt.onerror=reset;
+            el.querySelector('span').textContent='⏹'; el.querySelector('span').style.color='#10a37f';
             window.speechSynthesis.speak(utt);
         }
 
         function _makeActionBar(text, isUser) {
-            const bar=document.createElement('div'); bar.className='ai-action-bar';
-            if(isUser) bar.style.justifyContent='flex-end';
-            const copyBtn=document.createElement('button'); copyBtn.className='ai-action-btn';
-            copyBtn.title='Copiar'; copyBtn.innerHTML=_mkSVG(_COPY_D);
-            copyBtn.onclick=()=>_aiCopy(text,copyBtn); bar.appendChild(copyBtn);
+            const bar=document.createElement('div');
+            bar.style.cssText=`display:flex;gap:2px;margin-top:5px;${isUser?'justify-content:flex-end':''}`;
+            // Copy button
+            const copyEl=document.createElement('div');
+            copyEl.style.cssText=_BTN_STYLE;
+            copyEl.innerHTML=`<span style="${_ICON_STYLE}">⧉</span>`;
+            copyEl.onclick=()=>_aiCopy(copyEl,text);
+            bar.appendChild(copyEl);
+            // Speak button (assistant only)
             if(!isUser){
-                const speakBtn=document.createElement('button'); speakBtn.className='ai-action-btn';
-                speakBtn.title='Leer en voz alta'; speakBtn.innerHTML=_mkSVG(_SPEAK_D);
-                speakBtn.onclick=()=>_aiSpeak(text,speakBtn); bar.appendChild(speakBtn);
+                const speakEl=document.createElement('div');
+                speakEl.style.cssText=_BTN_STYLE;
+                speakEl.innerHTML=`<span style="${_ICON_STYLE}">🔊</span>`;
+                speakEl.onclick=()=>_aiSpeak(speakEl,text);
+                bar.appendChild(speakEl);
             }
             return bar;
         }
