@@ -16090,266 +16090,346 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
         // ─── AI ASSISTANT SYSTEM ─────────────────────────────────────────────
         let _aiHistory = [];
+        let _aiThinking = false;
 
+        // ── Memoria persistente ───────────────────────────────────────────────
+        const AI_MEMORY_KEY = 'rize_ai_memory';
+        function getAIMemory() {
+            try { const s=localStorage.getItem(AI_MEMORY_KEY); return s?JSON.parse(s):{notes:[],summary:'',total_messages:0}; }
+            catch { return {notes:[],summary:'',total_messages:0}; }
+        }
+        function saveAIMemory(mem) { try{localStorage.setItem(AI_MEMORY_KEY,JSON.stringify(mem));}catch{} }
+
+        // ── System Prompt ─────────────────────────────────────────────────────
         function buildAISystemPrompt() {
-            const bc = getBC();
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-
-            // ── Servicios ──
-            let servicesText = '(sin configurar)';
+            const bc=getBC(); const now=new Date(); const todayStr=now.toISOString().split('T')[0];
+            const mem=getAIMemory();
+            let servicesText='(sin configurar)';
             try {
-                const cfg = JSON.parse(localStorage.getItem('rize_services_config') || localStorage.getItem('servicesConfig') || '{}');
-                const lines = Object.entries(cfg).map(([k, v]) =>
-                    `  • ${v.name || k}: $${v.price || v.basePrice || '?'} ${v.unit || ''}`.trim()
-                );
-                if (lines.length) servicesText = lines.join('\n');
-            } catch(e) {}
-
-            // ── Citas: todas (pasadas y futuras) ──
-            let allApts = [];
-            try {
-                allApts = JSON.parse(localStorage.getItem('appointments') || localStorage.getItem('bookings') || localStorage.getItem('citas') || '[]');
-            } catch(e) {}
-
-            const fmtApt = a => {
-                const fecha = a.date || a.fecha || '';
-                const hora  = a.time || a.hora || '';
-                const cli   = a.clientName || a.cliente || a.name || '?';
-                const svc   = a.service || a.servicio || a.job || '';
-                const price = a.price ? ` $${a.price}` : '';
-                const city  = a.city ? ` — ${a.city}` : '';
-                return `  • ${fecha} ${hora} | ${cli}${city} | ${svc}${price}`;
+                const cfg=JSON.parse(localStorage.getItem('rize_services_config')||localStorage.getItem('servicesConfig')||'{}');
+                const lines=Object.entries(cfg).map(([k,v])=>`  • ${v.name||k}: $${v.price||v.basePrice||'?'} ${v.unit||''}`.trim());
+                if(lines.length) servicesText=lines.join('\n');
+            } catch {}
+            let allApts=[];
+            try { allApts=JSON.parse(localStorage.getItem('appointments')||'[]'); } catch {}
+            try { const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]'); dv.forEach(e=>{if(!allApts.find(a=>a.id===e.id))allApts.push(e);}); } catch {}
+            const fmtApt=a=>{
+                const fecha=a.date||a.fecha||''; const hora=a.time||a.hora||'';
+                const cli=a.clientName||a.cliente||a.name||'?';
+                const svc=a.service||a.servicio||a.job||'';
+                return `  • ${fecha} ${hora} | ${cli}${a.city?' — '+a.city:''} | ${svc}${a.price?' $'+a.price:''}`;
             };
-
-            // Incluir también dayEvents si existen
+            const citasHoy=allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
+            const citasFuturas=allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>(a.date||a.fecha||'')>(b.date||b.fecha||'')?1:-1);
+            const citasPasadas=allApts.filter(a=>(a.date||a.fecha||'')<todayStr).sort((a,b)=>(a.date||a.fecha||'')<(b.date||b.fecha||'')?1:-1);
+            let allClients=[]; let clientesText='(sin registros)';
             try {
-                const dv = JSON.parse(localStorage.getItem('dayEvents') || '[]');
-                dv.forEach(e => { if (!allApts.find(a => a.id === e.id)) allApts.push(e); });
-            } catch(e) {}
-
-            const citasHoy = allApts.filter(a => (a.date||a.fecha||'').startsWith(todayStr));
-            const citasFuturas = allApts.filter(a => (a.date||a.fecha||'') > todayStr)
-                .sort((a,b) => (a.date||a.fecha||'') > (b.date||b.fecha||'') ? 1 : -1);
-            const citasPasadas = allApts.filter(a => (a.date||a.fecha||'') < todayStr)
-                .sort((a,b) => (a.date||a.fecha||'') < (b.date||b.fecha||'') ? 1 : -1);
-
-            // ── Clientes registrados — TODOS ──
-            let allClients = [];
-            let clientesText = '(sin registros)';
-            try {
-                allClients = JSON.parse(localStorage.getItem('clientRegistry') || '[]');
-                if (allClients.length) {
-                    clientesText = `Total: ${allClients.length} clientes\n` +
-                        allClients.map((c, i) =>
-                            `  ${i+1}. ${c.name || '?'} | ${c.city || ''} | ${c.job || ''} $${c.price || ''} | ${c.date || ''} ${c.time || ''}`
-                        ).join('\n');
-                }
-            } catch(e) {}
-
-            // ── Stats rápidos ──
-            const totalCitas = allApts.length;
-            const ingresoTotal = allApts.reduce((s, a) => s + (parseFloat(a.price)||0), 0);
-            const serviciosMás = {};
-            allApts.forEach(a => { const s = a.service||a.servicio||a.job||'?'; serviciosMás[s] = (serviciosMás[s]||0)+1; });
-            const topServicio = Object.entries(serviciosMás).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
-
-            return `Eres el asistente privado de negocio de ${bc.name}. Solo el dueño usa esta app.
-Responde SIEMPRE en español. Sé directo y conciso. Si te preguntan algo sobre la agenda, clientes o ingresos, usa los datos reales de abajo.
-
+                allClients=JSON.parse(localStorage.getItem('clientRegistry')||'[]');
+                if(allClients.length) clientesText=`Total: ${allClients.length}\n`+allClients.map((c,i)=>`  ${i+1}. ${c.name||'?'} | ${c.city||''} | ${c.job||''} $${c.price||''} | ${c.date||''} ${c.time||''}`).join('\n');
+            } catch {}
+            const ingresoTotal=allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
+            const svcMap={}; allApts.forEach(a=>{const s=a.service||a.servicio||a.job||'?';svcMap[s]=(svcMap[s]||0)+1;});
+            const topSvc=Object.entries(svcMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
+            const memBlock=mem.notes.length>0?`\n═══ MEMORIA ═══\n${mem.notes.map(n=>`  [${n.category}] ${n.content} (${n.date})`).join('\n')}\n`:'';
+            return `Eres el asistente inteligente de ${bc.name}. Solo el dueño usa esta app.
+Responde SIEMPRE en español. Sé directo y conciso.
+Tienes herramientas para buscar datos, agregar clientes y crear citas — ÚSALAS proactivamente.
+Para escritura (add_client, create_appointment): confirma con el usuario ANTES de ejecutar.
+${memBlock}
 ═══ NEGOCIO ═══
-Nombre: ${bc.name} | Tel: ${bc.phone} | WhatsApp: ${bc.whatsapp}
-Email: ${bc.email} | Web: ${bc.website} | Instagram: ${bc.instagram}
+${bc.name} | Tel:${bc.phone} | WA:${bc.whatsapp} | Email:${bc.email} | Web:${bc.website}
 
-═══ SERVICIOS Y PRECIOS ═══
+═══ SERVICIOS ═══
 ${servicesText}
 
-═══ ESTADÍSTICAS ═══
-Total citas registradas: ${totalCitas}
-Ingresos registrados: $${ingresoTotal.toFixed(2)}
-Servicios más frecuentes: ${topServicio || '(sin datos)'}
+═══ STATS ═══
+Citas totales:${allApts.length} | Ingresos:$${ingresoTotal.toFixed(2)} | Top:${topSvc||'(sin datos)'}
 
-═══ CITAS DE HOY (${now.toLocaleDateString('es-US', {weekday:'long', day:'numeric', month:'long'})}) ═══
-${citasHoy.length ? citasHoy.map(fmtApt).join('\n') : 'Sin citas hoy'}
+═══ HOY (${now.toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'})}) ═══
+${citasHoy.length?citasHoy.map(fmtApt).join('\n'):'Sin citas hoy'}
 
 ═══ PRÓXIMAS CITAS ═══
-${citasFuturas.length ? citasFuturas.map(fmtApt).join('\n') : 'Sin citas futuras registradas'}
+${citasFuturas.length?citasFuturas.map(fmtApt).join('\n'):'Sin citas futuras'}
 
-═══ HISTORIAL RECIENTE ═══
-${citasPasadas.length ? citasPasadas.map(fmtApt).join('\n') : '(sin historial)'}
+═══ HISTORIAL ═══
+${citasPasadas.length?citasPasadas.map(fmtApt).join('\n'):'(sin historial)'}
 
-═══ REGISTRO DE CLIENTES ═══
-${clientesText}
-
-═══ INSTRUCCIONES ═══
-- Usa SIEMPRE los datos reales de arriba para responder preguntas sobre citas, clientes, ingresos o servicios
-- Si algo no está en los datos, dilo claramente
-- Ayuda con: mensajes para clientes, análisis del negocio, precios, estrategias
-- Si ves imagen con cita, extrae: nombre / fecha / hora / servicio / precio / dirección
-- NO respondas sobre temas ajenos al negocio`;
+═══ CLIENTES ═══
+${clientesText}`;
         }
 
+        // ── Herramientas (Tool Calling) ────────────────────────────────────────
+        const AI_TOOLS = [
+            {type:'function',function:{name:'search_appointments',
+                description:'Busca citas en la agenda por cliente, fecha (YYYY-MM-DD), servicio o cualquier texto.',
+                parameters:{type:'object',properties:{query:{type:'string'},limit:{type:'number'}},required:['query']}}},
+            {type:'function',function:{name:'get_stats',
+                description:'Calcula ingresos, número de citas y clientes para un período.',
+                parameters:{type:'object',properties:{period:{type:'string',enum:['today','week','month','all']}},required:['period']}}},
+            {type:'function',function:{name:'search_clients',
+                description:'Busca clientes en el registro por nombre, teléfono, email o ciudad.',
+                parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}}},
+            {type:'function',function:{name:'add_client',
+                description:'Agrega un nuevo cliente al registro. Confirma con el usuario primero.',
+                parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
+            {type:'function',function:{name:'create_appointment',
+                description:'Crea una nueva cita en la agenda. Confirma todos los datos con el usuario primero.',
+                parameters:{type:'object',properties:{date:{type:'string',description:'YYYY-MM-DD'},time:{type:'string',description:'HH:MM'},client_name:{type:'string'},service:{type:'string'},price:{type:'number'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
+            {type:'function',function:{name:'save_memory_note',
+                description:'Guarda una nota para recordar en futuras conversaciones. Úsalo cuando el usuario pida recordar algo.',
+                parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
+            {type:'function',function:{name:'get_memory',
+                description:'Recupera notas guardadas de conversaciones anteriores.',
+                parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}}
+        ];
+
+        // ── Ejecutores de herramientas ─────────────────────────────────────────
+        function executeTool(name,args) {
+            switch(name){
+                case 'search_appointments': return _toolSearchApts(args);
+                case 'get_stats':           return _toolGetStats(args);
+                case 'search_clients':      return _toolSearchClients(args);
+                case 'add_client':          return _toolAddClient(args);
+                case 'create_appointment':  return _toolCreateAppt(args);
+                case 'save_memory_note':    return _toolSaveNote(args);
+                case 'get_memory':          return _toolGetMem(args);
+                default: return {error:'Herramienta desconocida: '+name};
+            }
+        }
+        function _toolSearchApts(args) {
+            const q=(args.query||'').toLowerCase(); const lim=args.limit||10;
+            let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+            try{const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]');dv.forEach(e=>{if(!apts.find(a=>a.id===e.id))apts.push(e);});}catch{}
+            const r=apts.filter(a=>JSON.stringify(a).toLowerCase().includes(q)).slice(0,lim);
+            return {count:r.length,appointments:r.map(a=>({id:a.id,date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,status:a.status,city:a.city,notes:a.notes||a.notas}))};
+        }
+        function _toolGetStats(args) {
+            const p=args.period||'all'; const now=new Date();
+            let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+            const f=apts.filter(a=>{const d=new Date(a.date||a.fecha||'');
+                if(p==='today')return d.toDateString()===now.toDateString();
+                if(p==='week')return d>=new Date(now-7*86400000);
+                if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+                return true;});
+            const rev=f.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
+            const bySvc={}; f.forEach(a=>{const s=a.service||a.servicio||a.job||'?';bySvc[s]=(bySvc[s]||0)+1;});
+            let cli=[]; try{cli=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+            return {period:p,appointments:f.length,revenue:'$'+rev.toFixed(2),total_clients:cli.length,by_service:bySvc};
+        }
+        function _toolSearchClients(args) {
+            const q=(args.query||'').toLowerCase();
+            let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+            return {count:c.filter(cl=>JSON.stringify(cl).toLowerCase().includes(q)).length,
+                    clients:c.filter(cl=>JSON.stringify(cl).toLowerCase().includes(q)).slice(0,10)};
+        }
+        function _toolAddClient(args) {
+            try{
+                let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+                c.push({name:args.name,phone:args.phone||'',email:args.email||'',city:args.city||'',notes:args.notes||'',createdAt:new Date().toISOString(),source:'ai'});
+                localStorage.setItem('clientRegistry',JSON.stringify(c));
+                return {success:true,message:`Cliente "${args.name}" agregado.`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolCreateAppt(args) {
+            try{
+                const appt={id:'a'+Date.now(),date:args.date,time:args.time,hora:args.time,clientName:args.client_name,
+                    service:args.service,servicio:args.service,price:args.price,precio:args.price,
+                    city:args.city||'',notes:args.notes||'',status:'scheduled',createdAt:new Date().toISOString(),source:'ai'};
+                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                apts.push(appt); localStorage.setItem('appointments',JSON.stringify(apts));
+                const dk='dayEvents_'+args.date; let devs=[];
+                try{devs=JSON.parse(localStorage.getItem(dk)||'[]');}catch{}
+                devs.push(appt); localStorage.setItem(dk,JSON.stringify(devs));
+                return {success:true,id:appt.id,message:`Cita creada: ${args.client_name} el ${args.date} ${args.time} — ${args.service} $${args.price}`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        function _toolSaveNote(args) {
+            const mem=getAIMemory();
+            mem.notes.push({content:args.content,category:args.category||'general',date:new Date().toISOString().split('T')[0]});
+            if(mem.notes.length>20)mem.notes=mem.notes.slice(-20);
+            saveAIMemory(mem); return {success:true,message:'Nota guardada.'};
+        }
+        function _toolGetMem(args) {
+            const mem=getAIMemory(); let notes=mem.notes;
+            if(args.category)notes=notes.filter(n=>n.category===args.category);
+            return {notes,summary:mem.summary,total:mem.notes.length};
+        }
+
+        // ── Agent Loop ────────────────────────────────────────────────────────
         const _GD = 'XAJspucoj3yTo1bkTZPdgAYeYF3bydGWN4GJNjCK0b8mG3LbW9yZ_ksg'.split('').reverse().join('');
-        async function callGeminiAPI(userText, imageBase64 = null, imageMime = 'image/jpeg') {
-            const key = localStorage.getItem('rize_gemini_key') || _GD;
+        const _TOOL_LABELS = {search_appointments:'Buscando citas…',get_stats:'Calculando estadísticas…',
+            search_clients:'Buscando clientes…',add_client:'Agregando cliente…',
+            create_appointment:'Creando cita…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
 
-            // Build messages in OpenAI format (Groq is OpenAI-compatible)
-            const messages = [{ role: 'system', content: buildAISystemPrompt() }];
-            // Add history (text only — Groq vision requires specific model)
-            for (const h of _aiHistory) {
-                const role = h.role === 'assistant' ? 'assistant' : 'user';
-                messages.push({ role, content: h.content });
-            }
-            // Add current user message
-            let userContent = userText;
-            if (imageBase64) {
-                // Use vision-capable model for images
-                userContent = [
-                    { type: 'image_url', image_url: { url: `data:${imageMime};base64,${imageBase64}` } },
-                    { type: 'text', text: userText }
-                ];
-            }
-            messages.push({ role: 'user', content: userContent });
-
-            const model = imageBase64 ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile';
-
-            try {
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${key}`
-                    },
-                    body: JSON.stringify({
-                        model,
-                        messages,
-                        max_tokens: 600,
-                        temperature: 0.65
-                    })
+        async function runAgentLoop(history) {
+            const key=localStorage.getItem('rize_gemini_key')||_GD;
+            const messages=[{role:'system',content:buildAISystemPrompt()},...history];
+            for(let i=0;i<5;i++){
+                const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+                    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,tools:AI_TOOLS,tool_choice:'auto',max_tokens:800,temperature:0.65})
                 });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    if (res.status === 401) return '⚠️ API Key inválida. Verifica en Configuración.';
-                    if (res.status === 429) return '⚠️ Límite alcanzado. Espera un momento.';
-                    return '⚠️ Error: ' + (err.error?.message || res.status);
+                if(!res.ok){const err=await res.json().catch(()=>({}));
+                    if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración.');
+                    if(res.status===429)throw new Error('⚠️ Límite de uso alcanzado, espera un momento.');
+                    throw new Error('⚠️ Error '+(err.error?.message||res.status));}
+                const data=await res.json(); const msg=data.choices[0].message;
+                if(!msg.tool_calls||msg.tool_calls.length===0){
+                    const mem=getAIMemory();mem.total_messages=(mem.total_messages||0)+1;saveAIMemory(mem);
+                    return msg.content;
                 }
-                const data = await res.json();
-                const reply = data.choices?.[0]?.message?.content || '(sin respuesta)';
-                // Save to history
-                _aiHistory.push({ role: 'user', content: userText });
-                _aiHistory.push({ role: 'assistant', content: reply });
-                if (_aiHistory.length > 24) _aiHistory = _aiHistory.slice(-24);
-                return reply;
-            } catch(e) {
-                return '⚠️ Error de conexión. Revisa tu internet.';
+                messages.push(msg);
+                for(const tc of msg.tool_calls){
+                    let args={}; try{args=JSON.parse(tc.function.arguments);}catch{}
+                    _updateThinkingStatus(_TOOL_LABELS[tc.function.name]||tc.function.name);
+                    const result=executeTool(tc.function.name,args);
+                    messages.push({role:'tool',tool_call_id:tc.id,name:tc.function.name,content:JSON.stringify(result)});
+                }
             }
+            return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
+        }
+
+        // callGeminiAPI se mantiene solo para imágenes (vision model no soporta tools)
+        async function callGeminiAPI(userText,imageBase64=null,imageMime='image/jpeg') {
+            const key=localStorage.getItem('rize_gemini_key')||_GD;
+            const messages=[{role:'system',content:buildAISystemPrompt()}];
+            for(const h of _aiHistory)messages.push({role:h.role==='assistant'?'assistant':'user',content:h.content});
+            let uc=userText;
+            if(imageBase64)uc=[{type:'image_url',image_url:{url:`data:${imageMime};base64,${imageBase64}`}},{type:'text',text:userText}];
+            messages.push({role:'user',content:uc});
+            const model=imageBase64?'llama-3.2-11b-vision-preview':'llama-3.3-70b-versatile';
+            try{
+                const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages,max_tokens:600,temperature:0.65})});
+                if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401)return'⚠️ API Key inválida';if(res.status===429)return'⚠️ Límite alcanzado';return'⚠️ Error '+(err.error?.message||res.status);}
+                const data=await res.json();return data.choices?.[0]?.message?.content||'(sin respuesta)';
+            }catch(e){return'⚠️ Error de conexión: '+e.message;}
         }
 
         function _addAIBubble(role, text) {
-            const wrap = document.getElementById('ai-messages');
-            const isUser = role === 'user';
-            const row = document.createElement('div');
-            row.className = 'ai-msg';
-            row.style.cssText = `display:flex;align-items:flex-start;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:${isUser ? '8' : '16'}px;gap:10px;`;
-            if (!isUser) {
-                const avatar = document.createElement('div');
-                avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;';
-                avatar.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
-                row.appendChild(avatar);
+            const wrap=document.getElementById('ai-messages'); const isUser=role==='user';
+            const row=document.createElement('div'); row.className='ai-msg';
+            row.style.cssText=`display:flex;align-items:flex-start;justify-content:${isUser?'flex-end':'flex-start'};margin-bottom:${isUser?'8':'16'}px;gap:10px;`;
+            if(!isUser){
+                const av=document.createElement('div');
+                av.style.cssText='width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;';
+                av.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
+                row.appendChild(av);
             }
-            const bubble = document.createElement('div');
-            bubble.className = isUser ? 'ai-bubble-user' : 'ai-bubble-assistant';
-            bubble.textContent = text;
-            row.appendChild(bubble);
-            wrap.appendChild(row);
-            wrap.scrollTop = wrap.scrollHeight;
+            const bubble=document.createElement('div'); bubble.className=isUser?'ai-bubble-user':'ai-bubble-assistant';
+            bubble.textContent=text; row.appendChild(bubble); wrap.appendChild(row); wrap.scrollTop=wrap.scrollHeight;
         }
 
         function _addAIThinking() {
-            const wrap = document.getElementById('ai-messages');
-            const id = 'ait' + Date.now();
-            const row = document.createElement('div');
-            row.id = id;
-            row.className = 'ai-msg';
-            row.style.cssText = 'display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:16px;gap:10px;';
-            row.innerHTML = `
+            const wrap=document.getElementById('ai-messages'); const id='ait'+Date.now();
+            const row=document.createElement('div'); row.id=id; row.className='ai-msg';
+            row.style.cssText='display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:16px;gap:10px;';
+            row.innerHTML=`
                 <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>
                 </div>
-                <div style="display:flex;gap:5px;align-items:center;padding:12px 0;margin-top:4px;">
-                    <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0s;"></span>
-                    <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0.18s;"></span>
-                    <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0.36s;"></span>
+                <div style="display:flex;flex-direction:column;gap:5px;padding:8px 0;margin-top:2px;">
+                    <div style="display:flex;gap:5px;align-items:center;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0s;"></span>
+                        <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0.18s;"></span>
+                        <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;animation:aiDot 1.1s infinite 0.36s;"></span>
+                    </div>
+                    <span class="ai-thinking-text" style="font-size:11px;color:rgba(255,255,255,0.35);min-height:14px;"></span>
                 </div>`;
-            wrap.appendChild(row);
-            wrap.scrollTop = wrap.scrollHeight;
-            return id;
+            wrap.appendChild(row); wrap.scrollTop=wrap.scrollHeight; return id;
         }
+        function _updateThinkingStatus(text) { const el=document.querySelector('.ai-thinking-text'); if(el)el.textContent=text; }
 
         function openAIChat() {
-            const panel = document.getElementById('ai-chat-panel');
-            panel.style.display = 'flex';
-            requestAnimationFrame(() => { panel.style.transform = 'translateY(0)'; });
+            const panel=document.getElementById('ai-chat-panel');
+            panel.style.display='flex';
+            requestAnimationFrame(()=>{panel.style.transform='translateY(0)';});
             document.getElementById('ai-main-btn').classList.add('ai-open');
-            document.getElementById('ai-panel-title').textContent = getBC().name + ' IA';
-            if (_aiHistory.length === 0) {
-                _addAIBubble('assistant', `Hola! Soy tu asistente de ${getBC().name} ✨\n\nPuedo ayudarte con precios, mensajes para clientes, análisis de tu negocio y más. ¿En qué te ayudo?`);
+            document.getElementById('ai-panel-title').textContent=getBC().name+' IA';
+            if(_aiHistory.length===0){
+                const mem=getAIMemory();
+                const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
+                _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
             }
-            setTimeout(() => document.getElementById('ai-input').focus(), 350);
+            setTimeout(()=>document.getElementById('ai-input').focus(),350);
         }
 
         function closeAIChat() {
-            const panel = document.getElementById('ai-chat-panel');
-            panel.style.transform = 'translateY(100%)';
+            const panel=document.getElementById('ai-chat-panel');
+            panel.style.transform='translateY(100%)';
             document.getElementById('ai-main-btn').classList.remove('ai-open');
-            setTimeout(() => { panel.style.display = 'none'; }, 320);
+            setTimeout(()=>{panel.style.display='none';},320);
         }
 
         function handleAIFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            event.target.value = '';
-            _addAIBubble('user', `📎 ${file.name}`);
-            const tid = _addAIThinking();
-            const isImage = file.type.startsWith('image/');
-            if (isImage) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64 = e.target.result.split(',')[1];
-                    const reply = await callGeminiAPI('Analiza esta imagen y extrae cualquier información útil para el negocio (citas, servicios, datos de clientes, etc.)', base64, file.type);
-                    document.getElementById(tid)?.remove();
-                    _addAIBubble('assistant', reply);
+            const file=event.target.files[0]; if(!file) return; event.target.value='';
+            _addAIBubble('user','📎 '+file.name); const tid=_addAIThinking();
+            if(file.type.startsWith('image/')){
+                const reader=new FileReader();
+                reader.onload=async(e)=>{
+                    const base64=e.target.result.split(',')[1];
+                    const reply=await callGeminiAPI('Analiza esta imagen y extrae información útil para el negocio',base64,file.type);
+                    document.getElementById(tid)?.remove(); _addAIBubble('assistant',reply);
+                    _aiHistory.push({role:'user',content:'[Imagen: '+file.name+']'});
+                    _aiHistory.push({role:'assistant',content:reply});
                 };
                 reader.readAsDataURL(file);
             } else {
-                setTimeout(async () => {
-                    const reply = await callGeminiAPI(`Se adjuntó el archivo: ${file.name}. ¿Cómo puedo ayudarte con él?`);
-                    document.getElementById(tid)?.remove();
-                    _addAIBubble('assistant', reply);
-                }, 0);
+                setTimeout(async()=>{
+                    const reply=await callGeminiAPI('Se adjuntó: '+file.name+'. ¿Cómo ayudo?');
+                    document.getElementById(tid)?.remove(); _addAIBubble('assistant',reply);
+                },0);
             }
         }
 
         function toggleAIChat() {
-            const panel = document.getElementById('ai-chat-panel');
-            panel.style.display === 'flex' ? closeAIChat() : openAIChat();
+            const panel=document.getElementById('ai-chat-panel');
+            panel.style.display==='flex'?closeAIChat():openAIChat();
+        }
+
+        function startVoiceInput() {
+            const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+            if(!SR){showToast('Voz no disponible en este dispositivo');return;}
+            const rec=new SR(); rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
+            const btn=document.getElementById('ai-mic-btn');
+            btn.style.color='#ff5555'; btn.textContent='●';
+            rec.onresult=(e)=>{
+                const text=e.results[0][0].transcript;
+                document.getElementById('ai-input').value=text;
+                document.getElementById('ai-send-btn').classList.add('active');
+                document.getElementById('ai-send-icon').style.color='#000';
+            };
+            rec.onend=()=>{btn.style.color='rgba(255,255,255,0.6)';btn.textContent='♪';};
+            rec.onerror=()=>{btn.style.color='rgba(255,255,255,0.6)';btn.textContent='♪';};
+            rec.start();
         }
 
         async function sendAIMessage() {
-            const input = document.getElementById('ai-input');
-            const text = input.value.trim();
-            if (!text) return;
-            input.value = '';
-            input.style.height = 'auto';
-            _addAIBubble('user', text);
-            const tid = _addAIThinking();
-            const reply = await callGeminiAPI(text);
-            document.getElementById(tid)?.remove();
-            _addAIBubble('assistant', reply);
+            const input=document.getElementById('ai-input');
+            const text=input.value.trim();
+            if(!text||_aiThinking) return;
+            input.value=''; input.style.height='auto';
+            document.getElementById('ai-send-btn').classList.remove('active');
+            document.getElementById('ai-send-icon').style.color='rgba(255,255,255,0.35)';
+            _addAIBubble('user',text);
+            _aiHistory.push({role:'user',content:text});
+            _aiThinking=true; const tid=_addAIThinking();
+            try {
+                const reply=await runAgentLoop([..._aiHistory]);
+                document.getElementById(tid)?.remove();
+                _addAIBubble('assistant',reply);
+                _aiHistory.push({role:'assistant',content:reply});
+                if(_aiHistory.length>40)_aiHistory=_aiHistory.slice(-40);
+            } catch(e) {
+                document.getElementById(tid)?.remove();
+                _addAIBubble('assistant',e.message||'⚠️ Error de conexión.');
+                _aiHistory.pop();
+            }
+            _aiThinking=false;
         }
 
-        function _showAIBar() { const b = document.getElementById('ai-bar'); if (b) b.style.display = 'flex'; }
-        function _hideAIBar() { const b = document.getElementById('ai-bar'); if (b) b.style.display = 'none'; closeAIChat(); }
+        function _showAIBar() { const b=document.getElementById('ai-bar'); if(b)b.style.display='flex'; }
+        function _hideAIBar() { const b=document.getElementById('ai-bar'); if(b)b.style.display='none'; closeAIChat(); }
 
         // ─── BACKGROUND THEME SYSTEM ──────────────────────────────────────
         const BG_THEMES = {
@@ -19262,6 +19342,9 @@ END:VCARD`;
     <div class="ai-input-pill">
       <button class="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Adjuntar">
         <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
+      </button>
+      <button class="ai-attach-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Voz">
+        <span style="font-size:16px;color:rgba(255,255,255,0.6);line-height:1;display:flex;align-items:center;justify-content:center;">♪</span>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
