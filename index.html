@@ -16347,49 +16347,30 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             if(navigator.clipboard){ navigator.clipboard.writeText(text).then(copy).catch(copy); }
             else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
         }
-        async function _playAudioBlob(blob, reset) {
-            const url=URL.createObjectURL(blob);
-            const audio=new Audio(url);
-            window._aiAudioObj=audio;
-            audio.onended=()=>{ reset(); URL.revokeObjectURL(url); };
-            audio.onerror=()=>{ reset(); URL.revokeObjectURL(url); };
-            await audio.play().catch(()=>reset());
+        // Pre-load voices as soon as possible (iOS loads them async)
+        if(window.speechSynthesis){
+            window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
         }
 
-        async function _aiSpeak(el, text) {
+        function _aiSpeak(el, text) {
             const span=el.querySelector('span');
-            // Stop if already playing
-            if(window._aiAudioObj&&!window._aiAudioObj.paused){
-                window._aiAudioObj.pause(); window._aiAudioObj=null;
-                span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
-            }
             if(window.speechSynthesis.speaking){
                 window.speechSynthesis.cancel();
                 span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
             }
-            span.textContent='⏳'; span.style.color='#10a37f';
-            const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; window._aiAudioObj=null; };
-
-            // Try HuggingFace MMS-TTS (free, no key, neural Spanish)
-            try{
-                const hfRes=await fetch('https://api-inference.huggingface.co/models/facebook/mms-tts-spa',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({inputs:text.slice(0,500)})
-                });
-                if(hfRes.ok){
-                    const blob=await hfRes.blob();
-                    if(blob.size>1000){ span.textContent='⏹'; await _playAudioBlob(blob,reset); return; }
-                }
-                // 503 = model loading, fall through to Web Speech
-            }catch(e){}
-
-            // Fallback: Web Speech API with best available voice
-            span.textContent='⏹';
+            span.textContent='⏹'; span.style.color='#10a37f';
+            const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; };
             const utt=new SpeechSynthesisUtterance(text);
-            const voice=_getBestVoice();
+            const voices=window.speechSynthesis.getVoices();
+            // Priority: Premium/Enhanced male Spanish > any male Spanish > any Spanish
+            const voice=
+                voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos/i.test(v.name)&&/premium|enhanced/i.test(v.name))||
+                voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos|andr[eé]s/i.test(v.name))||
+                voices.find(v=>v.lang.startsWith('es')&&/premium|enhanced/i.test(v.name))||
+                voices.find(v=>v.lang.startsWith('es'));
             if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
-            utt.rate=1.0; utt.pitch=1.0;
+            utt.rate=0.97; utt.pitch=1.0; utt.volume=1.0;
             utt.onend=reset; utt.onerror=reset;
             window.speechSynthesis.speak(utt);
         }
