@@ -16340,56 +16340,66 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
         }
 
-        // Voice cache — populated on first load and whenever voices change
-        let _aiVoiceCache=[];
-        function _loadVoiceCache(){
-            const v=window.speechSynthesis.getVoices();
-            if(v.length) _aiVoiceCache=v;
+        // ── TTS (iOS PWA compatible) ──────────────────────────────────────────
+        let _ttsKA=null; // keepAlive interval
+        function _ttsStop(){
+            clearInterval(_ttsKA); _ttsKA=null;
+            window.speechSynthesis.cancel();
         }
         function _pickVoice(){
-            const voices=_aiVoiceCache.length ? _aiVoiceCache : window.speechSynthesis.getVoices();
+            const voices=window.speechSynthesis.getVoices();
             const isEs=v=>/^es/i.test(v.lang);
             return voices.find(v=>/siri voz 1/i.test(v.name))||
                    voices.find(v=>/siri voz/i.test(v.name))||
                    voices.find(v=>isEs(v)&&/siri/i.test(v.name))||
                    voices.find(v=>isEs(v)&&/premium|enhanced/i.test(v.name))||
                    voices.find(v=>isEs(v)&&/jorge|diego|carlos|andr[eé]s/i.test(v.name))||
-                   voices.find(v=>isEs(v))||
-                   null;
+                   voices.find(v=>isEs(v))||null;
         }
+        // Warm up: iOS PWA won't fire onvoiceschanged — kick it with a silent utterance
         if(window.speechSynthesis){
-            _loadVoiceCache();
-            window.speechSynthesis.onvoiceschanged=_loadVoiceCache;
+            window.speechSynthesis.onvoiceschanged=()=>{}; // ensure event listener registered
+            const _warmUp=new SpeechSynthesisUtterance('');
+            _warmUp.volume=0;
+            document.addEventListener('touchstart',function wu(){
+                window.speechSynthesis.speak(_warmUp);
+                window.speechSynthesis.cancel();
+                document.removeEventListener('touchstart',wu);
+            },{once:true,passive:true});
         }
 
         function _aiSpeak(el, text) {
             const span=el.querySelector('span');
-            if(window.speechSynthesis.speaking){
-                window.speechSynthesis.cancel();
+            // Toggle off if already speaking
+            if(window.speechSynthesis.speaking||_ttsKA){
+                _ttsStop();
                 span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
             }
             span.textContent='⏹'; span.style.color='#10a37f';
-            const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; };
+            const reset=()=>{ clearInterval(_ttsKA); _ttsKA=null; span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; };
 
-            const doSpeak=()=>{
-                const utt=new SpeechSynthesisUtterance(text);
-                const voice=_pickVoice();
-                console.log('🔊 cache:', _aiVoiceCache.length, 'voz:', voice?voice.name+'|'+voice.lang:'default');
-                if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
-                utt.rate=0.97; utt.pitch=1.0; utt.volume=1.0;
-                utt.onend=reset; utt.onerror=reset;
-                // iOS PWA: cancel() before speak() prevents silent failures
-                window.speechSynthesis.cancel();
+            // Split into short chunks — iOS PWA cuts off long utterances
+            const chunks=text.match(/.{1,200}(?:[.!?;,]|$)/g)||[text];
+            let idx=0;
+            const voice=_pickVoice();
+
+            function speakNext(){
+                if(idx>=chunks.length){reset();return;}
+                const utt=new SpeechSynthesisUtterance(chunks[idx++]);
+                if(voice){utt.voice=voice;utt.lang=voice.lang;}else{utt.lang='es-US';}
+                utt.rate=0.95; utt.pitch=1.0; utt.volume=1.0;
+                utt.onend=speakNext;
+                utt.onerror=reset;
+                // iOS PWA keepAlive: pause+resume every 10s prevents engine sleep
+                clearInterval(_ttsKA);
+                _ttsKA=setInterval(()=>{
+                    window.speechSynthesis.pause();
+                    window.speechSynthesis.resume();
+                },10000);
+                window.speechSynthesis.cancel(); // clear any pending
                 window.speechSynthesis.speak(utt);
-            };
-
-            // iOS PWA: getVoices() returns [] on first call — retry once after brief delay
-            if(!_aiVoiceCache.length){
-                _loadVoiceCache();
-                setTimeout(()=>{ _loadVoiceCache(); doSpeak(); }, 100);
-            } else {
-                doSpeak();
             }
+            speakNext();
         }
 
         function _makeActionBar(text, isUser) {
