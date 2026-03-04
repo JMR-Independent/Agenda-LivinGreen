@@ -6327,6 +6327,9 @@
             0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
             30% { transform: translateY(-4px); opacity: 1; }
         }
+        @keyframes aiCursor {
+            0%, 100% { opacity: 1; } 50% { opacity: 0; }
+        }
         @keyframes aiFadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -16332,6 +16335,32 @@ ${clientesText}`;
             bubble.textContent=text; row.appendChild(bubble); wrap.appendChild(row); wrap.scrollTop=wrap.scrollHeight;
         }
 
+        async function _streamAIBubble(text) {
+            const wrap=document.getElementById('ai-messages');
+            const row=document.createElement('div'); row.className='ai-msg';
+            row.style.cssText='display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:16px;gap:10px;';
+            const av=document.createElement('div');
+            av.style.cssText='width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;';
+            av.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
+            row.appendChild(av);
+            const bubble=document.createElement('div'); bubble.className='ai-bubble-assistant';
+            bubble.textContent=''; row.appendChild(bubble); wrap.appendChild(row);
+            // Cursor parpadeante
+            const cursor=document.createElement('span');
+            cursor.textContent='▋'; cursor.style.cssText='opacity:1;animation:aiCursor 0.7s step-end infinite;color:rgba(255,255,255,0.5);';
+            bubble.appendChild(cursor);
+            // Velocidad adaptativa según longitud
+            const words=text.split(' '); const wl=words.length;
+            const delay=wl>200?8:wl>80?13:18;
+            for(let i=0;i<words.length;i++){
+                bubble.insertBefore(document.createTextNode((i===0?'':' ')+words[i]),cursor);
+                wrap.scrollTop=wrap.scrollHeight;
+                await new Promise(r=>setTimeout(r,delay));
+            }
+            cursor.remove();
+            wrap.scrollTop=wrap.scrollHeight;
+        }
+
         function _addAIThinking() {
             const wrap=document.getElementById('ai-messages'); const id='ait'+Date.now();
             const row=document.createElement('div'); row.id=id; row.className='ai-msg';
@@ -16381,7 +16410,7 @@ ${clientesText}`;
                 reader.onload=async(e)=>{
                     const base64=e.target.result.split(',')[1];
                     const reply=await callGeminiAPI('Analiza esta imagen y extrae información útil para el negocio',base64,file.type);
-                    document.getElementById(tid)?.remove(); _addAIBubble('assistant',reply);
+                    document.getElementById(tid)?.remove(); await _streamAIBubble(reply);
                     _aiHistory.push({role:'user',content:'[Imagen: '+file.name+']'});
                     _aiHistory.push({role:'assistant',content:reply});
                 };
@@ -16389,7 +16418,7 @@ ${clientesText}`;
             } else {
                 setTimeout(async()=>{
                     const reply=await callGeminiAPI('Se adjuntó: '+file.name+'. ¿Cómo ayudo?');
-                    document.getElementById(tid)?.remove(); _addAIBubble('assistant',reply);
+                    document.getElementById(tid)?.remove(); await _streamAIBubble(reply);
                 },0);
             }
         }
@@ -16500,7 +16529,7 @@ ${clientesText}`;
             try {
                 const reply=await runAgentLoop([..._aiHistory]);
                 document.getElementById(tid)?.remove();
-                _addAIBubble('assistant',reply);
+                await _streamAIBubble(reply);
                 _aiHistory.push({role:'assistant',content:reply});
                 if(_aiHistory.length>40)_aiHistory=_aiHistory.slice(-40);
                 // Auto-resumen cada 15 mensajes — espera 8s para no competir con rate limit
