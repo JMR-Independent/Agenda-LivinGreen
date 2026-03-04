@@ -16363,12 +16363,15 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; };
             const utt=new SpeechSynthesisUtterance(text);
             const voices=window.speechSynthesis.getVoices();
-            // Priority: Premium/Enhanced male Spanish > any male Spanish > any Spanish
+            // Log available voices for debugging
+            console.log('🔊 Voces disponibles:', voices.map(v=>v.name+'|'+v.lang).join(', '));
+            // Pick best Spanish voice: any downloaded Siri/Premium/Enhanced first, then any Spanish
             const voice=
-                voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos/i.test(v.name)&&/premium|enhanced/i.test(v.name))||
-                voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos|andr[eé]s/i.test(v.name))||
+                voices.find(v=>v.lang.startsWith('es')&&/siri/i.test(v.name))||
                 voices.find(v=>v.lang.startsWith('es')&&/premium|enhanced/i.test(v.name))||
+                voices.find(v=>v.lang.startsWith('es')&&/jorge|diego|carlos|andr[eé]s/i.test(v.name))||
                 voices.find(v=>v.lang.startsWith('es'));
+            console.log('🔊 Usando voz:', voice ? voice.name+'|'+voice.lang : 'ninguna (default es-US)');
             if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
             utt.rate=0.97; utt.pitch=1.0; utt.volume=1.0;
             utt.onend=reset; utt.onerror=reset;
