@@ -16208,8 +16208,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}}},
             {type:'function',function:{name:'add_client',description:'Agrega cliente. Confirma antes.',
                 parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
-            {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM',
-                parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'number'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
+            {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM. price debe ser solo el número sin símbolo $ (ej: 90)',
+                parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string',description:'Solo el número, sin $. Ej: "90"'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
             {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',
                 parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
             {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',
@@ -16269,15 +16269,16 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
         function _toolCreateAppt(args) {
             try{
+                const price=parseFloat(String(args.price).replace(/[^0-9.]/g,''))||0;
                 const appt={id:'a'+Date.now(),date:args.date,time:args.time,hora:args.time,clientName:args.client_name,
-                    service:args.service,servicio:args.service,price:args.price,precio:args.price,
+                    service:args.service,servicio:args.service,price:price,precio:price,
                     city:args.city||'',notes:args.notes||'',status:'scheduled',createdAt:new Date().toISOString(),source:'ai'};
                 let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
                 apts.push(appt); localStorage.setItem('appointments',JSON.stringify(apts));
                 const dk='dayEvents_'+args.date; let devs=[];
                 try{devs=JSON.parse(localStorage.getItem(dk)||'[]');}catch{}
                 devs.push(appt); localStorage.setItem(dk,JSON.stringify(devs));
-                return {success:true,id:appt.id,message:`Cita creada: ${args.client_name} el ${args.date} ${args.time} — ${args.service} $${args.price}`};
+                return {success:true,id:appt.id,message:`Cita creada: ${args.client_name} el ${args.date} ${args.time} — ${args.service} $${price}`};
             }catch(e){return{success:false,error:e.message};}
         }
         function _toolSaveNote(args) {
@@ -19659,7 +19660,7 @@ END:VCARD`;
   <!-- Messages -->
   <div id="ai-messages" style="flex:1;overflow-y:auto;padding:20px 16px 12px;display:flex;flex-direction:column;">
     <div id="ai-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-bottom:70px;pointer-events:none;">
-      <img id="ai-logo-img" src="./images/agenda-logo.jpg" style="width:108px;height:108px;object-fit:contain;opacity:0.92;">
+      <img id="ai-logo-img" src="./images/agenda-logo.jpg" style="width:216px;height:216px;object-fit:contain;opacity:0.92;">
       <p id="ai-empty-text" style="font-family:'Lora',Georgia,serif;font-size:27px;font-weight:400;color:rgba(255,255,255,0.82);text-align:center;margin:0;line-height:1.45;letter-spacing:-0.2px;">¿En qué puedo<br>ayudarte hoy?</p>
     </div>
   </div>
