@@ -7893,9 +7893,9 @@ Incluye:
 
                   <!-- Gemini API Key -->
                   <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
-                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🤖 Gemini API Key</label>
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🤖 Groq API Key</label>
                     <div style="display:flex;gap:8px;">
-                      <input id="gemini-api-key" type="password" placeholder="AIzaSy..."
+                      <input id="gemini-api-key" type="password" placeholder="gsk_..."
                              style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
                                     background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
                                     box-sizing:border-box;outline:none;font-family:monospace;">
@@ -7906,7 +7906,7 @@ Incluye:
                         Guardar
                       </button>
                     </div>
-                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">Obtén tu key gratis en aistudio.google.com</div>
+                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en console.groq.com — sin tarjeta</div>
                   </div>
                 </div>
 
@@ -16094,35 +16094,53 @@ REGLAS:
 
         async function callGeminiAPI(userText, imageBase64 = null, imageMime = 'image/jpeg') {
             const key = localStorage.getItem('rize_gemini_key') || '';
-            if (!key) return '⚠️ Agrega tu API Key de Gemini en Configuración para usar el asistente.';
+            if (!key) return '⚠️ Agrega tu API Key de Groq en Configuración para usar el asistente.';
 
-            const userParts = [];
-            if (imageBase64) userParts.push({ inlineData: { mimeType: imageMime, data: imageBase64 } });
-            userParts.push({ text: userText });
-            _aiHistory.push({ role: 'user', parts: userParts });
+            // Build messages in OpenAI format (Groq is OpenAI-compatible)
+            const messages = [{ role: 'system', content: buildAISystemPrompt() }];
+            // Add history (text only — Groq vision requires specific model)
+            for (const h of _aiHistory) {
+                const role = h.role === 'assistant' ? 'assistant' : 'user';
+                messages.push({ role, content: h.content });
+            }
+            // Add current user message
+            let userContent = userText;
+            if (imageBase64) {
+                // Use vision-capable model for images
+                userContent = [
+                    { type: 'image_url', image_url: { url: `data:${imageMime};base64,${imageBase64}` } },
+                    { type: 'text', text: userText }
+                ];
+            }
+            messages.push({ role: 'user', content: userContent });
+
+            const model = imageBase64 ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile';
 
             try {
-                const res = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            system_instruction: { parts: [{ text: buildAISystemPrompt() }] },
-                            contents: _aiHistory,
-                            generationConfig: { maxOutputTokens: 600, temperature: 0.65 }
-                        })
-                    }
-                );
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        model,
+                        messages,
+                        max_tokens: 600,
+                        temperature: 0.65
+                    })
+                });
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
-                    if (res.status === 400 || res.status === 403) return '⚠️ API Key inválida. Verifica en Configuración.';
-                    if (res.status === 429) return '⚠️ Límite de requests alcanzado. Espera un momento.';
+                    if (res.status === 401) return '⚠️ API Key inválida. Verifica en Configuración.';
+                    if (res.status === 429) return '⚠️ Límite alcanzado. Espera un momento.';
                     return '⚠️ Error: ' + (err.error?.message || res.status);
                 }
                 const data = await res.json();
-                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '(sin respuesta)';
-                _aiHistory.push({ role: 'model', parts: [{ text: reply }] });
+                const reply = data.choices?.[0]?.message?.content || '(sin respuesta)';
+                // Save to history
+                _aiHistory.push({ role: 'user', content: userText });
+                _aiHistory.push({ role: 'assistant', content: reply });
                 if (_aiHistory.length > 24) _aiHistory = _aiHistory.slice(-24);
                 return reply;
             } catch(e) {
