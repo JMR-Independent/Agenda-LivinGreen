@@ -16341,7 +16341,9 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
 
         // ── TTS (iOS PWA compatible) ──────────────────────────────────────────
-        let _ttsKA=null;
+        const _isIOSPWA=navigator.standalone===true;
+        let _ttsAudio=null, _ttsKA=null;
+
         function _pickVoice(){
             const voices=window.speechSynthesis.getVoices();
             const isEs=v=>/^es/i.test(v.lang);
@@ -16355,26 +16357,43 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>{};
 
         function _aiSpeak(el, text) {
-            const ss=window.speechSynthesis;
             const span=el.querySelector('span');
-            if(ss.speaking||_ttsKA){
-                clearInterval(_ttsKA); _ttsKA=null;
-                ss.cancel();
-                span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
+            const isSpeaking=_ttsAudio||(window.speechSynthesis&&window.speechSynthesis.speaking)||_ttsKA;
+            if(isSpeaking){
+                if(_ttsAudio){_ttsAudio.pause();_ttsAudio=null;}
+                clearInterval(_ttsKA);_ttsKA=null;
+                if(window.speechSynthesis)window.speechSynthesis.cancel();
+                span.textContent='🔊';span.style.color='rgba(255,255,255,0.7)';return;
             }
-            span.textContent='⏹'; span.style.color='#10a37f';
-            const reset=()=>{ clearInterval(_ttsKA); _ttsKA=null; span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; };
-            const utt=new SpeechSynthesisUtterance(text);
-            const voice=_pickVoice();
-            if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
-            utt.rate=0.95; utt.pitch=1.0; utt.volume=1.0;
-            utt.onend=reset; utt.onerror=reset;
-            // iOS PWA: synthesizer starts paused in standalone mode
-            ss.cancel();
-            ss.resume();
-            ss.speak(utt);
-            // keepAlive: iOS sleeps the engine after ~15s of speaking
-            _ttsKA=setInterval(()=>{ ss.pause(); ss.resume(); },10000);
+            span.textContent='⏹';span.style.color='#10a37f';
+            const reset=()=>{_ttsAudio=null;clearInterval(_ttsKA);_ttsKA=null;span.textContent='🔊';span.style.color='rgba(255,255,255,0.7)';};
+
+            if(_isIOSPWA){
+                // iOS PWA: speechSynthesis is silently blocked — use Audio element + Google TTS
+                const chunks=text.match(/.{1,190}(?:[.!?;,]|\s|$)/g)||[text];
+                let idx=0;
+                function playNext(){
+                    if(idx>=chunks.length){reset();return;}
+                    const chunk=chunks[idx++].trim();
+                    if(!chunk){playNext();return;}
+                    const url='https://translate.google.com/translate_tts?ie=UTF-8&tl=es&client=tw-ob&q='+encodeURIComponent(chunk);
+                    _ttsAudio=new Audio(url);
+                    _ttsAudio.onended=playNext;
+                    _ttsAudio.onerror=playNext;
+                    _ttsAudio.play().catch(playNext);
+                }
+                playNext();
+            } else {
+                // Browser (Safari/Desktop): use Web Speech API
+                const ss=window.speechSynthesis;
+                const utt=new SpeechSynthesisUtterance(text);
+                const voice=_pickVoice();
+                if(voice){utt.voice=voice;utt.lang=voice.lang;}else{utt.lang='es-US';}
+                utt.rate=0.95;utt.pitch=1.0;utt.volume=1.0;
+                utt.onend=reset;utt.onerror=reset;
+                ss.cancel();ss.resume();ss.speak(utt);
+                _ttsKA=setInterval(()=>{ss.pause();ss.resume();},10000);
+            }
         }
 
         function _makeActionBar(text, isUser) {
