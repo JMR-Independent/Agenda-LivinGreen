@@ -16210,6 +16210,10 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
             {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes. date=YYYY-MM-DD time=HH:MM. price debe ser solo el número sin símbolo $ (ej: 90)',
                 parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string',description:'Solo el número, sin $. Ej: "90"'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
+            {type:'function',function:{name:'delete_appointment',description:'Elimina una cita por ID o por nombre+fecha. Primero busca con search_appointments para obtener el ID.',
+                parameters:{type:'object',properties:{id:{type:'string',description:'ID de la cita (preferido)'},client_name:{type:'string'},date:{type:'string'}},required:[]}}},
+            {type:'function',function:{name:'update_appointment',description:'Modifica campos de una cita existente. Primero busca con search_appointments para obtener el ID.',
+                parameters:{type:'object',properties:{id:{type:'string',description:'ID de la cita (requerido)'},date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['id']}}},
             {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',
                 parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
             {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',
@@ -16217,15 +16221,17 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         ];
 
         // ── Ejecutores de herramientas ─────────────────────────────────────────
-        function executeTool(name,args) {
+        async function executeTool(name,args) {
             switch(name){
-                case 'search_appointments': return _toolSearchApts(args);
-                case 'get_stats':           return _toolGetStats(args);
-                case 'search_clients':      return _toolSearchClients(args);
-                case 'add_client':          return _toolAddClient(args);
-                case 'create_appointment':  return _toolCreateAppt(args);
-                case 'save_memory_note':    return _toolSaveNote(args);
-                case 'get_memory':          return _toolGetMem(args);
+                case 'search_appointments':  return _toolSearchApts(args);
+                case 'get_stats':            return _toolGetStats(args);
+                case 'search_clients':       return _toolSearchClients(args);
+                case 'add_client':           return _toolAddClient(args);
+                case 'create_appointment':   return _toolCreateAppt(args);
+                case 'delete_appointment':   return _toolDeleteAppt(args);
+                case 'update_appointment':   return _toolUpdateAppt(args);
+                case 'save_memory_note':     return _toolSaveNote(args);
+                case 'get_memory':           return _toolGetMem(args);
                 default: return {error:'Herramienta desconocida: '+name};
             }
         }
@@ -16234,7 +16240,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
             try{const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]');dv.forEach(e=>{if(!apts.find(a=>a.id===e.id))apts.push(e);});}catch{}
             const r=apts.filter(a=>JSON.stringify(a).toLowerCase().includes(q)).slice(0,lim);
-            return {count:r.length,appointments:r.map(a=>({id:a.id,date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,status:a.status,city:a.city,notes:a.notes||a.notas}))};
+            return {count:r.length,appointments:r.map(a=>({id:a.id||String(a.timestamp),date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,status:a.status,city:a.city,notes:a.notes||a.notas}))};
         }
         function _toolGetStats(args) {
             const p=args.period||'all'; const now=new Date();
@@ -16288,6 +16294,56 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 window._cacheLoaded={};
                 if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
                 return {success:true,message:`✅ Cita creada: ${args.client_name} el ${args.date} a las ${args.time} — ${args.service} $${price}`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        async function _toolDeleteAppt(args) {
+            try{
+                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                let match=null;
+                // Find by ID first, then by name+date
+                if(args.id) match=apts.find(a=>a.id===args.id||String(a.timestamp)===String(args.id));
+                if(!match&&args.client_name){
+                    const q=args.client_name.toLowerCase();
+                    const candidates=apts.filter(a=>(a.name||a.clientName||'').toLowerCase().includes(q));
+                    if(args.date) match=candidates.find(a=>(a.date||'').startsWith(args.date));
+                    else if(candidates.length===1) match=candidates[0];
+                    else if(candidates.length>1) return {success:false,message:`Encontré ${candidates.length} citas para "${args.client_name}". Especifica la fecha (YYYY-MM-DD).`,appointments:candidates.map(a=>({id:a.id||a.timestamp,date:a.date,time:a.time,name:a.name||a.clientName}))};
+                }
+                if(!match) return {success:false,message:'No encontré ninguna cita con esos datos. Usa search_appointments para buscarla primero.'};
+                // Remove from localStorage
+                const filtered=apts.filter(a=>a!==match);
+                localStorage.setItem('appointments',JSON.stringify(filtered));
+                // Remove from Supabase if online
+                if(navigator.onLine&&window.supabaseClient&&match.timestamp){
+                    try{ await window.supabaseClient.from('appointments').delete().eq('timestamp',match.timestamp); }catch{}
+                }
+                window._cacheLoaded={};
+                if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
+                return {success:true,message:`✅ Cita eliminada: ${match.name||match.clientName} el ${match.date} a las ${match.time}`};
+            }catch(e){return{success:false,error:e.message};}
+        }
+        async function _toolUpdateAppt(args) {
+            try{
+                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                const idx=apts.findIndex(a=>a.id===args.id||String(a.timestamp)===String(args.id));
+                if(idx===-1) return {success:false,message:'No encontré la cita con ese ID. Usa search_appointments para obtener el ID correcto.'};
+                const appt={...apts[idx]};
+                if(args.date)        appt.date=args.date;
+                if(args.time)        { appt.time=args.time; appt.hora=args.time; }
+                if(args.client_name) { appt.name=args.client_name; appt.clientName=args.client_name; }
+                if(args.service)     { appt.job=args.service; appt.service=args.service; appt.servicio=args.service; }
+                if(args.price)       { const p=parseFloat(String(args.price).replace(/[^0-9.]/g,''))||0; appt.price=p; appt.precio=p; }
+                if(args.city)        appt.city=args.city;
+                if(args.notes!=null) appt.notes=args.notes;
+                apts[idx]=appt;
+                localStorage.setItem('appointments',JSON.stringify(apts));
+                // Sync to Supabase
+                if(navigator.onLine&&window.supabaseClient&&appt.timestamp){
+                    try{ await window.supabaseClient.from('appointments').update(appt).eq('timestamp',appt.timestamp); }catch{}
+                }
+                window._cacheLoaded={};
+                if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
+                return {success:true,message:`✅ Cita actualizada: ${appt.name||appt.clientName} el ${appt.date} a las ${appt.time}`};
             }catch(e){return{success:false,error:e.message};}
         }
         function _toolSaveNote(args) {
