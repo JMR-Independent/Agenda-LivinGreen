@@ -3917,11 +3917,10 @@
            ================================ */
 
         .landing-view {
-            height: 100vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: none;
-            background: transparent;
+            background: linear-gradient(135deg, #0f1117 0%, #1a2332 50%, #0f1117 100%);
             padding: 48px 24px;
             display: flex;
             flex-direction: column;
@@ -3933,7 +3932,6 @@
             width: 100%;
             height: 100%;
             z-index: 10001;
-            overflow-y: auto;
         }
 
         /* Hide header when landing view is visible */
@@ -6018,14 +6016,13 @@
             background: transparent !important;
         }
 
-        /* Calendar View & Main Schedule View - Same background as landing page */
+        /* Calendar View & Main Schedule View - background via body */
         #calendar-view,
         #datos-view,
         .main-content {
             min-height: 100vh;
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                         url('./images/background.webp') center center / cover no-repeat !important;
-            background-attachment: fixed !important;
         }
 
         /* Calendar View and Datos View - Tablet adjustments */
@@ -6039,7 +6036,6 @@
             body:has(#settings-view:not([style*="display: none"])) {
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                             url('./images/background.webp') center center / cover no-repeat !important;
-                background-attachment: fixed !important;
             }
 
             /* Gas price header - transparent on tablet */
@@ -6096,7 +6092,6 @@
             body:has(#settings-view:not([style*="display: none"])) {
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%),
                             url('./images/background.webp') center center / cover no-repeat !important;
-                background-attachment: fixed !important;
             }
 
             /* Gas price header - transparent, minimal spacing */
@@ -6337,19 +6332,19 @@
 
         /* === BACKGROUND THEMES === */
         /* Target .main-content (which has its own !important bg) + body */
-        body.bg-midnight .main-content,
+        body.bg-midnight .main-content, body.bg-midnight .landing-view,
         body.bg-midnight { background: linear-gradient(135deg, #0a0f2e 0%, #1a237e 50%, #0a0f2e 100%) !important; animation: none !important; }
 
-        body.bg-violeta .main-content,
+        body.bg-violeta .main-content, body.bg-violeta .landing-view,
         body.bg-violeta  { background: linear-gradient(135deg, #1a0033 0%, #2d1b69 50%, #1a0033 100%) !important; animation: none !important; }
 
-        body.bg-carbon .main-content,
+        body.bg-carbon .main-content, body.bg-carbon .landing-view,
         body.bg-carbon   { background: linear-gradient(135deg, #111111 0%, #2d2d2d 50%, #111111 100%) !important; animation: none !important; }
 
-        body.bg-oceano .main-content,
+        body.bg-oceano .main-content, body.bg-oceano .landing-view,
         body.bg-oceano   { background: linear-gradient(135deg, #001f3f 0%, #0d4f5e 50%, #001f3f 100%) !important; animation: none !important; }
 
-        body.bg-bosque2 .main-content,
+        body.bg-bosque2 .main-content, body.bg-bosque2 .landing-view,
         body.bg-bosque2  { background: linear-gradient(135deg, #0d1f1a 0%, #1a3a2a 50%, #0d1f1a 100%) !important; animation: none !important; }
         /* bosque = default, no class needed */
     </style>
