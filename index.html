@@ -6437,6 +6437,15 @@
             white-space: pre-wrap; word-break: break-word;
         }
         #ai-messages { scrollbar-width: thin; scrollbar-color: #3d3d3d transparent; overscroll-behavior: contain; }
+        .ai-action-bar { display:flex; gap:2px; margin-top:4px; }
+        .ai-action-btn {
+            width:28px; height:28px; border:none; background:transparent; cursor:pointer;
+            border-radius:6px; display:flex; align-items:center; justify-content:center;
+            color:rgba(255,255,255,0.35); transition:color 0.15s, background 0.15s;
+            padding:0; flex-shrink:0;
+        }
+        .ai-action-btn:hover { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.08); }
+        .ai-action-btn.speaking { color:#10a37f; }
         #ai-messages::-webkit-scrollbar { width: 4px; }
         #ai-messages::-webkit-scrollbar-thumb { background: #3d3d3d; border-radius: 2px; }
         #ai-input { scrollbar-width: none; }
@@ -16311,6 +16320,43 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             }catch(e){return'⚠️ Error de conexión: '+e.message;}
         }
 
+        const _COPY_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        const _SPEAK_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+        const _STOP_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+
+        function _aiCopy(text, btn) {
+            navigator.clipboard.writeText(text).then(()=>{
+                const prev=btn.innerHTML; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+                setTimeout(()=>{btn.innerHTML=prev;},1500);
+            });
+        }
+        function _aiSpeak(text, btn) {
+            if(window.speechSynthesis.speaking){
+                window.speechSynthesis.cancel();
+                btn.innerHTML=_SPEAK_SVG; btn.classList.remove('speaking'); return;
+            }
+            const utt=new SpeechSynthesisUtterance(text);
+            utt.lang='es-US'; utt.rate=1.05;
+            utt.onend=()=>{btn.innerHTML=_SPEAK_SVG; btn.classList.remove('speaking');};
+            utt.onerror=()=>{btn.innerHTML=_SPEAK_SVG; btn.classList.remove('speaking');};
+            btn.innerHTML=_STOP_SVG; btn.classList.add('speaking');
+            window.speechSynthesis.speak(utt);
+        }
+
+        function _makeActionBar(text, isUser) {
+            const bar=document.createElement('div'); bar.className='ai-action-bar';
+            if(isUser) bar.style.justifyContent='flex-end';
+            const copyBtn=document.createElement('button'); copyBtn.className='ai-action-btn';
+            copyBtn.title='Copiar'; copyBtn.innerHTML=_COPY_SVG;
+            copyBtn.onclick=()=>_aiCopy(text,copyBtn); bar.appendChild(copyBtn);
+            if(!isUser){
+                const speakBtn=document.createElement('button'); speakBtn.className='ai-action-btn';
+                speakBtn.title='Leer en voz alta'; speakBtn.innerHTML=_SPEAK_SVG;
+                speakBtn.onclick=()=>_aiSpeak(text,speakBtn); bar.appendChild(speakBtn);
+            }
+            return bar;
+        }
+
         function _addAIBubble(role, text) {
             const wrap=document.getElementById('ai-messages'); const isUser=role==='user';
             const row=document.createElement('div'); row.className='ai-msg';
@@ -16321,8 +16367,12 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 av.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
                 row.appendChild(av);
             }
+            const col=document.createElement('div');
+            col.style.cssText=`display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};max-width:82%;`;
             const bubble=document.createElement('div'); bubble.className=isUser?'ai-bubble-user':'ai-bubble-assistant';
-            bubble.textContent=text; row.appendChild(bubble); wrap.appendChild(row); wrap.scrollTop=wrap.scrollHeight;
+            bubble.textContent=text; col.appendChild(bubble);
+            col.appendChild(_makeActionBar(text,isUser));
+            row.appendChild(col); wrap.appendChild(row); wrap.scrollTop=wrap.scrollHeight;
         }
 
         async function _streamAIBubble(text) {
@@ -16333,8 +16383,10 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             av.style.cssText='width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;';
             av.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
             row.appendChild(av);
+            const col=document.createElement('div');
+            col.style.cssText='display:flex;flex-direction:column;align-items:flex-start;max-width:82%;';
             const bubble=document.createElement('div'); bubble.className='ai-bubble-assistant';
-            bubble.textContent=''; row.appendChild(bubble); wrap.appendChild(row);
+            bubble.textContent=''; col.appendChild(bubble); row.appendChild(col); wrap.appendChild(row);
             // Cursor parpadeante
             const cursor=document.createElement('span');
             cursor.textContent='▋'; cursor.style.cssText='opacity:1;animation:aiCursor 0.7s step-end infinite;color:rgba(255,255,255,0.5);';
@@ -16348,6 +16400,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 await new Promise(r=>setTimeout(r,delay));
             }
             cursor.remove();
+            col.appendChild(_makeActionBar(text,false));
             wrap.scrollTop=wrap.scrollHeight;
         }
 
