@@ -15892,6 +15892,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         async function shareDigitalCard() {
             const canvas = document.getElementById('biz-card-canvas');
             const bc = getBC();
+            const cardUrl = bc.websiteFull.replace(/\/$/, '') + '/card';
             // Try Web Share API with image file
             if (navigator.canShare) {
                 try {
@@ -15900,7 +15901,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: bc.name,
-                            text: bc.websiteFull,
+                            text: cardUrl,
                             files: [file],
                         });
                         return;
@@ -15912,17 +15913,17 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 try {
                     await navigator.share({
                         title: bc.name,
-                        url: bc.websiteFull,
+                        url: cardUrl,
                     });
                     return;
                 } catch(e) { /* fallthrough */ }
             }
             // Final fallback: copy URL to clipboard
             try {
-                await navigator.clipboard.writeText(bc.websiteFull);
+                await navigator.clipboard.writeText(cardUrl);
                 showToast('🔗 Enlace copiado al portapapeles');
             } catch(e) {
-                showToast('📋 ' + bc.websiteFull);
+                showToast('📋 ' + cardUrl);
             }
         }
         function triggerLogoUpload() {
