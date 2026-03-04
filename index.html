@@ -6437,7 +6437,7 @@
             color: rgba(255,255,255,0.88); font-size: 15px; line-height: 1.68;
             white-space: pre-wrap; word-break: break-word;
         }
-        #ai-messages { scrollbar-width: thin; scrollbar-color: #3d3d3d transparent; }
+        #ai-messages { scrollbar-width: thin; scrollbar-color: #3d3d3d transparent; overscroll-behavior: contain; }
         #ai-messages::-webkit-scrollbar { width: 4px; }
         #ai-messages::-webkit-scrollbar-thumb { background: #3d3d3d; border-radius: 2px; }
         #ai-input { scrollbar-width: none; }
@@ -16384,10 +16384,13 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 const memNote=mem.notes.length>0?`\nRecuerdo ${mem.notes.length} nota(s) de sesiones anteriores.`:'';
                 _addAIBubble('assistant',`Hola! Soy el asistente de ${getBC().name} ✨${memNote}\n\nPuedo buscar citas, calcular ingresos, agregar clientes, crear citas y más. ¿En qué te ayudo?`);
             }
-            // Lock body scroll so iOS can't shift the fixed panel
+            // Lock body scroll (iOS-safe: position:fixed is the only reliable method)
+            const scrollY=window.scrollY||0;
+            document.body.style.position='fixed';
+            document.body.style.top='-'+scrollY+'px';
+            document.body.style.width='100%';
             document.body.style.overflow='hidden';
-            document.body.scrollTop=0;
-            document.documentElement.scrollTop=0;
+            document.body.dataset.aiScrollY=scrollY;
             // Adjust panel for iOS keyboard: correct both height AND top offset
             if(window.visualViewport){
                 window._aiVVHandler=()=>{
@@ -16407,7 +16410,12 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             panel.style.transform='translateY(100%)';
             panel.style.height=''; panel.style.top='';
             document.getElementById('ai-main-btn').classList.remove('ai-open');
+            const savedY=parseInt(document.body.dataset.aiScrollY||'0');
+            document.body.style.position='';
+            document.body.style.top='';
+            document.body.style.width='';
             document.body.style.overflow='';
+            window.scrollTo(0,savedY);
             if(window.visualViewport&&window._aiVVHandler){
                 window.visualViewport.removeEventListener('resize',window._aiVVHandler);
                 window.visualViewport.removeEventListener('scroll',window._aiVVHandler);
