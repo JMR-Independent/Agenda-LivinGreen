@@ -16267,18 +16267,27 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 return {success:true,message:`Cliente "${args.name}" agregado.`};
             }catch(e){return{success:false,error:e.message};}
         }
-        function _toolCreateAppt(args) {
+        async function _toolCreateAppt(args) {
             try{
                 const price=parseFloat(String(args.price).replace(/[^0-9.]/g,''))||0;
-                const appt={id:'a'+Date.now(),date:args.date,time:args.time,hora:args.time,clientName:args.client_name,
-                    service:args.service,servicio:args.service,price:price,precio:price,
-                    city:args.city||'',notes:args.notes||'',status:'scheduled',createdAt:new Date().toISOString(),source:'ai'};
-                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
-                apts.push(appt); localStorage.setItem('appointments',JSON.stringify(apts));
-                const dk='dayEvents_'+args.date; let devs=[];
-                try{devs=JSON.parse(localStorage.getItem(dk)||'[]');}catch{}
-                devs.push(appt); localStorage.setItem(dk,JSON.stringify(devs));
-                return {success:true,id:appt.id,message:`Cita creada: ${args.client_name} el ${args.date} ${args.time} — ${args.service} $${price}`};
+                const now=new Date();
+                const appt={
+                    name:args.client_name,
+                    time:args.time,
+                    date:args.date,
+                    job:args.service,
+                    price:price,
+                    city:args.city||'',
+                    notes:args.notes||'',
+                    address:'',
+                    timestamp:now.getTime(),
+                    created_at:now.toISOString()
+                };
+                await OfflineDB.saveAppointment(appt);
+                // Refresh UI caches so calendar/history shows new appointment
+                window._cacheLoaded={};
+                if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
+                return {success:true,message:`✅ Cita creada: ${args.client_name} el ${args.date} a las ${args.time} — ${args.service} $${price}`};
             }catch(e){return{success:false,error:e.message};}
         }
         function _toolSaveNote(args) {
@@ -16640,11 +16649,19 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         function _setMicIcon(active){
             const svg=document.getElementById('ai-mic-icon');
             if(!svg)return;
-            const color=active?'#ff5555':'rgba(255,255,255,0.65)';
-            svg.querySelectorAll('rect,path,line').forEach(el=>{
-                if(el.hasAttribute('fill')&&el.getAttribute('fill')!=='none') el.setAttribute('fill',color);
-                if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none') el.setAttribute('stroke',color);
-            });
+            if(active){
+                svg.style.opacity='1';
+                svg.querySelectorAll('rect,path,line').forEach(el=>{
+                    if(el.hasAttribute('fill')&&el.getAttribute('fill')!=='none') el.setAttribute('fill','#ff5555');
+                    if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none') el.setAttribute('stroke','#ff5555');
+                });
+            } else {
+                svg.style.opacity='0.65';
+                svg.querySelectorAll('rect,path,line').forEach(el=>{
+                    if(el.hasAttribute('fill')&&el.getAttribute('fill')!=='none') el.setAttribute('fill','white');
+                    if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none') el.setAttribute('stroke','white');
+                });
+            }
         }
         function startVoiceInput() {
             const btn=document.getElementById('ai-mic-btn');
@@ -19680,11 +19697,11 @@ END:VCARD`;
         <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
       </button>
       <button class="ai-attach-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Voz">
-        <svg id="ai-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="2" width="6" height="12" rx="3" fill="rgba(255,255,255,0.65)"/>
-          <path d="M5 10a7 7 0 0 0 14 0" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <line x1="12" y1="17" x2="12" y2="21" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"/>
-          <line x1="9" y1="21" x2="15" y2="21" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"/>
+        <svg id="ai-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.65">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
+          <path d="M5 10a7 7 0 0 0 14 0" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="9" y1="21" x2="15" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
