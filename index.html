@@ -6356,52 +6356,74 @@
         }
         .ai-center-btn:active { transform: scale(0.88); }
         .ai-center-btn.ai-open { color: #0d8f6f; filter: drop-shadow(0 0 16px rgba(16,163,127,0.9)); }
-        /* ── Chat panel — ChatGPT style ── */
+        /* ── Chat panel — ChatGPT full screen ── */
         .ai-chat-panel {
             position: fixed;
-            bottom: 0; left: 0; right: 0;
+            inset: 0;
             z-index: 10003;
-            height: 80vh;
             display: none;
             flex-direction: column;
-            background: rgba(18, 18, 22, 0.86);
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border-radius: 24px 24px 0 0;
+            background: #212121;
             transform: translateY(100%);
-            opacity: 0;
-            transition: transform 0.32s cubic-bezier(0.32,0.72,0,1), opacity 0.2s ease;
-            box-shadow: 0 -12px 60px rgba(0,0,0,0.6);
+            transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
             overflow: hidden;
-            mask-image: linear-gradient(to bottom, transparent 0px, black 28px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 28px);
         }
+        .ai-chat-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            padding-top: calc(14px + env(safe-area-inset-top));
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            flex-shrink: 0;
+        }
+        .ai-chat-header-btn {
+            width: 38px; height: 38px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .ai-input-row {
+            padding: 10px 12px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            background: #212121;
+            flex-shrink: 0;
+        }
+        .ai-input-pill {
+            display: flex; align-items: flex-end; gap: 8px;
+            background: #2f2f2f; border-radius: 26px;
+            padding: 8px 8px 8px 14px;
+        }
+        .ai-attach-btn {
+            width: 34px; height: 34px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0; margin-bottom: 2px;
+        }
+        .ai-send-btn {
+            width: 34px; height: 34px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0; margin-bottom: 2px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .ai-send-btn.active { background: #fff; color: #000; }
         #ai-input {
-            color: #fff !important;
-            -webkit-text-fill-color: #fff !important;
+            flex: 1; resize: none; border: none; background: transparent;
+            color: #fff !important; -webkit-text-fill-color: #fff !important;
+            font-size: 15px; line-height: 1.45; outline: none;
+            font-family: inherit; max-height: 130px; padding: 6px 0;
         }
-        #ai-input::placeholder { color: rgba(255,255,255,0.38); }
+        #ai-input::placeholder { color: rgba(255,255,255,0.35); }
         .ai-msg { animation: aiFadeIn 0.18s ease; }
-        /* User bubble */
         .ai-bubble-user {
-            display: inline-block;
-            max-width: 78%;
-            background: #2f2f2f;
-            color: rgba(255,255,255,0.92);
+            display: inline-block; max-width: 78%;
+            background: #2f2f2f; color: rgba(255,255,255,0.92);
             border-radius: 18px 18px 4px 18px;
-            padding: 11px 15px;
-            font-size: 15px;
-            line-height: 1.58;
-            white-space: pre-wrap;
-            word-break: break-word;
+            padding: 11px 15px; font-size: 15px; line-height: 1.58;
+            white-space: pre-wrap; word-break: break-word;
         }
-        /* Assistant text — no bubble */
         .ai-bubble-assistant {
-            color: rgba(255,255,255,0.88);
-            font-size: 15px;
-            line-height: 1.68;
-            white-space: pre-wrap;
-            word-break: break-word;
+            color: rgba(255,255,255,0.88); font-size: 15px; line-height: 1.68;
+            white-space: pre-wrap; word-break: break-word;
         }
         #ai-messages { scrollbar-width: thin; scrollbar-color: #3d3d3d transparent; }
         #ai-messages::-webkit-scrollbar { width: 4px; }
@@ -16209,11 +16231,11 @@ REGLAS:
         function openAIChat() {
             const panel = document.getElementById('ai-chat-panel');
             panel.style.display = 'flex';
-            requestAnimationFrame(() => { panel.style.transform = 'translateY(0)'; panel.style.opacity = '1'; });
+            requestAnimationFrame(() => { panel.style.transform = 'translateY(0)'; });
             document.getElementById('ai-main-btn').classList.add('ai-open');
-            document.getElementById('ai-panel-title').textContent = getBC().name + ' — Asistente';
+            document.getElementById('ai-panel-title').textContent = getBC().name + ' IA';
             if (_aiHistory.length === 0) {
-                _addAIBubble('assistant', `Hola! Soy tu asistente de ${getBC().name} 🤖\n\nPuedo ayudarte con precios, mensajes para clientes, análisis de tu negocio y más. ¿En qué te ayudo?`);
+                _addAIBubble('assistant', `Hola! Soy tu asistente de ${getBC().name} ✨\n\nPuedo ayudarte con precios, mensajes para clientes, análisis de tu negocio y más. ¿En qué te ayudo?`);
             }
             setTimeout(() => document.getElementById('ai-input').focus(), 350);
         }
@@ -16221,9 +16243,33 @@ REGLAS:
         function closeAIChat() {
             const panel = document.getElementById('ai-chat-panel');
             panel.style.transform = 'translateY(100%)';
-            panel.style.opacity = '0';
             document.getElementById('ai-main-btn').classList.remove('ai-open');
             setTimeout(() => { panel.style.display = 'none'; }, 320);
+        }
+
+        function handleAIFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            event.target.value = '';
+            _addAIBubble('user', `📎 ${file.name}`);
+            const tid = _addAIThinking();
+            const isImage = file.type.startsWith('image/');
+            if (isImage) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64 = e.target.result.split(',')[1];
+                    const reply = await callGeminiAPI('Analiza esta imagen y extrae cualquier información útil para el negocio (citas, servicios, datos de clientes, etc.)', base64, file.type);
+                    document.getElementById(tid)?.remove();
+                    _addAIBubble('assistant', reply);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setTimeout(async () => {
+                    const reply = await callGeminiAPI(`Se adjuntó el archivo: ${file.name}. ¿Cómo puedo ayudarte con él?`);
+                    document.getElementById(tid)?.remove();
+                    _addAIBubble('assistant', reply);
+                }, 0);
+            }
         }
 
         function toggleAIChat() {
@@ -19135,44 +19181,48 @@ END:VCARD`;
 
 <!-- ─── AI CHAT PANEL ─── -->
 <div class="ai-chat-panel" id="ai-chat-panel">
-  <!-- Drag handle -->
-  <div style="display:flex;justify-content:center;padding:10px 0 2px;cursor:pointer;" onclick="closeAIChat()">
-    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.18);"></div>
-  </div>
+
   <!-- Header -->
-  <div style="display:flex;align-items:center;gap:10px;padding:8px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.07);">
-    <div style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(16,163,127,0.55);background:rgba(16,163,127,0.12);display:flex;align-items:center;justify-content:center;color:#10a37f;flex-shrink:0;">
-      <svg width="17" height="17" viewBox="0 0 41 41" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.99-3.768 10.079 10.079 0 0 0-9.562 4.936 9.964 9.964 0 0 0-6.65 3.498 10.079 10.079 0 0 0-2.48 10.582 9.964 9.964 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.99 3.768 10.079 10.079 0 0 0 9.563-4.936 9.965 9.965 0 0 0 6.65-3.498 10.079 10.079 0 0 0 2.479-10.582zm-14.46 20.184a7.482 7.482 0 0 1-4.806-1.73c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.482 7.665zM6.031 33.317a7.482 7.482 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103L16.443 36.5a7.505 7.505 0 0 1-10.412-3.183zm-2.64-17.428A7.482 7.482 0 0 1 7.29 11.67c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L6.849 25.289a7.505 7.505 0 0 1-3.458-9.4zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l7.336 4.235a7.504 7.504 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.935-1.317zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l7.882-4.551a7.504 7.504 0 0 1 11.302 7.669zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.505 7.505 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.5v4.999l-4.331 2.5-4.331-2.5V20.27z"/>
-      </svg>
-    </div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.95);" id="ai-panel-title">Asistente</div>
-      <div style="font-size:11px;color:rgba(16,163,127,0.8);display:flex;align-items:center;gap:4px;">
-        <span style="width:6px;height:6px;border-radius:50%;background:#10a37f;display:inline-block;"></span>Activo
-      </div>
-    </div>
-    <button onclick="closeAIChat()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:24px;cursor:pointer;line-height:1;padding:4px 6px;">&times;</button>
-  </div>
-  <!-- Messages -->
-  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:14px 14px 6px;display:flex;flex-direction:column;"></div>
-  <!-- Input -->
-  <div style="padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:0;align-items:flex-end;background:#2f2f2f;margin:8px;border-radius:14px;">
-    <textarea id="ai-input" placeholder="Pregunta algo…" rows="1"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
-              oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';this.nextElementSibling.style.opacity=this.value.trim()?'1':'0.35';"
-              style="flex:1;resize:none;border:none;border-radius:0;
-                     background:transparent;color:rgba(255,255,255,0.92);font-size:14px;
-                     padding:10px 8px 10px 4px;outline:none;line-height:1.4;overflow-y:auto;
-                     font-family:inherit;max-height:110px;"></textarea>
-    <button onclick="sendAIMessage()"
-            style="background:none;border:none;cursor:pointer;flex-shrink:0;padding:8px 4px;
-                   color:#10a37f;opacity:0.35;transition:opacity 0.15s;display:flex;align-items:center;justify-content:center;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+  <div class="ai-chat-header">
+    <button class="ai-chat-header-btn" onclick="closeAIChat()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M6 9l6 6 6-6"/>
       </svg>
     </button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#10a37f">
+        <path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/>
+      </svg>
+      <span id="ai-panel-title" style="font-size:16px;font-weight:600;color:#fff;">Asistente IA</span>
+    </div>
+    <div style="width:38px;"></div>
   </div>
+
+  <!-- Messages -->
+  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:20px 16px 12px;display:flex;flex-direction:column;"></div>
+
+  <!-- Input bar -->
+  <div class="ai-input-row">
+    <div class="ai-input-pill">
+      <button class="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Adjuntar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <textarea id="ai-input" placeholder="Mensaje…" rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';
+                         var btn=document.getElementById('ai-send-btn');
+                         btn.classList.toggle('active',this.value.trim().length>0);"></textarea>
+      <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <input type="file" id="ai-file-input" accept="image/*,.pdf,.txt" style="display:none" onchange="handleAIFileUpload(event)">
 </div>
 
 <!-- ─── DIGITAL BUSINESS CARD MODAL ─── -->
