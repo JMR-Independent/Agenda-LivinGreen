@@ -6343,7 +6343,7 @@
                            data-biz="name">LivinGreen</div>
                       <div style="font-size:10.5px;color:rgba(255,255,255,0.42);margin-top:2px;
                                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                           id="bento-biz-tagline">Experience the pleasure of walking on clean carpets</div>
+                           id="bento-biz-tagline" style="display:none"></div>
                     </div>
                   </div>
 
@@ -9986,7 +9986,6 @@ Incluye:
                 <div style="display: ${isMobile ? 'block' : 'flex'}; ${isMobile ? '' : 'justify-content: space-between;'}">
                     <div style="${isMobile ? 'text-align: center; margin-bottom: 20px;' : ''}">
                         <h1 style="margin: 0; color: #00bfff; font-size: ${isMobile ? '18px' : '24px'};">${getBC().emoji} ${getBC().name.toUpperCase()}</h1>
-                        <p style="margin: 5px 0; font-size: ${isMobile ? '12px' : '14px'};">${getBC().tagline}</p>
                         <p style="margin: 2px 0; font-size: ${isMobile ? '11px' : '14px'};">📞 ${getBC().phone}</p>
                         ${isMobile ? '' : `<p style="margin: 2px 0; font-size: 14px;">✉️ ${getBC().email}</p>`}
                     </div>
@@ -15805,28 +15804,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             ctx.fillStyle = 'rgba(255,255,255,0.97)';
             ctx.fillText(bc.name, contentX, 180);
 
-            // Tagline
-            ctx.font = '22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-            ctx.fillStyle = 'rgba(16,163,127,0.9)';
-            // Wrap tagline if needed
-            const taglineWords = bc.tagline.split(' ');
-            let taglineLine = '';
-            let taglineY = 220;
-            const maxTaglineWidth = W - contentX - 40;
-            for (const word of taglineWords) {
-                const test = taglineLine + (taglineLine ? ' ' : '') + word;
-                if (ctx.measureText(test).width > maxTaglineWidth && taglineLine) {
-                    ctx.fillText(taglineLine, contentX, taglineY);
-                    taglineLine = word;
-                    taglineY += 30;
-                } else {
-                    taglineLine = test;
-                }
-            }
-            if (taglineLine) ctx.fillText(taglineLine, contentX, taglineY);
-
             // Divider line
-            const divY = taglineY + 30;
+            const divY = 220;
             const divGrad = ctx.createLinearGradient(contentX, divY, W - 40, divY);
             divGrad.addColorStop(0, 'rgba(16,163,127,0.6)');
             divGrad.addColorStop(1, 'rgba(16,163,127,0)');
@@ -15893,13 +15872,11 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 'VERSION:3.0',
                 'FN:' + bc.name,
                 'ORG:' + bc.name,
-                'TITLE:' + bc.tagline,
                 'TEL;TYPE=CELL:+' + phone,
                 'TEL;TYPE=WORK:+' + whatsapp,
                 'EMAIL:' + bc.email,
                 'URL:' + bc.websiteFull,
                 'X-SOCIALPROFILE;type=instagram:https://www.instagram.com/' + instagram + '/',
-                'NOTE:' + bc.tagline,
                 'END:VCARD'
             ].join('\r\n');
             const blob = new Blob([vcf], { type: 'text/vcard' });
@@ -15923,7 +15900,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: bc.name,
-                            text: bc.tagline + '\n' + bc.websiteFull,
+                            text: bc.websiteFull,
                             files: [file],
                         });
                         return;
@@ -15935,7 +15912,6 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 try {
                     await navigator.share({
                         title: bc.name,
-                        text: bc.tagline,
                         url: bc.websiteFull,
                     });
                     return;
@@ -17965,8 +17941,7 @@ END:VCARD`;
                 pdf.setTextColor(255, 255, 255);
                 pdf.setFontSize(9);
                 pdf.setFont(undefined, 'normal');
-                pdf.text(getBC().tagline, 10, 45);
-                pdf.text('📞 ' + getBC().phone, 10, 52);
+                pdf.text('📞 ' + getBC().phone, 10, 45);
                 pdf.text('✉️ ' + getBC().email, 10, 58);
                 pdf.text('🌐 ' + getBC().website, 10, 64);
 
