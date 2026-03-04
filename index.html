@@ -6376,7 +6376,7 @@
                   </div>
 
                   <!-- Botón compartir tarjeta (ancho completo) -->
-                  <button onclick="shareBizCard()"
+                  <button onclick="openBizCardModal()"
                      style="display:flex;align-items:center;justify-content:space-between;width:100%;
                             padding:10px 14px;border-radius:10px;box-sizing:border-box;
                             background:rgba(16,163,127,0.16);border:1px solid rgba(16,163,127,0.38);
@@ -15714,26 +15714,239 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             if (document.getElementById('biz-name')) renderBusinessProfileCard();
         }
 
-        // Compartir tarjeta digital del negocio con clientes
-        async function shareBizCard() {
+        // ─── DIGITAL BUSINESS CARD ───────────────────────────────────────────
+        function openBizCardModal() {
+            const modal = document.getElementById('biz-card-modal');
+            modal.style.display = 'flex';
+            drawBizCard();
+        }
+        function closeBizCardModal() {
+            document.getElementById('biz-card-modal').style.display = 'none';
+        }
+
+        async function drawBizCard() {
+            const canvas = document.getElementById('biz-card-canvas');
+            const ctx = canvas.getContext('2d');
+            const W = 1050, H = 600;
+            canvas.width = W; canvas.height = H;
             const bc = getBC();
-            const cardUrl = bc.websiteFull.replace(/\/$/, '') + '/card';
+
+            // Background gradient
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, '#0d1526');
+            bg.addColorStop(0.5, '#112038');
+            bg.addColorStop(1, '#0d1526');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // Top accent bar (green)
+            const topBar = ctx.createLinearGradient(0, 0, W, 0);
+            topBar.addColorStop(0, '#059669');
+            topBar.addColorStop(0.5, '#10a37f');
+            topBar.addColorStop(1, '#059669');
+            ctx.fillStyle = topBar;
+            ctx.fillRect(0, 0, W, 6);
+
+            // Subtle grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+            for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+            // Logo circle (left column)
+            const logoX = 100, logoY = H / 2, logoR = 80;
+            // Circle border
+            ctx.beginPath();
+            ctx.arc(logoX, logoY, logoR + 3, 0, Math.PI * 2);
+            const circleBorder = ctx.createLinearGradient(logoX - logoR, logoY - logoR, logoX + logoR, logoY + logoR);
+            circleBorder.addColorStop(0, 'rgba(16,163,127,0.8)');
+            circleBorder.addColorStop(1, 'rgba(5,150,105,0.4)');
+            ctx.fillStyle = circleBorder;
+            ctx.fill();
+
+            // Load and draw logo image
+            const logoSrc = bc.logo || bc.logoDefault;
+            await new Promise(resolve => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(img, logoX - logoR, logoY - logoR, logoR * 2, logoR * 2);
+                    ctx.restore();
+                    resolve();
+                };
+                img.onerror = () => {
+                    // Fallback: draw emoji
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(16,163,127,0.2)';
+                    ctx.fill();
+                    ctx.restore();
+                    ctx.font = '56px serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(bc.emoji, logoX, logoY);
+                    resolve();
+                };
+                img.src = logoSrc;
+            });
+
+            // Right content area
+            const contentX = 220;
+
+            // Business name
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.97)';
+            ctx.fillText(bc.name, contentX, 180);
+
+            // Tagline
+            ctx.font = '22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.fillStyle = 'rgba(16,163,127,0.9)';
+            // Wrap tagline if needed
+            const taglineWords = bc.tagline.split(' ');
+            let taglineLine = '';
+            let taglineY = 220;
+            const maxTaglineWidth = W - contentX - 40;
+            for (const word of taglineWords) {
+                const test = taglineLine + (taglineLine ? ' ' : '') + word;
+                if (ctx.measureText(test).width > maxTaglineWidth && taglineLine) {
+                    ctx.fillText(taglineLine, contentX, taglineY);
+                    taglineLine = word;
+                    taglineY += 30;
+                } else {
+                    taglineLine = test;
+                }
+            }
+            if (taglineLine) ctx.fillText(taglineLine, contentX, taglineY);
+
+            // Divider line
+            const divY = taglineY + 30;
+            const divGrad = ctx.createLinearGradient(contentX, divY, W - 40, divY);
+            divGrad.addColorStop(0, 'rgba(16,163,127,0.6)');
+            divGrad.addColorStop(1, 'rgba(16,163,127,0)');
+            ctx.strokeStyle = divGrad;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(contentX, divY);
+            ctx.lineTo(W - 40, divY);
+            ctx.stroke();
+
+            // Contact info grid (2 columns)
+            const infoStartY = divY + 36;
+            const col1X = contentX;
+            const col2X = contentX + Math.round((W - contentX - 40) / 2) + 10;
+            const rowH = 46;
+            const contacts = [
+                { icon: '📞', label: bc.phone,     col: 0, row: 0 },
+                { icon: '💬', label: bc.whatsapp,  col: 1, row: 0 },
+                { icon: '✉️', label: bc.email,     col: 0, row: 1 },
+                { icon: '🌐', label: bc.website,   col: 1, row: 1 },
+                { icon: '📸', label: bc.instagram, col: 0, row: 2 },
+            ];
+            ctx.font = '20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            for (const c of contacts) {
+                const cx = c.col === 0 ? col1X : col2X;
+                const cy = infoStartY + c.row * rowH;
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(c.icon + '  ' + c.label, cx, cy);
+            }
+
+            // Bottom bar
+            const botBar = ctx.createLinearGradient(0, H - 44, W, H - 44);
+            botBar.addColorStop(0, 'rgba(16,163,127,0.18)');
+            botBar.addColorStop(1, 'rgba(16,163,127,0.05)');
+            ctx.fillStyle = botBar;
+            ctx.fillRect(0, H - 44, W, 44);
+
+            ctx.font = '17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🌐 ' + bc.websiteFull.replace('https://', ''), W / 2, H - 22);
+        }
+
+        function saveBizCardImage() {
+            const canvas = document.getElementById('biz-card-canvas');
+            const bc = getBC();
+            const link = document.createElement('a');
+            link.download = bc.name.replace(/\s+/g, '-') + '-tarjeta.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ Imagen guardada');
+        }
+
+        function saveBizCardVCard() {
+            const bc = getBC();
+            const phone = bc.phone.replace(/\D/g, '');
+            const whatsapp = bc.whatsapp.replace(/\D/g, '');
+            const instagram = bc.instagram.replace('@', '');
+            const vcf = [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                'FN:' + bc.name,
+                'ORG:' + bc.name,
+                'TITLE:' + bc.tagline,
+                'TEL;TYPE=CELL:+' + phone,
+                'TEL;TYPE=WORK:+' + whatsapp,
+                'EMAIL:' + bc.email,
+                'URL:' + bc.websiteFull,
+                'X-SOCIALPROFILE;type=instagram:https://www.instagram.com/' + instagram + '/',
+                'NOTE:' + bc.tagline,
+                'END:VCARD'
+            ].join('\r\n');
+            const blob = new Blob([vcf], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = bc.name.replace(/\s+/g, '-') + '.vcf';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            showToast('✅ Contacto guardado');
+        }
+
+        async function shareDigitalCard() {
+            const canvas = document.getElementById('biz-card-canvas');
+            const bc = getBC();
+            // Try Web Share API with image file
+            if (navigator.canShare) {
+                try {
+                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                    const file = new File([blob], bc.name.replace(/\s+/g, '-') + '-tarjeta.png', { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: bc.name,
+                            text: bc.tagline + '\n' + bc.websiteFull,
+                            files: [file],
+                        });
+                        return;
+                    }
+                } catch(e) { /* fallthrough */ }
+            }
+            // Fallback: share URL only
             if (navigator.share) {
                 try {
                     await navigator.share({
                         title: bc.name,
                         text: bc.tagline,
-                        url: cardUrl,
+                        url: bc.websiteFull,
                     });
                     return;
-                } catch(e) { /* fallthrough to copy */ }
+                } catch(e) { /* fallthrough */ }
             }
-            // Fallback: copy to clipboard
+            // Final fallback: copy URL to clipboard
             try {
-                await navigator.clipboard.writeText(cardUrl);
-                showToast('🔗 Enlace copiado: ' + cardUrl);
+                await navigator.clipboard.writeText(bc.websiteFull);
+                showToast('🔗 Enlace copiado al portapapeles');
             } catch(e) {
-                showToast('📋 ' + cardUrl);
+                showToast('📋 ' + bc.websiteFull);
             }
         }
         function triggerLogoUpload() {
@@ -18647,5 +18860,57 @@ END:VCARD`;
         }
 
     </script>
+
+<!-- ─── DIGITAL BUSINESS CARD MODAL ─── -->
+<div id="biz-card-modal" onclick="if(event.target===this)closeBizCardModal()"
+     style="display:none;position:fixed;inset:0;z-index:30000;
+            background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);
+            align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
+  <div style="background:linear-gradient(145deg,#141b2d,#1a2640);border:1px solid rgba(255,255,255,0.12);
+              border-radius:20px;max-width:520px;width:100%;overflow:hidden;
+              box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+    <!-- Header -->
+    <div style="padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between;
+                border-bottom:1px solid rgba(255,255,255,0.08);">
+      <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);">Tarjeta Digital</div>
+      <button onclick="closeBizCardModal()" style="background:none;border:none;color:rgba(255,255,255,0.5);
+              font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+    </div>
+    <!-- Canvas preview -->
+    <div style="padding:20px 20px 0;display:flex;justify-content:center;">
+      <canvas id="biz-card-canvas" width="1050" height="600"
+              style="width:100%;max-width:460px;border-radius:12px;
+                     box-shadow:0 8px 32px rgba(0,0,0,0.5);"></canvas>
+    </div>
+    <!-- Action buttons -->
+    <div style="padding:20px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="saveBizCardImage()"
+              style="flex:1;min-width:120px;padding:12px 10px;border-radius:10px;cursor:pointer;
+                     background:rgba(16,163,127,0.2);border:1px solid rgba(16,163,127,0.5);
+                     color:rgba(255,255,255,0.92);font-size:13px;font-weight:600;
+                     display:flex;align-items:center;justify-content:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Guardar imagen
+      </button>
+      <button onclick="saveBizCardVCard()"
+              style="flex:1;min-width:120px;padding:12px 10px;border-radius:10px;cursor:pointer;
+                     background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.5);
+                     color:rgba(255,255,255,0.92);font-size:13px;font-weight:600;
+                     display:flex;align-items:center;justify-content:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Guardar contacto
+      </button>
+      <button onclick="shareDigitalCard()"
+              style="flex:1;min-width:120px;padding:12px 10px;border-radius:10px;cursor:pointer;
+                     background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.5);
+                     color:rgba(255,255,255,0.92);font-size:13px;font-weight:600;
+                     display:flex;align-items:center;justify-content:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartir
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
