@@ -250,19 +250,9 @@
             -webkit-user-select: text;
         }
 
-        /* Fixed wallpaper via ::before — funciona en iOS Safari (background-attachment:fixed no funciona en iOS) */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: url('./images/background.webp') center center / cover no-repeat;
-            z-index: -2;
-            pointer-events: none;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, rgba(10, 15, 30, 0.75) 0%, rgba(20, 30, 50, 0.75) 100%) !important;
+            background: linear-gradient(135deg, #0f1117 0%, #1a2332 50%, #0f1117 100%) !important;
             overscroll-behavior: none;
             overflow: hidden;
             color: var(--text-primary);
@@ -10797,7 +10787,7 @@ Incluye:
                 // Try OpenAI GPT-4 Vision first (best for WhatsApp/Messenger screenshots)
                 console.log('🤖 Attempting OpenAI GPT-4 Vision OCR (optimized for screenshots)...');
                 const openaiResult = await extractDataWithOpenAI(imagesData);
-                if (openaiResult && Object.keys(openaiResult).length > 0) {
+                if (openaiResult && Object.values(openaiResult).some(v => v && String(v).trim())) {
                     console.log('✅ OpenAI extraction successful:', openaiResult);
                     return openaiResult;
                 }
@@ -10806,7 +10796,7 @@ Incluye:
                 // Try Google Cloud Vision as fallback
                 console.log('📸 Attempting Google Cloud Vision OCR...');
                 const visionResult = await extractDataWithGoogleVision(imagesData);
-                if (visionResult && Object.keys(visionResult).length > 0) {
+                if (visionResult && Object.values(visionResult).some(v => v && String(v).trim())) {
                     console.log('✅ Google Vision extraction successful:', visionResult);
                     return visionResult;
                 }
@@ -11589,18 +11579,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             return combinedData;
             } catch (error) {
                 console.error('Multi-image processing error:', error);
-
-                // Fallback: return empty data so user can fill manually
-                showError(`Error procesando múltiples imágenes: ${error.message}. Puedes llenar los datos manualmente.`);
-                return {
-                    name: '',
-                    time: '',
-                    city: '',
-                    address: '',
-                    job: '',
-                    price: '',
-                    day: ''
-                };
+                return null;
             }
         }
 
