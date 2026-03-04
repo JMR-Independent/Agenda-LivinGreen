@@ -19243,9 +19243,7 @@ END:VCARD`;
   <!-- Header -->
   <div class="ai-chat-header">
     <button class="ai-chat-header-btn" onclick="closeAIChat()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)">
-        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-      </svg>
+      <span style="font-size:20px;color:rgba(255,255,255,0.8);line-height:1;display:flex;align-items:center;justify-content:center;">↓</span>
     </button>
     <div style="display:flex;align-items:center;gap:8px;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="#10a37f">
@@ -19263,20 +19261,16 @@ END:VCARD`;
   <div class="ai-input-row">
     <div class="ai-input-pill">
       <button class="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Adjuntar">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.75)">
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
+        <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
                 oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';
                          var hasText=this.value.trim().length>0;
                          document.getElementById('ai-send-btn').classList.toggle('active',hasText);
-                         document.getElementById('ai-send-icon').setAttribute('fill',hasText?'#000':'rgba(255,255,255,0.35)');"></textarea>
+                         document.getElementById('ai-send-icon').style.color=hasText?'#000':'rgba(255,255,255,0.35)';"></textarea>
       <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">
-        <svg id="ai-send-icon" width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.35)">
-          <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
-        </svg>
+        <span id="ai-send-icon" style="font-size:18px;color:rgba(255,255,255,0.35);line-height:1;display:flex;align-items:center;justify-content:center;">↑</span>
       </button>
     </div>
   </div>
