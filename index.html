@@ -16261,18 +16261,29 @@ ${clientesText}`;
             search_clients:'Buscando clientes…',add_client:'Agregando cliente…',
             create_appointment:'Creando cita…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
 
-        async function runAgentLoop(history) {
+        async function _groqCall(body, attempt=0) {
             const key=localStorage.getItem('rize_gemini_key')||_GD;
+            const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+                method:'POST',
+                headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+                body:JSON.stringify(body)
+            });
+            if(res.status===429&&attempt<2){
+                const wait=4000+attempt*3000;
+                _updateThinkingStatus(`Esperando límite Groq (${Math.round(wait/1000)}s)…`);
+                await new Promise(r=>setTimeout(r,wait));
+                return _groqCall(body,attempt+1);
+            }
+            return res;
+        }
+
+        async function runAgentLoop(history) {
             const messages=[{role:'system',content:buildAISystemPrompt()},...history];
             for(let i=0;i<5;i++){
-                const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-                    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,tools:AI_TOOLS,tool_choice:'auto',max_tokens:800,temperature:0.65})
-                });
+                const res=await _groqCall({model:'llama-3.3-70b-versatile',messages,tools:AI_TOOLS,tool_choice:'auto',max_tokens:800,temperature:0.65});
                 if(!res.ok){const err=await res.json().catch(()=>({}));
                     if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración.');
-                    if(res.status===429)throw new Error('⚠️ Límite de uso alcanzado, espera un momento.');
+                    if(res.status===429)throw new Error('⚠️ Límite de Groq agotado. Espera 1 minuto e intenta de nuevo.');
                     throw new Error('⚠️ Error '+(err.error?.message||res.status));}
                 const data=await res.json(); const msg=data.choices[0].message;
                 if(!msg.tool_calls||msg.tool_calls.length===0){
@@ -16286,13 +16297,14 @@ ${clientesText}`;
                     const result=executeTool(tc.function.name,args);
                     messages.push({role:'tool',tool_call_id:tc.id,name:tc.function.name,content:JSON.stringify(result)});
                 }
+                // Pausa entre iteraciones para no saturar rate limit
+                if(i<4) await new Promise(r=>setTimeout(r,600));
             }
             return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
         }
 
         // callGeminiAPI se mantiene solo para imágenes (vision model no soporta tools)
         async function callGeminiAPI(userText,imageBase64=null,imageMime='image/jpeg') {
-            const key=localStorage.getItem('rize_gemini_key')||_GD;
             const messages=[{role:'system',content:buildAISystemPrompt()}];
             for(const h of _aiHistory)messages.push({role:h.role==='assistant'?'assistant':'user',content:h.content});
             let uc=userText;
@@ -16300,8 +16312,8 @@ ${clientesText}`;
             messages.push({role:'user',content:uc});
             const model=imageBase64?'meta-llama/llama-4-scout-17b-16e-instruct':'llama-3.3-70b-versatile';
             try{
-                const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages,max_tokens:600,temperature:0.65})});
-                if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401)return'⚠️ API Key inválida';if(res.status===429)return'⚠️ Límite alcanzado';return'⚠️ Error '+(err.error?.message||res.status);}
+                const res=await _groqCall({model,messages,max_tokens:600,temperature:0.65});
+                if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401)return'⚠️ API Key inválida';if(res.status===429)return'⚠️ Límite Groq agotado. Espera 1 minuto.';return'⚠️ Error '+(err.error?.message||res.status);}
                 const data=await res.json();return data.choices?.[0]?.message?.content||'(sin respuesta)';
             }catch(e){return'⚠️ Error de conexión: '+e.message;}
         }
@@ -16458,20 +16470,15 @@ ${clientesText}`;
         }
 
         async function _autoSummarize() {
-            if(_aiHistory.length<6) return;
-            const key=localStorage.getItem('rize_gemini_key')||_GD;
+            if(_aiHistory.length<6||_aiThinking) return;
             const recent=_aiHistory.slice(-20);
             const conv=recent.map(h=>`${h.role==='user'?'Usuario':'Asistente'}: ${h.content.slice(0,300)}`).join('\n');
             try{
-                const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-                    body:JSON.stringify({model:'llama-3.1-8b-instant',
-                        messages:[
-                            {role:'system',content:'Resume esta conversación en 3-4 líneas en español. Destaca: datos de clientes mencionados, citas agendadas, preferencias del usuario, información importante del negocio. Solo el resumen, sin comentarios extra.'},
-                            {role:'user',content:conv}
-                        ],max_tokens:200,temperature:0.3})
-                });
+                const res=await _groqCall({model:'llama-3.1-8b-instant',
+                    messages:[
+                        {role:'system',content:'Resume esta conversación en 3-4 líneas en español. Destaca: datos de clientes mencionados, citas agendadas, preferencias del usuario, información importante del negocio. Solo el resumen, sin comentarios extra.'},
+                        {role:'user',content:conv}
+                    ],max_tokens:200,temperature:0.3});
                 if(res.ok){
                     const data=await res.json();
                     const summary=data.choices?.[0]?.message?.content||'';
@@ -16496,8 +16503,8 @@ ${clientesText}`;
                 _addAIBubble('assistant',reply);
                 _aiHistory.push({role:'assistant',content:reply});
                 if(_aiHistory.length>40)_aiHistory=_aiHistory.slice(-40);
-                // Auto-resumen cada 15 mensajes (no bloquea)
-                if(_aiHistory.length%15===0) _autoSummarize();
+                // Auto-resumen cada 15 mensajes — espera 8s para no competir con rate limit
+                if(_aiHistory.length%15===0) setTimeout(()=>{if(!_aiThinking)_autoSummarize();},8000);
             } catch(e) {
                 document.getElementById(tid)?.remove();
                 _addAIBubble('assistant',e.message||'⚠️ Error de conexión.');
