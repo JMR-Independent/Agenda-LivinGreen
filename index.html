@@ -15901,7 +15901,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: bc.name,
-                            text: cardUrl,
+                            url: cardUrl,
                             files: [file],
                         });
                         return;
