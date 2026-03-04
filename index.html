@@ -16321,25 +16321,34 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
         async function _toolCreateAppt(args) {
             try{
-                const price=parseFloat(String(args.price).replace(/[^0-9.]/g,''))||0;
+                const price=parseFloat(String(args.price||'0').replace(/[^0-9.]/g,''))||0;
                 const now=new Date();
                 const appt={
                     id:'ai_'+now.getTime(),
                     name:args.client_name,
+                    clientName:args.client_name,
+                    cliente:args.client_name,
                     time:args.time,
+                    hora:args.time,
                     date:args.date,
+                    fecha:args.date,
                     job:args.service,
+                    service:args.service,
+                    servicio:args.service,
                     price:price,
+                    precio:price,
                     city:args.city||'',
                     notes:args.notes||'',
+                    notas:args.notes||'',
                     address:'',
                     timestamp:now.getTime(),
                     created_at:now.toISOString()
                 };
                 await OfflineDB.saveAppointment(appt);
-                // Refresh UI caches so calendar/history shows new appointment
                 window._cacheLoaded={};
                 if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
+                if(typeof generateWeeklyCalendar==='function'&&currentView==='calendar') generateWeeklyCalendar();
+                else if(typeof loadAppointments==='function') loadAppointments();
                 return {success:true,message:`✅ Cita creada: ${args.client_name} el ${args.date} a las ${args.time} — ${args.service} $${price}`};
             }catch(e){return{success:false,error:e.message};}
         }
