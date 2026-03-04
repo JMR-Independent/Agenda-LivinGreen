@@ -7962,23 +7962,6 @@ Incluye:
                     </div>
                     <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en console.groq.com — sin tarjeta</div>
                   </div>
-                  <!-- OpenAI TTS Key -->
-                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
-                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🔊 OpenAI API Key (voz IA)</label>
-                    <div style="display:flex;gap:8px;">
-                      <input id="openai-tts-key" type="password" placeholder="sk-..."
-                             style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
-                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
-                                    box-sizing:border-box;outline:none;font-family:monospace;">
-                      <button onclick="saveOpenAITTSKey()"
-                              style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
-                                     background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
-                                     font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
-                        Guardar
-                      </button>
-                    </div>
-                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">platform.openai.com · voz masculina natural (tts-1-hd)</div>
-                  </div>
                 </div>
 
                 <!-- ─── BACKGROUND THEME CAROUSEL ─── -->
@@ -16364,6 +16347,15 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             if(navigator.clipboard){ navigator.clipboard.writeText(text).then(copy).catch(copy); }
             else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
         }
+        async function _playAudioBlob(blob, reset) {
+            const url=URL.createObjectURL(blob);
+            const audio=new Audio(url);
+            window._aiAudioObj=audio;
+            audio.onended=()=>{ reset(); URL.revokeObjectURL(url); };
+            audio.onerror=()=>{ reset(); URL.revokeObjectURL(url); };
+            await audio.play().catch(()=>reset());
+        }
+
         async function _aiSpeak(el, text) {
             const span=el.querySelector('span');
             // Stop if already playing
@@ -16375,28 +16367,25 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 window.speechSynthesis.cancel();
                 span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; return;
             }
-            span.textContent='⏹'; span.style.color='#10a37f';
+            span.textContent='⏳'; span.style.color='#10a37f';
             const reset=()=>{ span.textContent='🔊'; span.style.color='rgba(255,255,255,0.7)'; window._aiAudioObj=null; };
-            const openaiKey=localStorage.getItem('rize_openai_tts_key');
-            if(openaiKey){
-                try{
-                    const res=await fetch('https://api.openai.com/v1/audio/speech',{
-                        method:'POST',
-                        headers:{'Authorization':'Bearer '+openaiKey,'Content-Type':'application/json'},
-                        body:JSON.stringify({model:'tts-1-hd',input:text,voice:'onyx',speed:1.0})
-                    });
-                    if(!res.ok) throw new Error('tts fail');
-                    const blob=await res.blob();
-                    const url=URL.createObjectURL(blob);
-                    const audio=new Audio(url);
-                    window._aiAudioObj=audio;
-                    audio.onended=()=>{ reset(); URL.revokeObjectURL(url); };
-                    audio.onerror=()=>{ reset(); URL.revokeObjectURL(url); };
-                    audio.play();
-                    return;
-                }catch(e){ reset(); return; }
-            }
+
+            // Try HuggingFace MMS-TTS (free, no key, neural Spanish)
+            try{
+                const hfRes=await fetch('https://api-inference.huggingface.co/models/facebook/mms-tts-spa',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({inputs:text.slice(0,500)})
+                });
+                if(hfRes.ok){
+                    const blob=await hfRes.blob();
+                    if(blob.size>1000){ span.textContent='⏹'; await _playAudioBlob(blob,reset); return; }
+                }
+                // 503 = model loading, fall through to Web Speech
+            }catch(e){}
+
             // Fallback: Web Speech API with best available voice
+            span.textContent='⏹';
             const utt=new SpeechSynthesisUtterance(text);
             const voice=_getBestVoice();
             if(voice){utt.voice=voice; utt.lang=voice.lang;}else{utt.lang='es-US';}
