@@ -16103,62 +16103,37 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         }
         function saveAIMemory(mem) { try{localStorage.setItem(AI_MEMORY_KEY,JSON.stringify(mem));}catch{} }
 
-        // ── System Prompt ─────────────────────────────────────────────────────
+        // ── System Prompt (compacto para no exceder TPM) ──────────────────────
         function buildAISystemPrompt() {
             const bc=getBC(); const now=new Date(); const todayStr=now.toISOString().split('T')[0];
             const mem=getAIMemory();
-            let servicesText='(sin configurar)';
+            // Servicios
+            let svcTxt='(sin configurar)';
             try {
                 const cfg=JSON.parse(localStorage.getItem('rize_services_config')||localStorage.getItem('servicesConfig')||'{}');
-                const lines=Object.entries(cfg).map(([k,v])=>`  • ${v.name||k}: $${v.price||v.basePrice||'?'} ${v.unit||''}`.trim());
-                if(lines.length) servicesText=lines.join('\n');
+                const lines=Object.entries(cfg).map(([k,v])=>`${v.name||k}:$${v.price||v.basePrice||'?'}`);
+                if(lines.length) svcTxt=lines.join(' | ');
             } catch {}
+            // Solo citas de hoy + próximas 7 (no historial — usar tool search_appointments si hace falta)
             let allApts=[];
             try { allApts=JSON.parse(localStorage.getItem('appointments')||'[]'); } catch {}
-            try { const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]'); dv.forEach(e=>{if(!allApts.find(a=>a.id===e.id))allApts.push(e);}); } catch {}
-            const fmtApt=a=>{
-                const fecha=a.date||a.fecha||''; const hora=a.time||a.hora||'';
-                const cli=a.clientName||a.cliente||a.name||'?';
-                const svc=a.service||a.servicio||a.job||'';
-                return `  • ${fecha} ${hora} | ${cli}${a.city?' — '+a.city:''} | ${svc}${a.price?' $'+a.price:''}`;
-            };
-            const citasHoy=allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
-            const citasFuturas=allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>(a.date||a.fecha||'')>(b.date||b.fecha||'')?1:-1);
-            const citasPasadas=allApts.filter(a=>(a.date||a.fecha||'')<todayStr).sort((a,b)=>(a.date||a.fecha||'')<(b.date||b.fecha||'')?1:-1);
-            let allClients=[]; let clientesText='(sin registros)';
-            try {
-                allClients=JSON.parse(localStorage.getItem('clientRegistry')||'[]');
-                if(allClients.length) clientesText=`Total: ${allClients.length}\n`+allClients.map((c,i)=>`  ${i+1}. ${c.name||'?'} | ${c.city||''} | ${c.job||''} $${c.price||''} | ${c.date||''} ${c.time||''}`).join('\n');
-            } catch {}
-            const ingresoTotal=allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
-            const svcMap={}; allApts.forEach(a=>{const s=a.service||a.servicio||a.job||'?';svcMap[s]=(svcMap[s]||0)+1;});
-            const topSvc=Object.entries(svcMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
-            const memBlock=(mem.notes.length>0||mem.summary)?`\n═══ MEMORIA ═══\n${mem.summary?'Resumen conversaciones anteriores: '+mem.summary+'\n':''}${mem.notes.length>0?mem.notes.map(n=>`  [${n.category}] ${n.content} (${n.date})`).join('\n'):''}\n`:'';
-            return `Eres el asistente inteligente de ${bc.name}. Solo el dueño usa esta app.
-Responde SIEMPRE en español. Sé directo y conciso.
-Tienes herramientas para buscar datos, agregar clientes y crear citas — ÚSALAS proactivamente.
-Para escritura (add_client, create_appointment): confirma con el usuario ANTES de ejecutar.
-${memBlock}
-═══ NEGOCIO ═══
-${bc.name} | Tel:${bc.phone} | WA:${bc.whatsapp} | Email:${bc.email} | Web:${bc.website}
-
-═══ SERVICIOS ═══
-${servicesText}
-
-═══ STATS ═══
-Citas totales:${allApts.length} | Ingresos:$${ingresoTotal.toFixed(2)} | Top:${topSvc||'(sin datos)'}
-
-═══ HOY (${now.toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'})}) ═══
-${citasHoy.length?citasHoy.map(fmtApt).join('\n'):'Sin citas hoy'}
-
-═══ PRÓXIMAS CITAS ═══
-${citasFuturas.length?citasFuturas.map(fmtApt).join('\n'):'Sin citas futuras'}
-
-═══ HISTORIAL ═══
-${citasPasadas.length?citasPasadas.map(fmtApt).join('\n'):'(sin historial)'}
-
-═══ CLIENTES ═══
-${clientesText}`;
+            const fmt=a=>`${a.date||a.fecha||''} ${a.time||a.hora||''} ${a.clientName||a.cliente||a.name||'?'} — ${a.service||a.servicio||a.job||''}${a.price?' $'+a.price:''}`;
+            const hoy=allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
+            const prox=allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>((a.date||a.fecha||'')>(b.date||b.fecha||''))?1:-1).slice(0,7);
+            // Stats compactos
+            const total=allApts.length;
+            const ingresos=allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
+            let nClients=0; try{nClients=JSON.parse(localStorage.getItem('clientRegistry')||'[]').length;}catch{}
+            // Memoria
+            const memBlock=(mem.notes.length>0||mem.summary)
+                ?`\nMemoria: ${mem.summary||''} ${mem.notes.slice(-5).map(n=>n.content).join(' | ')}\n`:'';
+            return `Eres el asistente de ${bc.name}. Responde en español, sé breve y directo.
+USA las herramientas para buscar datos específicos. Para agregar/crear: confirma antes.
+${memBlock}Negocio: ${bc.name} | ${bc.phone} | ${bc.email}
+Servicios: ${svcTxt}
+Stats: ${total} citas | $${ingresos.toFixed(0)} ingresos | ${nClients} clientes
+Hoy (${todayStr}): ${hoy.length?hoy.map(fmt).join(' / '):'sin citas'}
+Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
 
         // ── Herramientas (Tool Calling) ────────────────────────────────────────
@@ -16283,7 +16258,7 @@ ${clientesText}`;
         async function runAgentLoop(history) {
             const messages=[{role:'system',content:buildAISystemPrompt()},...history];
             for(let i=0;i<5;i++){
-                const res=await _groqCall({model:'llama-3.3-70b-versatile',messages,tools:AI_TOOLS,tool_choice:'auto',max_tokens:800,temperature:0.65});
+                const res=await _groqCall({model:'llama-3.1-8b-instant',messages,tools:AI_TOOLS,tool_choice:'auto',max_tokens:700,temperature:0.65});
                 if(!res.ok){const err=await res.json().catch(()=>({}));
                     if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración.');
                     if(res.status===429)throw new Error('⚠️ Límite de Groq agotado. Espera 1 minuto e intenta de nuevo.');
