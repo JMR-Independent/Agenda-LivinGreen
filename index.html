@@ -16278,6 +16278,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 const price=parseFloat(String(args.price).replace(/[^0-9.]/g,''))||0;
                 const now=new Date();
                 const appt={
+                    id:'ai_'+now.getTime(),
                     name:args.client_name,
                     time:args.time,
                     date:args.date,
@@ -16298,7 +16299,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         }
         async function _toolDeleteAppt(args) {
             try{
-                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                // Use OfflineDB so we get data from Supabase when online
+                const apts = await OfflineDB.getAppointments();
                 let match=null;
                 // Find by ID first, then by name+date
                 if(args.id) match=apts.find(a=>a.id===args.id||String(a.timestamp)===String(args.id));
@@ -16310,15 +16312,11 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                     else if(candidates.length>1) return {success:false,message:`Encontré ${candidates.length} citas para "${args.client_name}". Especifica la fecha (YYYY-MM-DD).`,appointments:candidates.map(a=>({id:a.id||a.timestamp,date:a.date,time:a.time,name:a.name||a.clientName}))};
                 }
                 if(!match) return {success:false,message:'No encontré ninguna cita con esos datos. Usa search_appointments para buscarla primero.'};
-                // Remove from localStorage
-                const filtered=apts.filter(a=>a!==match);
-                localStorage.setItem('appointments',JSON.stringify(filtered));
-                // Remove from Supabase if online
-                if(navigator.onLine&&window.supabaseClient&&match.timestamp){
-                    try{ await window.supabaseClient.from('appointments').delete().eq('timestamp',match.timestamp); }catch{}
-                }
+                // Use OfflineDB.deleteAppointment so it handles Supabase + localStorage + IndexedDB
+                await OfflineDB.deleteAppointment(match.id||match.timestamp);
                 window._cacheLoaded={};
                 if(typeof updateAppointmentCounter==='function') updateAppointmentCounter();
+                if(typeof generateWeeklyCalendar==='function'&&currentView==='calendar') generateWeeklyCalendar();
                 return {success:true,message:`✅ Cita eliminada: ${match.name||match.clientName} el ${match.date} a las ${match.time}`};
             }catch(e){return{success:false,error:e.message};}
         }
@@ -16401,7 +16399,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 for(const tc of msg.tool_calls){
                     let args={}; try{args=JSON.parse(tc.function.arguments);}catch{}
                     _updateThinkingStatus(_TOOL_LABELS[tc.function.name]||tc.function.name);
-                    const result=executeTool(tc.function.name,args);
+                    const result=await executeTool(tc.function.name,args);
                     messages.push({role:'tool',tool_call_id:tc.id,name:tc.function.name,content:JSON.stringify(result)});
                 }
                 hasToolResults=true;
@@ -16896,9 +16894,11 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 `¿Eliminar la cita de ${selectedAppointment.name}?`,
                 async () => {
                     try {
-                        await OfflineDB.deleteAppointment(selectedAppointment.id);
+                        await OfflineDB.deleteAppointment(selectedAppointment.id || selectedAppointment.timestamp);
                         closeAppointmentModal();
+                        window._cacheLoaded = {};
                         if (currentView === 'calendar') await generateWeeklyCalendar();
+                        else await loadAppointments();
                         showToast('🗑️ Cita eliminada');
                     } catch (error) {
                         console.error('❌ Error deleting appointment:', error);
