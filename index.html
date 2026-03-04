@@ -16868,7 +16868,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             const okBtn = document.getElementById('confirm-ok-btn');
             okBtn.textContent = okLabel;
             okBtn.style.background = okColor;
-            okBtn.onclick = () => { closeConfirmModal(); if (_confirmCallback) _confirmCallback(); };
+            okBtn.onclick = () => { const cb = _confirmCallback; closeConfirmModal(); if (cb) cb(); };
             document.getElementById('confirm-modal').style.display = 'flex';
         }
         function closeConfirmModal() {
