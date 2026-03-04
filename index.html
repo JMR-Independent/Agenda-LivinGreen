@@ -10442,6 +10442,29 @@ Incluye:
             initBgTheme();
             // Save ElevenLabs key to localStorage on first load
             if(!localStorage.getItem('elabs_key')) localStorage.setItem('elabs_key','sk_13183fc4f15eb3f848c408956b320ea92f4ebb184361d38c');
+            // Remove black background from chat logo using canvas
+            (function(){
+                const img=document.getElementById('ai-logo-img');
+                if(!img) return;
+                function process(){
+                    try{
+                        const c=document.createElement('canvas');
+                        c.width=img.naturalWidth; c.height=img.naturalHeight;
+                        const ctx=c.getContext('2d');
+                        ctx.drawImage(img,0,0);
+                        const d=ctx.getImageData(0,0,c.width,c.height);
+                        const px=d.data;
+                        for(let i=0;i<px.length;i+=4){
+                            const brightness=(px[i]+px[i+1]+px[i+2])/3;
+                            px[i+3]=brightness<40?0:brightness<80?Math.round((brightness-40)/40*255):255;
+                        }
+                        ctx.putImageData(d,0,0);
+                        img.src=c.toDataURL('image/png');
+                    }catch(e){}
+                }
+                if(img.complete&&img.naturalWidth) process();
+                else img.onload=process;
+            })();
 
             // Initialize backup system
             console.log('📦 Initializing backup system...');
@@ -19636,7 +19659,7 @@ END:VCARD`;
   <!-- Messages -->
   <div id="ai-messages" style="flex:1;overflow-y:auto;padding:20px 16px 12px;display:flex;flex-direction:column;">
     <div id="ai-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-bottom:70px;pointer-events:none;">
-      <img src="./images/agenda-logo.jpg" style="width:108px;height:108px;object-fit:contain;mix-blend-mode:screen;opacity:0.92;">
+      <img id="ai-logo-img" src="./images/agenda-logo.jpg" style="width:108px;height:108px;object-fit:contain;opacity:0.92;">
       <p id="ai-empty-text" style="font-family:'Lora',Georgia,serif;font-size:27px;font-weight:400;color:rgba(255,255,255,0.82);text-align:center;margin:0;line-height:1.45;letter-spacing:-0.2px;">¿En qué puedo<br>ayudarte hoy?</p>
     </div>
   </div>
