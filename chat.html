@@ -376,17 +376,24 @@ const OfflineDB = {
   }
 };
 
-// ── System Prompt ──────────────────────────────────────────────────────────
+// ── System Prompt (idéntico al de la app) ─────────────────────────────────
 function buildSystemPrompt() {
   const bc = _getBC();
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
   const weekday = now.toLocaleDateString('es', {weekday:'long'});
   const mem = _getAIMem();
+  // Servicios: intenta ambas claves igual que la app
   let svcTxt = '(sin configurar)';
   try {
     const cfg = JSON.parse(localStorage.getItem('rize_services_config') || '[]');
-    if (Array.isArray(cfg) && cfg.length) svcTxt = cfg.map(s=>`${s.name}:$${s.price||s.basePrice||'?'}`).join(' | ');
+    if (Array.isArray(cfg) && cfg.length)
+      svcTxt = cfg.map(s=>`${s.name}:$${s.price||s.basePrice||'?'}${s.priceRange?' ('+s.priceRange+')':''}`).join(' | ');
+    else {
+      const cfg2 = JSON.parse(localStorage.getItem('servicesConfig') || '{}');
+      const lines = Object.entries(cfg2).map(([k,v])=>`${v.name||k}:$${v.price||v.basePrice||'?'}`);
+      if (lines.length) svcTxt = lines.join(' | ');
+    }
   } catch {}
   let allApts = [];
   try { allApts = JSON.parse(localStorage.getItem('appointments') || '[]'); } catch {}
@@ -399,20 +406,31 @@ function buildSystemPrompt() {
   allApts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});
   try{JSON.parse(localStorage.getItem('clientRegistry')||'[]').forEach(c=>{const n=(c.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});}catch{}
   const memBlock = (mem.notes.length>0||mem.summary)
-    ? `\nMEMORIA: ${mem.summary||''} ${mem.notes.slice(-8).map(n=>n.content).join(' | ')}\n` : '';
-  return `Eres el asistente inteligente de ${bc.name||'LivinGreen'}, empresa de limpieza en Utah, USA. Tienes acceso completo a los datos del negocio. Respondes en español de forma concisa y útil.
+    ? `\nMEMORIA PERSISTENTE: ${mem.summary||''} ${mem.notes.slice(-8).map(n=>n.content).join(' | ')}\n` : '';
+  return `Eres el asistente inteligente de ${bc.name||'LivinGreen'}, empresa de limpieza en Utah, USA. Eres un AGENTE COMPLETO con conocimiento general ilimitado y acceso total a los datos del negocio. Respondes en español.
 
-NEGOCIO: ${bc.name||'LivinGreen'} | Tel: ${bc.phone||'—'} | Email: ${bc.email||'—'}
+NEGOCIO: ${bc.name||'LivinGreen'} | Tel: ${bc.phone||'—'} | Email: ${bc.email||'—'} | Web: ${bc.website||'—'} | IG: ${bc.instagram||'—'}
+Slogan: "${bc.tagline||''}" | Base: Mapleton, Utah
+Ciudades atendidas: Alpine, American Fork, Bluffdale, Bountiful, Cedar Hills, Cottonwood Heights, Draper, Eagle Mountain, Elk Ridge, Herriman, Highland, Holladay, Kearns, Lehi, Lindon, Mapleton, Midvale, Millcreek, Murray, North Salt Lake, Orem, Payson, Pleasant Grove, Provo, Riverton, Salem, Salt Lake City, Sandy, Santaquin, Saratoga Springs, South Jordan, Spanish Fork, Springville, Taylorsville, West Jordan, West Valley City, Woodland Hills, Woods Cross
+
 FECHA HOY: ${todayStr} (${weekday})
 SERVICIOS: ${svcTxt}
-STATS: ${total} citas totales | $${ingresos.toFixed(0)} ingresos acumulados | ${uniqueNames.size} clientes únicos
-HOY: ${hoy.length ? hoy.map(fmt).join(' // ') : 'sin citas'}
-PRÓXIMAS ${prox.length} citas: ${prox.length ? prox.map(fmt).join(' // ') : 'ninguna'}
+STATS GLOBALES: ${total} citas totales | $${ingresos.toFixed(0)} ingresos acumulados | ${uniqueNames.size} clientes únicos
+HOY (${todayStr}): ${hoy.length?hoy.map(fmt).join(' // '):'sin citas'}
+PRÓXIMAS ${prox.length} citas: ${prox.length?prox.map(fmt).join(' // '):'ninguna'}
 ${memBlock}
-REGLAS:
-- Usa tools para leer/escribir datos. Confirma ANTES de crear/eliminar/modificar.
-- Para abrir la app completa, dile al usuario que toque el botón "App" arriba a la derecha.
-- Adapta la longitud de respuesta a lo que pide el usuario.`;
+DATOS EN STORAGE:
+• appointments: [{id, date(YYYY-MM-DD), time(HH:MM), clientName, service, price, city, notes, timestamp}]
+• clientRegistry: [{id, name, phone, email, city, notes}]
+• dayEvents: {"YYYY-MM-DD": "vacaciones"|"libre"|"compromiso"|"salida"|"sin-pega"}
+• rize_services_config: [{id, name, price, basePrice, priceRange}]
+
+REGLAS DEL AGENTE:
+- Usa tools para leer/escribir todos los datos. Confirma ANTES de eliminar o modificar.
+- Para reagendar/actualizar con datos claros: ejecuta sin pedir confirmación adicional.
+- Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto.
+- Adapta la longitud de respuesta a lo que pide el usuario.
+- Para navegar la app, dile al usuario que toque "App" arriba a la derecha.`;
 }
 
 // ── Agent Tools ────────────────────────────────────────────────────────────
@@ -424,8 +442,13 @@ const AI_TOOLS = [
   {type:'function',function:{name:'add_client',description:'Agrega cliente.',parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
   {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes.',parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
   {type:'function',function:{name:'delete_appointment',description:'Elimina cita. Confirma antes.',parameters:{type:'object',properties:{client_name:{type:'string'},date:{type:'string'}},required:['client_name']}}},
-  {type:'function',function:{name:'update_appointment',description:'Modifica cita.',parameters:{type:'object',properties:{client_name:{type:'string'},date:{type:'string'},new_date:{type:'string'},new_time:{type:'string'},new_service:{type:'string'},new_price:{type:'string'},new_city:{type:'string'},new_notes:{type:'string'}},required:['client_name']}}},
+  {type:'function',function:{name:'update_appointment',description:'Modifica fecha, hora, servicio, precio, ciudad, notas o nombre de una cita.',parameters:{type:'object',properties:{client_name:{type:'string'},date:{type:'string'},new_date:{type:'string'},new_time:{type:'string'},new_service:{type:'string'},new_price:{type:'string'},new_city:{type:'string'},new_notes:{type:'string'},new_name:{type:'string',description:'Nuevo nombre del cliente'}},required:['client_name']}}},
+  {type:'function',function:{name:'update_client',description:'Actualiza datos de un cliente (teléfono, email, notas, ciudad).',parameters:{type:'object',properties:{name:{type:'string',description:'Nombre del cliente a buscar'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
+  {type:'function',function:{name:'delete_client',description:'Elimina un cliente del registro.',parameters:{type:'object',properties:{name:{type:'string',description:'Nombre del cliente'}},required:['name']}}},
+  {type:'function',function:{name:'add_day_event',description:'Marca un día en el calendario. types: vacaciones|libre|compromiso|salida|sin-pega',parameters:{type:'object',properties:{date:{type:'string',description:'Fecha YYYY-MM-DD'},event_type:{type:'string',enum:['vacaciones','libre','compromiso','salida','sin-pega']}},required:['date','event_type']}}},
+  {type:'function',function:{name:'remove_day_event',description:'Quita el evento/marca de un día del calendario.',parameters:{type:'object',properties:{date:{type:'string',description:'Fecha YYYY-MM-DD'}},required:['date']}}},
   {type:'function',function:{name:'get_services',description:'Lista servicios y precios.',parameters:{type:'object',properties:{},required:[]}}},
+  {type:'function',function:{name:'update_service_price',description:'Actualiza el precio de un servicio.',parameters:{type:'object',properties:{service_name:{type:'string',description:'Nombre del servicio'},price:{type:'number',description:'Nuevo precio en dólares'}},required:['service_name','price']}}},
   {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
   {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}},
 ];
@@ -525,6 +548,7 @@ async function executeTool(name, args) {
         else if(candidates.length>1) return {success:false,message:`Encontré ${candidates.length} citas. Especifica la fecha actual.`,appointments:candidates.map(_fmtApt)};
         if(!match) return {success:false,message:'No encontré la cita.'};
         const apt={...match};
+        if(args.new_name){apt.name=args.new_name;apt.clientName=args.new_name;apt.cliente=args.new_name;}
         if(args.new_date){apt.date=args.new_date;apt.fecha=args.new_date;}
         if(args.new_time){apt.time=args.new_time;apt.hora=args.new_time;}
         if(args.new_service){apt.job=args.new_service;apt.service=args.new_service;apt.servicio=args.new_service;}
@@ -532,7 +556,52 @@ async function executeTool(name, args) {
         if(args.new_city) apt.city=args.new_city;
         if(args.new_notes!=null) apt.notes=args.new_notes;
         await OfflineDB.saveAppointment(apt);
-        return {success:true,message:`Cita actualizada: ${apt.name||apt.clientName} — ${apt.date} a las ${apt.time}`};
+        return {success:true,message:`✅ Cita actualizada: ${apt.name||apt.clientName} — ${apt.date} a las ${apt.time}`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'update_client': {
+      try{
+        let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+        const q=(args.name||'').toLowerCase();
+        const idx=c.findIndex(cl=>(cl.name||'').toLowerCase().includes(q));
+        if(idx===-1) return {success:false,message:`No encontré cliente con nombre "${args.name}".`};
+        if(args.phone) c[idx].phone=args.phone;
+        if(args.email) c[idx].email=args.email;
+        if(args.city)  c[idx].city=args.city;
+        if(args.notes!=null) c[idx].notes=args.notes;
+        localStorage.setItem('clientRegistry',JSON.stringify(c));
+        return {success:true,message:`✅ Cliente "${c[idx].name}" actualizado.`,client:c[idx]};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'delete_client': {
+      try{
+        let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+        const q=(args.name||'').toLowerCase();
+        const before=c.length;
+        c=c.filter(cl=>!(cl.name||'').toLowerCase().includes(q));
+        if(c.length===before) return {success:false,message:`No encontré cliente con nombre "${args.name}".`};
+        localStorage.setItem('clientRegistry',JSON.stringify(c));
+        return {success:true,message:`✅ Cliente "${args.name}" eliminado del registro.`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'add_day_event': {
+      try{
+        const validTypes=['vacaciones','libre','compromiso','salida','sin-pega'];
+        if(!validTypes.includes(args.event_type)) return {success:false,message:`Tipo inválido. Usa: ${validTypes.join('|')}`};
+        let events={}; try{events=JSON.parse(localStorage.getItem('dayEvents')||'{}');}catch{}
+        events[args.date]=args.event_type;
+        localStorage.setItem('dayEvents',JSON.stringify(events));
+        const labels={vacaciones:'Vacaciones 🏖',libre:'Día libre ✅',compromiso:'Compromiso 📅',salida:'Salida 🚗','sin-pega':'Sin trabajo 😴'};
+        return {success:true,message:`✅ ${args.date} marcado como: ${labels[args.event_type]||args.event_type}`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'remove_day_event': {
+      try{
+        let events={}; try{events=JSON.parse(localStorage.getItem('dayEvents')||'{}');}catch{}
+        if(!events[args.date]) return {success:false,message:`No hay ningún evento marcado el ${args.date}.`};
+        delete events[args.date];
+        localStorage.setItem('dayEvents',JSON.stringify(events));
+        return {success:true,message:`✅ Evento del ${args.date} eliminado.`};
       }catch(e){return{success:false,error:e.message};}
     }
     case 'get_services': {
@@ -540,6 +609,17 @@ async function executeTool(name, args) {
         const cfg=JSON.parse(localStorage.getItem('rize_services_config')||'[]');
         if(!cfg.length) return {services:[],message:'No hay servicios configurados.'};
         return {count:cfg.length,services:cfg.map(s=>({name:s.name,price:s.price||s.basePrice,priceRange:s.priceRange||''}))};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'update_service_price': {
+      try{
+        const q=(args.service_name||'').toLowerCase();
+        let cfg=[]; try{cfg=JSON.parse(localStorage.getItem('rize_services_config')||'[]');}catch{}
+        const idx=cfg.findIndex(s=>(s.name||s.id||'').toLowerCase().includes(q));
+        if(idx===-1) return {success:false,message:`No encontré servicio "${args.service_name}". Usa get_services para ver la lista.`};
+        cfg[idx].price=args.price; cfg[idx].basePrice=args.price;
+        localStorage.setItem('rize_services_config',JSON.stringify(cfg));
+        return {success:true,message:`✅ Precio de "${cfg[idx].name}" actualizado a $${args.price}.`};
       }catch(e){return{success:false,error:e.message};}
     }
     case 'save_memory_note': {
@@ -668,7 +748,7 @@ function _resizeImageForAI(base64, mime, maxPx=800){
 }
 
 // ── Agent tool labels ──────────────────────────────────────────────────────
-const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',get_services:'Cargando servicios…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
+const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',update_client:'Actualizando cliente…',delete_client:'Eliminando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',add_day_event:'Marcando día…',remove_day_event:'Quitando evento…',get_services:'Cargando servicios…',update_service_price:'Actualizando precio…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
 
 // ── Agent loop ─────────────────────────────────────────────────────────────
 async function runAgent(userText){
@@ -732,11 +812,22 @@ function _setInputEnabled(on){
   if(on){ inp.style.opacity='1'; } else { inp.style.opacity='0.5'; }
 }
 
+// ── Spacer: empuja mensajes hacia abajo hasta que llenen el contenedor ──────
+function _ensureSpacer(){
+  const wrap=document.getElementById('messages');
+  if(!document.getElementById('msg-spacer')){
+    const sp=document.createElement('div');
+    sp.id='msg-spacer';sp.style.cssText='flex:1;min-height:0;';
+    wrap.insertBefore(sp,wrap.firstChild);
+  }
+}
+
 // ── Add user bubble (sync scroll — leer scrollHeight fuerza reflow) ────────
 function _addUserBubble(text){
   const wrap=document.getElementById('messages');
   const es=document.getElementById('empty-state');
   if(es) es.remove();
+  _ensureSpacer();
   const row=document.createElement('div');
   row.className='ai-msg user';
   const bub=document.createElement('div');
@@ -752,6 +843,7 @@ async function _streamBubble(text){
   const wrap=document.getElementById('messages');
   const es=document.getElementById('empty-state');
   if(es) es.remove();
+  _ensureSpacer();
 
   const row=document.createElement('div');
   row.className='ai-msg';
@@ -786,6 +878,7 @@ function _showThinking(){
   const wrap=document.getElementById('messages');
   const es=document.getElementById('empty-state');
   if(es) es.remove();
+  _ensureSpacer();
   const row=document.createElement('div');
   row.className='ai-msg'; row.id='thinking-row';
   row.innerHTML=`<div class="msg-av"><img src="./images/agenda-logo.jpg"></div>
