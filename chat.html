@@ -147,6 +147,29 @@ body{
   white-space:nowrap;z-index:999;
 }
 #toast.show{opacity:1;}
+
+/* Modal API Key */
+#apikey-modal{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+#apikey-modal.hidden{display:none;}
+#apikey-box{
+  background:#1a1a1a;border:1px solid rgba(255,255,255,0.12);border-radius:20px;
+  padding:24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px;
+}
+#apikey-box h3{color:#fff;font-size:17px;font-weight:600;margin:0;}
+#apikey-box p{color:rgba(255,255,255,0.55);font-size:13px;line-height:1.5;margin:0;}
+#apikey-input{
+  width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);
+  border-radius:12px;padding:12px 14px;color:#fff;font-size:15px;outline:none;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+#apikey-input::placeholder{color:rgba(255,255,255,0.3);}
+#apikey-save{
+  background:#10a37f;color:#fff;border:none;border-radius:12px;padding:13px;
+  font-size:15px;font-weight:600;cursor:pointer;width:100%;
+}
 </style>
 </head>
 <body>
@@ -163,6 +186,9 @@ body{
   <div style="display:flex;gap:4px;">
     <button class="header-btn" onclick="newChat()" title="Nueva conversación">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    </button>
+    <button class="header-btn" onclick="openApiKeyModal()" title="Configuración">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     <button class="header-btn" onclick="window.location.href='index.html'" title="Abrir app">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -200,6 +226,16 @@ body{
 
 <div id="toast"></div>
 
+<!-- Modal: configurar API Key de Gemini -->
+<div id="apikey-modal" class="hidden">
+  <div id="apikey-box">
+    <h3>Configurar API Key</h3>
+    <p>Ingresa tu API Key de Gemini (Google AI Studio). Solo se guarda en este dispositivo.</p>
+    <input id="apikey-input" type="password" placeholder="AIza..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button id="apikey-save" onclick="saveApiKey()">Guardar y continuar</button>
+  </div>
+</div>
+
 <script>
 // ── Shared state ──────────────────────────────────────────────────────────
 let _history = [];
@@ -217,7 +253,28 @@ let _thinkingEl = null;
   if (bc.logo) document.getElementById('header-logo').src = bc.logo;
   // SW registration
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  // Mostrar modal si no hay API key
+  if (!localStorage.getItem('rize_gemini_key')) openApiKeyModal();
 })();
+
+// ── API Key modal ──────────────────────────────────────────────────────────
+function openApiKeyModal(){
+  const modal = document.getElementById('apikey-modal');
+  const inp = document.getElementById('apikey-input');
+  modal.classList.remove('hidden');
+  const existing = localStorage.getItem('rize_gemini_key');
+  if (existing) inp.value = existing;
+  setTimeout(()=>inp.focus(), 300);
+}
+function saveApiKey(){
+  const key = document.getElementById('apikey-input').value.trim();
+  if (!key) { showToast('Ingresa una API Key válida'); return; }
+  localStorage.setItem('rize_gemini_key', key);
+  localStorage.removeItem('rize_gemini_model'); // forzar re-detección de modelo
+  _geminiModel = null;
+  document.getElementById('apikey-modal').classList.add('hidden');
+  showToast('API Key guardada');
+}
 
 // ── iOS keyboard fix ──────────────────────────────────────────────────────
 (function iosKeyboardFix(){
