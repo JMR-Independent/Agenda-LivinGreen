@@ -16886,19 +16886,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         function _setMicIcon(active){
             const svg=document.getElementById('ai-mic-icon');
             if(!svg)return;
-            if(active){
-                svg.style.opacity='1';
-                svg.querySelectorAll('rect,path,line').forEach(el=>{
-                    if(el.hasAttribute('fill')&&el.getAttribute('fill')!=='none') el.setAttribute('fill','#ff5555');
-                    if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none') el.setAttribute('stroke','#ff5555');
-                });
-            } else {
-                svg.style.opacity='0.65';
-                svg.querySelectorAll('rect,path,line').forEach(el=>{
-                    if(el.hasAttribute('fill')&&el.getAttribute('fill')!=='none') el.setAttribute('fill','white');
-                    if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none') el.setAttribute('stroke','white');
-                });
-            }
+            svg.style.color=active?'#ff5555':'rgba(255,255,255,0.7)';
         }
         function startVoiceInput() {
             const btn=document.getElementById('ai-mic-btn');
@@ -19936,11 +19924,11 @@ END:VCARD`;
         <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
       </button>
       <button class="ai-attach-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Voz">
-        <svg id="ai-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.65">
-          <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
-          <path d="M5 10a7 7 0 0 0 14 0" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          <line x1="9" y1="21" x2="15" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <svg id="ai-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:rgba(255,255,255,0.7);display:block;">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor"/>
+          <path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="9" y1="21" x2="15" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
