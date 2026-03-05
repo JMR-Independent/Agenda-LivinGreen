@@ -16634,14 +16634,14 @@ REGLAS DEL AGENTE:
 
         async function _groqCall(body, attempt=0) {
             const key=localStorage.getItem('rize_gemini_key');
-            const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+            const res=await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',{
                 method:'POST',
                 headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
                 body:JSON.stringify(body)
             });
             if(res.status===429&&attempt<2){
                 const wait=4000+attempt*3000;
-                _updateThinkingStatus(`Esperando límite Groq (${Math.round(wait/1000)}s)…`);
+                _updateThinkingStatus(`Esperando límite de API (${Math.round(wait/1000)}s)…`);
                 await new Promise(r=>setTimeout(r,wait));
                 return _groqCall(body,attempt+1);
             }
@@ -16651,11 +16651,11 @@ REGLAS DEL AGENTE:
         async function runAgentLoop(history) {
             const messages=[{role:'system',content:buildAISystemPrompt()},...history];
             for(let i=0;i<8;i++){
-                const body={model:'llama-3.3-70b-versatile',messages,max_tokens:2048,temperature:0.6,tools:AI_TOOLS,tool_choice:'auto'};
+                const body={model:'gemini-2.0-flash',messages,max_tokens:2048,temperature:0.6,tools:AI_TOOLS,tool_choice:'auto'};
                 const res=await _groqCall(body);
                 if(!res.ok){const err=await res.json().catch(()=>({}));
-                    if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración.');
-                    if(res.status===429)throw new Error('⚠️ Límite de Groq agotado. Espera 1 minuto e intenta de nuevo.');
+                    if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración y verifica tu key de Google AI.');
+                    if(res.status===429)throw new Error('⚠️ Límite de API alcanzado. Espera 1 minuto e intenta de nuevo.');
                     throw new Error('⚠️ Error '+(err.error?.message||res.status));}
                 const data=await res.json(); const msg=data.choices[0].message;
                 if(!msg.tool_calls||msg.tool_calls.length===0){
@@ -16688,7 +16688,7 @@ REGLAS DEL AGENTE:
             let uc=userText;
             if(imageBase64)uc=[{type:'image_url',image_url:{url:`data:${imageMime};base64,${imageBase64}`}},{type:'text',text:userText}];
             messages.push({role:'user',content:uc});
-            const model=imageBase64?'meta-llama/llama-4-scout-17b-16e-instruct':'llama-3.3-70b-versatile';
+            const model='gemini-2.0-flash';
             const maxTok=imageBase64?150:380;
             try{
                 const res=await _groqCall({model,messages,max_tokens:maxTok,temperature:0.3});
@@ -17006,10 +17006,9 @@ REGLAS DEL AGENTE:
             const btn=document.getElementById('ai-mic-btn');
             // Si ya está grabando, detener
             if(window._aiRecorder){window._aiRecorder.stop();return;}
-            // Intentar Whisper (MediaRecorder) primero, fallback a Web Speech API
+            // Usar WebSpeech API (Whisper/Groq ya no está disponible con key de Google)
+            _startWebSpeech(btn); return;
             if(!navigator.mediaDevices||!window.MediaRecorder){
-                _startWebSpeech(btn); return;
-            }
             navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
                 const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
                                MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
@@ -17078,7 +17077,7 @@ REGLAS DEL AGENTE:
             const recent=_aiHistory.slice(-20);
             const conv=recent.map(h=>`${h.role==='user'?'Usuario':'Asistente'}: ${h.content.slice(0,300)}`).join('\n');
             try{
-                const res=await _groqCall({model:'llama-3.1-8b-instant',
+                const res=await _groqCall({model:'gemini-2.0-flash',
                     messages:[
                         {role:'system',content:'Resume esta conversación en 3-4 líneas en español. Destaca: datos de clientes mencionados, citas agendadas, preferencias del usuario, información importante del negocio. Solo el resumen, sin comentarios extra.'},
                         {role:'user',content:conv}
