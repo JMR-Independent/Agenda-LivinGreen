@@ -16956,8 +16956,8 @@ REGLAS DEL AGENTE:
             const row=document.createElement('div'); row.className='ai-msg';
             row.style.cssText='display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:16px;gap:10px;';
             const av=document.createElement('div');
-            av.style.cssText='width:28px;height:28px;border-radius:50%;background:rgba(16,163,127,0.18);border:1px solid rgba(16,163,127,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;';
-            av.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="#10a37f"><path d="M12 2C12 2 13.2 7.8 16 10.5C18.8 13.2 24 12 24 12C24 12 18.8 10.8 16 13.5C13.2 16.2 12 22 12 22C12 22 10.8 16.2 8 13.5C5.2 10.8 0 12 0 12C0 12 5.2 13.2 8 10.5C10.8 7.8 12 2 12 2Z"/></svg>';
+            av.style.cssText='width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;margin-top:2px;';
+            av.innerHTML='<img src="./images/agenda-logo.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
             row.appendChild(av);
             const col=document.createElement('div');
             col.style.cssText='display:flex;flex-direction:column;align-items:flex-start;max-width:82%;';
