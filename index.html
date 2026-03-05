@@ -7783,7 +7783,7 @@
                 <div style="display: grid; gap: 14px; max-width: 600px;">
 
                     <!-- Card 1: Alfombras — azul -->
-                    <div class="message-card" style="background: rgba(59, 130, 246, 0.15);">
+                    <div class="message-card" onclick="copyMessage('carpet')" style="background: rgba(59, 130, 246, 0.15); cursor:pointer;">
                         <div class="msg-slides" id="msg-slides-carpet">
                             <!-- Slide 1: icono -->
                             <div class="msg-slide" style="flex-direction: column; gap: 8px;">
@@ -7800,8 +7800,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Botón fijo -->
-                        <button onclick="copyMessage('carpet')" class="copy-btn" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); z-index:10;">Copiar</button>
                         <div id="carpet-message" style="display:none;">El costo del lavado de alfombras varía según el área que necesite limpiar:
 
 • Cuartos: $30 c/u
@@ -7818,7 +7816,7 @@
                     </div>
 
                     <!-- Card 2: Sillones — púrpura -->
-                    <div class="message-card" style="background: rgba(139, 92, 246, 0.15);">
+                    <div class="message-card" onclick="copyMessage('furniture')" style="background: rgba(139, 92, 246, 0.15); cursor:pointer;">
                         <div class="msg-slides" id="msg-slides-furniture">
                             <!-- Slide 1: icono -->
                             <div class="msg-slide" style="flex-direction: column; gap: 8px;">
@@ -7835,8 +7833,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Botón fijo -->
-                        <button onclick="copyMessage('furniture')" class="copy-btn" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); z-index:10;">Copiar</button>
                         <div id="furniture-message" style="display:none;">El valor por la limpieza de sillones depende del tamaño:
 
 • Sillón de 1 puesto: $35
@@ -7857,7 +7853,7 @@ Incluye:
                     </div>
 
                     <!-- Card 3: Cotización específica sillones — verde -->
-                    <div class="message-card" style="background: rgba(16, 163, 127, 0.15);">
+                    <div class="message-card" onclick="copyMessage('general')" style="background: rgba(16, 163, 127, 0.15); cursor:pointer;">
                         <div class="msg-slides" id="msg-slides-general">
                             <!-- Slide 1: icono -->
                             <div class="msg-slide" style="flex-direction: column; gap: 8px;">
@@ -7874,8 +7870,6 @@ Incluye:
                                 </div>
                             </div>
                         </div>
-                        <!-- Botón fijo -->
-                        <button onclick="copyMessage('general')" class="copy-btn" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); z-index:10;">Copiar</button>
                         <div id="general-message" style="display:none;">El valor por la limpieza de un sillón como ese es $
 
 Incluye:
