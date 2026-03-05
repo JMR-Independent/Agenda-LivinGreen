@@ -16271,7 +16271,7 @@ HOY (${todayStr}): ${hoy.length?hoy.map(fmt).join(' // '):'sin citas'}
 PRÓXIMAS ${prox.length} citas: ${prox.length?prox.map(fmt).join(' // '):'ninguna'}
 ${memBlock}
 APP — ARQUITECTURA:
-Archivo único HTML ~20,000 líneas. Stack: Supabase (cloud sync) + IndexedDB (cache) + localStorage (fallback offline). API: Groq llama-3.3-70b (agente), Whisper (voz→texto), ElevenLabs TTS. PDF con jsPDF. Offline-first: funciona sin internet.
+Archivo único HTML ~20,000 líneas. Stack: Supabase (cloud sync) + IndexedDB (cache) + localStorage (fallback offline). API: Google Gemini (agente IA), Groq Whisper (voz→texto), ElevenLabs TTS. PDF con jsPDF. Offline-first: funciona sin internet.
 
 APP — SECCIONES (viewName para navigate_to/execute_js):
 • schedule — Agenda del día: lista de citas, crear/editar/eliminar/reagendar. Máx 3 citas/día. Incluye extractión de citas desde fotos de WhatsApp/Messenger con IA.
