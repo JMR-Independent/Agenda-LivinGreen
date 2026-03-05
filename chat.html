@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asistente">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="./chat-manifest.json">
+<link rel="apple-touch-icon" href="./images/livingreen-icon.png">
+<title>Asistente IA</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);}
+html,body{height:100%;width:100%;overflow:hidden;background:#0d1117;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+body{display:flex;flex-direction:column;}
+
+/* Header */
+#chat-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(12px + var(--safe-top)) 16px 12px;
+  background:rgba(13,17,23,0.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  flex-shrink:0;
+}
+#chat-header .logo-wrap{display:flex;align-items:center;gap:10px;}
+#chat-header img{width:32px;height:32px;border-radius:50%;object-fit:cover;}
+#chat-header .title{font-size:15px;font-weight:600;color:#fff;}
+#chat-header .subtitle{font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;}
+.header-btn{
+  background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;
+  color:rgba(255,255,255,0.55);font-size:13px;font-weight:500;
+  display:flex;align-items:center;gap:5px;
+  transition:background 0.15s;
+}
+.header-btn:active{background:rgba(255,255,255,0.08);}
+.header-btn svg{flex-shrink:0;}
+
+/* Messages */
+#messages{
+  flex:1;overflow-y:auto;padding:16px 14px 8px;
+  display:flex;flex-direction:column;gap:10px;
+  -webkit-overflow-scrolling:touch;
+}
+#messages::-webkit-scrollbar{display:none;}
+
+/* Empty state */
+#empty-state{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:18px;padding-bottom:60px;pointer-events:none;
+}
+#empty-state img{width:100px;height:100px;object-fit:contain;opacity:0.9;}
+#empty-state p{
+  font-family:'Georgia',serif;font-size:22px;font-weight:400;
+  color:rgba(255,255,255,0.78);text-align:center;line-height:1.45;
+}
+
+/* Message bubbles */
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+.msg-bubble{
+  max-width:82%;padding:10px 13px;border-radius:16px;
+  font-size:14px;line-height:1.5;word-break:break-word;white-space:pre-wrap;
+}
+.msg.user .msg-bubble{
+  background:rgba(16,163,127,0.22);border:1px solid rgba(16,163,127,0.3);
+  color:rgba(255,255,255,0.92);border-bottom-right-radius:4px;
+}
+.msg.ai .msg-bubble{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.88);border-bottom-left-radius:4px;
+}
+.msg-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.msg-avatar img{width:100%;height:100%;object-fit:cover;}
+
+/* Thinking */
+.thinking-dots{display:flex;gap:4px;padding:10px 14px;align-items:center;}
+.thinking-dots span{
+  width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);
+  animation:dot 1.2s infinite;
+}
+.thinking-dots span:nth-child(2){animation-delay:0.2s;}
+.thinking-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+.thinking-status{font-size:11px;color:rgba(255,255,255,0.35);padding:2px 0 0 4px;font-style:italic;}
+
+/* Input bar */
+#input-bar{
+  display:flex;align-items:flex-end;gap:8px;
+  padding:10px 14px calc(10px + var(--safe-bottom));
+  background:rgba(13,17,23,0.95);
+  border-top:1px solid rgba(255,255,255,0.06);
+  flex-shrink:0;
+}
+#msg-input{
+  flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;padding:9px 14px;color:#fff;font-size:14px;
+  resize:none;outline:none;min-height:38px;max-height:120px;line-height:1.45;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+#msg-input::placeholder{color:rgba(255,255,255,0.3);}
+.send-btn{
+  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+  background:#10a37f;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:opacity 0.15s;
+}
+.send-btn:disabled{opacity:0.4;cursor:default;}
+.send-btn svg{flex-shrink:0;}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;transform:translateX(-50%);
+  background:rgba(16,163,127,0.9);color:#fff;padding:8px 16px;border-radius:20px;
+  font-size:13px;font-weight:500;pointer-events:none;opacity:0;transition:opacity 0.25s;
+  white-space:nowrap;z-index:999;
+}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="chat-header">
+  <div class="logo-wrap">
+    <img id="header-logo" src="./images/agenda-logo.jpg" alt="logo">
+    <div>
+      <div class="title" id="header-title">Asistente IA</div>
+      <div class="subtitle" id="header-sub">LivinGreen</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:4px;">
+    <button class="header-btn" onclick="newChat()" title="Nueva conversación">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    </button>
+    <button class="header-btn" onclick="window.location.href='index.html'" title="Abrir app">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>App</span>
+    </button>
+  </div>
+</div>
+
+<!-- Messages -->
+<div id="messages">
+  <div id="empty-state">
+    <img src="./images/agenda-logo.jpg" alt="logo">
+    <p>¿En qué puedo<br>ayudarte hoy?</p>
+  </div>
+</div>
+
+<!-- Input -->
+<div id="input-bar">
+  <textarea id="msg-input" rows="1" placeholder="Escribe un mensaje…"
+    oninput="autoGrow(this)" onkeydown="handleKey(event)"></textarea>
+  <button class="send-btn" id="send-btn" onclick="sendMessage()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Shared state ──────────────────────────────────────────────────────────
+let _history = [];
+let _busy = false;
+let _geminiModel = localStorage.getItem('rize_gemini_model') || null;
+let _thinkingEl = null;
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────
+(function init(){
+  const bc = _getBC();
+  if (bc.name) {
+    document.getElementById('header-title').textContent = bc.name;
+    document.getElementById('header-sub').textContent = 'Asistente IA';
+  }
+  if (bc.logo) document.getElementById('header-logo').src = bc.logo;
+  // SW registration
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+
+// ── localStorage helpers ───────────────────────────────────────────────────
+function _getBC() {
+  try { return JSON.parse(localStorage.getItem('rize_business_config') || '{}'); } catch { return {}; }
+}
+function _getAIMem() {
+  try { return JSON.parse(localStorage.getItem('rize_ai_memory') || '{"notes":[],"summary":"","total_messages":0}'); }
+  catch { return {notes:[],summary:'',total_messages:0}; }
+}
+function _saveAIMem(m) { localStorage.setItem('rize_ai_memory', JSON.stringify(m)); }
+
+// ── Minimal OfflineDB shim (localStorage only) ─────────────────────────────
+const OfflineDB = {
+  getAppointments: () => {
+    try { return Promise.resolve(JSON.parse(localStorage.getItem('appointments') || '[]')); }
+    catch { return Promise.resolve([]); }
+  },
+  saveAppointment: async (apt) => {
+    let apts = []; try { apts = JSON.parse(localStorage.getItem('appointments') || '[]'); } catch {}
+    const idx = apts.findIndex(a => a.id === apt.id || String(a.timestamp) === String(apt.timestamp));
+    if (idx !== -1) apts[idx] = apt; else apts.push(apt);
+    localStorage.setItem('appointments', JSON.stringify(apts));
+    return apt;
+  },
+  deleteAppointment: async (id) => {
+    let apts = []; try { apts = JSON.parse(localStorage.getItem('appointments') || '[]'); } catch {}
+    apts = apts.filter(a => a.id !== id && String(a.timestamp) !== String(id));
+    localStorage.setItem('appointments', JSON.stringify(apts));
+  }
+};
+
+// ── System Prompt ──────────────────────────────────────────────────────────
+function buildSystemPrompt() {
+  const bc = _getBC();
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  const weekday = now.toLocaleDateString('es', {weekday:'long'});
+  const mem = _getAIMem();
+  let svcTxt = '(sin configurar)';
+  try {
+    const cfg = JSON.parse(localStorage.getItem('rize_services_config') || '[]');
+    if (Array.isArray(cfg) && cfg.length) svcTxt = cfg.map(s=>`${s.name}:$${s.price||s.basePrice||'?'}`).join(' | ');
+  } catch {}
+  let allApts = [];
+  try { allApts = JSON.parse(localStorage.getItem('appointments') || '[]'); } catch {}
+  const fmt = a => `${a.date||a.fecha||''} ${a.time||a.hora||''} | ${a.clientName||a.cliente||a.name||'?'} | ${a.service||a.servicio||a.job||''}${a.price?' $'+a.price:''}${a.city?' ('+a.city+')':''}`;
+  const hoy = allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
+  const prox = allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>((a.date||a.fecha||'')>(b.date||b.fecha||''))?1:-1).slice(0,10);
+  const total = allApts.length;
+  const ingresos = allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
+  const uniqueNames = new Set();
+  allApts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});
+  try{JSON.parse(localStorage.getItem('clientRegistry')||'[]').forEach(c=>{const n=(c.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});}catch{}
+  const memBlock = (mem.notes.length>0||mem.summary)
+    ? `\nMEMORIA: ${mem.summary||''} ${mem.notes.slice(-8).map(n=>n.content).join(' | ')}\n` : '';
+  return `Eres el asistente inteligente de ${bc.name||'LivinGreen'}, empresa de limpieza en Utah, USA. Tienes acceso completo a los datos del negocio. Respondes en español de forma concisa y útil.
+
+NEGOCIO: ${bc.name||'LivinGreen'} | Tel: ${bc.phone||'—'} | Email: ${bc.email||'—'}
+FECHA HOY: ${todayStr} (${weekday})
+SERVICIOS: ${svcTxt}
+STATS: ${total} citas totales | $${ingresos.toFixed(0)} ingresos acumulados | ${uniqueNames.size} clientes únicos
+HOY: ${hoy.length ? hoy.map(fmt).join(' // ') : 'sin citas'}
+PRÓXIMAS ${prox.length} citas: ${prox.length ? prox.map(fmt).join(' // ') : 'ninguna'}
+${memBlock}
+REGLAS:
+- Usa tools para leer/escribir datos. Confirma ANTES de crear/eliminar/modificar.
+- Para abrir la app completa, dile al usuario que toque el botón "App" arriba a la derecha.
+- Adapta la longitud de respuesta a lo que pide el usuario.`;
+}
+
+// ── Agent Tools ────────────────────────────────────────────────────────────
+const AI_TOOLS = [
+  {type:'function',function:{name:'search_appointments',description:'Busca citas por texto.',parameters:{type:'object',properties:{query:{type:'string'},limit:{type:'number'}},required:['query']}}},
+  {type:'function',function:{name:'get_appointments',description:'Lista citas. period: today|tomorrow|week|month|YYYY-MM-DD|YYYY-MM',parameters:{type:'object',properties:{period:{type:'string'}},required:['period']}}},
+  {type:'function',function:{name:'get_stats',description:'Ingresos y totales. period: today|week|month|all|YYYY-MM',parameters:{type:'object',properties:{period:{type:'string'}},required:['period']}}},
+  {type:'function',function:{name:'search_clients',description:'Busca cliente.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}}},
+  {type:'function',function:{name:'add_client',description:'Agrega cliente.',parameters:{type:'object',properties:{name:{type:'string'},phone:{type:'string'},email:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['name']}}},
+  {type:'function',function:{name:'create_appointment',description:'Crea cita. Confirma antes.',parameters:{type:'object',properties:{date:{type:'string'},time:{type:'string'},client_name:{type:'string'},service:{type:'string'},price:{type:'string'},city:{type:'string'},notes:{type:'string'}},required:['date','time','client_name','service','price']}}},
+  {type:'function',function:{name:'delete_appointment',description:'Elimina cita. Confirma antes.',parameters:{type:'object',properties:{client_name:{type:'string'},date:{type:'string'}},required:['client_name']}}},
+  {type:'function',function:{name:'update_appointment',description:'Modifica cita.',parameters:{type:'object',properties:{client_name:{type:'string'},date:{type:'string'},new_date:{type:'string'},new_time:{type:'string'},new_service:{type:'string'},new_price:{type:'string'},new_city:{type:'string'},new_notes:{type:'string'}},required:['client_name']}}},
+  {type:'function',function:{name:'get_services',description:'Lista servicios y precios.',parameters:{type:'object',properties:{},required:[]}}},
+  {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
+  {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}},
+];
+
+// ── Tool executors ─────────────────────────────────────────────────────────
+function _fmtApt(a){return{id:a.id||String(a.timestamp),date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,city:a.city,notes:a.notes||a.notas};}
+
+async function executeTool(name, args) {
+  switch(name) {
+    case 'search_appointments': {
+      const q=(args.query||'').toLowerCase(); const lim=args.limit||10;
+      const apts=await OfflineDB.getAppointments();
+      const r=apts.filter(a=>JSON.stringify(a).toLowerCase().includes(q)).slice(0,lim);
+      return {count:r.length,appointments:r.map(_fmtApt)};
+    }
+    case 'get_appointments': {
+      const apts=await OfflineDB.getAppointments();
+      const today=new Date().toISOString().split('T')[0];
+      const tomorrow=new Date(Date.now()+86400000).toISOString().split('T')[0];
+      const p=args.period||'today'; let filtered=apts;
+      if(p==='today') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(today));
+      else if(p==='tomorrow') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(tomorrow));
+      else if(p==='week'){const wEnd=new Date(Date.now()+7*86400000).toISOString().split('T')[0];filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=wEnd;});}
+      else if(p==='month'){const mEnd=new Date(Date.now()+30*86400000).toISOString().split('T')[0];filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;});}
+      else if(/^\d{4}-\d{2}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
+      else if(/^\d{4}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
+      filtered.sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
+      return {count:filtered.length,appointments:filtered.map(_fmtApt)};
+    }
+    case 'get_stats': {
+      const p=args.period||'all'; const now=new Date();
+      const todayStr=now.toISOString().split('T')[0];
+      const weekAgo=new Date(now-7*86400000).toISOString().split('T')[0];
+      const curY=now.getFullYear(), curM=now.getMonth()+1;
+      let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+      const f=apts.filter(a=>{const ds=(a.date||a.fecha||'').slice(0,10);
+        if(p==='today')return ds===todayStr;
+        if(p==='week')return ds>=weekAgo&&ds<=todayStr;
+        if(p==='month'){const[y,m]=ds.split('-').map(Number);return y===curY&&m===curM;}
+        if(/^\d{4}-\d{2}$/.test(p)){const[y,m]=p.split('-').map(Number);const[dy,dm]=ds.split('-').map(Number);return dy===y&&dm===m;}
+        return true;});
+      const rev=f.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
+      const bySvc={}; f.forEach(a=>{const s=a.service||a.servicio||a.job||'?';bySvc[s]=(bySvc[s]||0)+1;});
+      const names=new Set();
+      apts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim().toLowerCase();if(n)names.add(n);});
+      try{JSON.parse(localStorage.getItem('clientRegistry')||'[]').forEach(c=>{const n=(c.name||'').trim().toLowerCase();if(n)names.add(n);});}catch{}
+      return {period:p,appointments:f.length,revenue:'$'+rev.toFixed(2),unique_clients:names.size,by_service:bySvc};
+    }
+    case 'search_clients': {
+      const q=(args.query||'').toLowerCase();
+      let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+      return {count:c.filter(cl=>JSON.stringify(cl).toLowerCase().includes(q)).length,
+              clients:c.filter(cl=>JSON.stringify(cl).toLowerCase().includes(q)).slice(0,10)};
+    }
+    case 'add_client': {
+      try{
+        let c=[]; try{c=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+        c.push({name:args.name,phone:args.phone||'',email:args.email||'',city:args.city||'',notes:args.notes||'',createdAt:new Date().toISOString(),source:'ai'});
+        localStorage.setItem('clientRegistry',JSON.stringify(c));
+        return {success:true,message:`Cliente "${args.name}" agregado.`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'create_appointment': {
+      try{
+        const price=parseFloat(String(args.price||'0').replace(/[^0-9.]/g,''))||0;
+        const n=new Date();
+        const apt={id:'ai_'+n.getTime(),name:args.client_name,clientName:args.client_name,cliente:args.client_name,
+          time:args.time,hora:args.time,date:args.date,fecha:args.date,job:args.service,service:args.service,
+          servicio:args.service,price,precio:price,city:args.city||'',notes:args.notes||'',notas:args.notes||'',
+          address:'',timestamp:n.getTime(),created_at:n.toISOString()};
+        await OfflineDB.saveAppointment(apt);
+        return {success:true,message:`Cita creada: ${args.client_name} el ${args.date} a las ${args.time} — ${args.service} $${price}`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'delete_appointment': {
+      try{
+        const apts=await OfflineDB.getAppointments();
+        const q=(args.client_name||'').toLowerCase();
+        const candidates=apts.filter(a=>(a.name||a.clientName||'').toLowerCase().includes(q));
+        let match=null;
+        if(args.date) match=candidates.find(a=>(a.date||'').startsWith(args.date));
+        else if(candidates.length===1) match=candidates[0];
+        else if(candidates.length>1) return {success:false,message:`Encontré ${candidates.length} citas para "${args.client_name}". Especifica la fecha.`,appointments:candidates.map(_fmtApt)};
+        if(!match) return {success:false,message:'No encontré la cita.'};
+        await OfflineDB.deleteAppointment(match.id||match.timestamp);
+        return {success:true,message:`Cita eliminada: ${match.name||match.clientName} el ${match.date}`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'update_appointment': {
+      try{
+        const apts=await OfflineDB.getAppointments();
+        const q=(args.client_name||'').toLowerCase();
+        const candidates=apts.filter(a=>(a.name||a.clientName||'').toLowerCase().includes(q));
+        let match=null;
+        if(args.date) match=candidates.find(a=>(a.date||'').startsWith(args.date));
+        else if(candidates.length===1) match=candidates[0];
+        else if(candidates.length>1) return {success:false,message:`Encontré ${candidates.length} citas. Especifica la fecha actual.`,appointments:candidates.map(_fmtApt)};
+        if(!match) return {success:false,message:'No encontré la cita.'};
+        const apt={...match};
+        if(args.new_date) apt.date=args.new_date;
+        if(args.new_time){apt.time=args.new_time;apt.hora=args.new_time;}
+        if(args.new_service){apt.job=args.new_service;apt.service=args.new_service;apt.servicio=args.new_service;}
+        if(args.new_price){const p=parseFloat(String(args.new_price).replace(/[^0-9.]/g,''))||0;apt.price=p;apt.precio=p;}
+        if(args.new_city) apt.city=args.new_city;
+        if(args.new_notes!=null) apt.notes=args.new_notes;
+        await OfflineDB.saveAppointment(apt);
+        return {success:true,message:`Cita actualizada: ${apt.name||apt.clientName} — ${apt.date} a las ${apt.time}`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'get_services': {
+      try{
+        const cfg=JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+        if(!cfg.length) return {services:[],message:'No hay servicios configurados.'};
+        return {count:cfg.length,services:cfg.map(s=>({name:s.name,price:s.price||s.basePrice,priceRange:s.priceRange||''}))};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'save_memory_note': {
+      const mem=_getAIMem();
+      mem.notes.push({content:args.content,category:args.category||'general',date:new Date().toISOString().split('T')[0]});
+      if(mem.notes.length>20)mem.notes=mem.notes.slice(-20);
+      _saveAIMem(mem); return {success:true,message:'Nota guardada.'};
+    }
+    case 'get_memory': {
+      const mem=_getAIMem(); let notes=mem.notes;
+      if(args.category)notes=notes.filter(n=>n.category===args.category);
+      return {notes,summary:mem.summary,total:mem.notes.length};
+    }
+    default: return {error:'Herramienta no disponible en chat standalone: '+name};
+  }
+}
+
+// ── Gemini API ─────────────────────────────────────────────────────────────
+const _GEMINI_MODELS=['gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash-exp','gemini-1.5-flash-latest','gemini-1.5-flash'];
+
+async function _resolveModel(){
+  if(_geminiModel) return _geminiModel;
+  const key=localStorage.getItem('rize_gemini_key');
+  if(!key) throw new Error('⚠️ Sin API Key. Configúrala en la app principal.');
+  for(const m of _GEMINI_MODELS){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}?key=${encodeURIComponent(key)}`);
+    if(r.ok){_geminiModel=m;localStorage.setItem('rize_gemini_model',m);return m;}
+  }
+  throw new Error('⚠️ No se encontró modelo Gemini disponible para tu API key.');
+}
+
+function _toGeminiContents(messages){
+  let systemText=''; const contents=[];
+  for(const msg of messages){
+    if(msg.role==='system'){systemText=msg.content;continue;}
+    if(msg.role==='user'){
+      const parts=typeof msg.content==='string'?[{text:msg.content}]:[];
+      contents.push({role:'user',parts});
+    } else if(msg.role==='assistant'){
+      const parts=[];
+      if(msg.content)parts.push({text:msg.content});
+      if(msg.tool_calls)msg.tool_calls.forEach(tc=>{let a={};try{a=JSON.parse(tc.function.arguments);}catch{}parts.push({functionCall:{name:tc.function.name,args:a}});});
+      if(parts.length)contents.push({role:'model',parts});
+    } else if(msg.role==='tool'){
+      let response={};try{response=JSON.parse(msg.content);}catch{response={result:msg.content};}
+      const last=contents[contents.length-1];
+      if(last&&last.role==='user'&&last.parts[0]?.functionResponse)last.parts.push({functionResponse:{name:msg.name,response}});
+      else contents.push({role:'user',parts:[{functionResponse:{name:msg.name,response}}]});
+    }
+  }
+  return {systemText,contents};
+}
+
+function _toGeminiTools(tools){
+  return [{function_declarations:tools.map(t=>({name:t.function.name,description:t.function.description,parameters:t.function.parameters}))}];
+}
+
+async function _geminiCall(systemText,contents,tools=null,attempt=0){
+  const key=localStorage.getItem('rize_gemini_key');
+  if(!key) throw new Error('⚠️ Sin API Key. Configúrala en Configuración de la app principal.');
+  const model=await _resolveModel();
+  const body={contents,...(systemText&&{systemInstruction:{parts:[{text:systemText}]}}),...(tools&&{tools:_toGeminiTools(tools),toolConfig:{function_calling_config:{mode:'AUTO'}}}),generationConfig:{maxOutputTokens:2048,temperature:0.6}};
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.status===429&&attempt<2){
+    _updateThinking(`Esperando límite de API…`);
+    await new Promise(r=>setTimeout(r,4000+attempt*3000));
+    return _geminiCall(systemText,contents,tools,attempt+1);
+  }
+  return res;
+}
+
+const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',get_services:'Cargando servicios…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
+
+async function runAgent(userText){
+  const allMsgs=[{role:'system',content:buildSystemPrompt()},..._history,{role:'user',content:userText}];
+  for(let i=0;i<8;i++){
+    const {systemText,contents}=_toGeminiContents(allMsgs);
+    const res=await _geminiCall(systemText,contents,AI_TOOLS);
+    if(!res.ok){const err=await res.json().catch(()=>({}));
+      if(res.status===401||res.status===403) throw new Error('⚠️ API Key inválida. Configúrala en la app principal → Configuración.');
+      if(res.status===429) throw new Error('⚠️ Límite de API alcanzado. Espera 1 minuto.');
+      throw new Error('⚠️ Error '+(err.error?.message||res.status));}
+    const data=await res.json();
+    const parts=data.candidates?.[0]?.content?.parts||[];
+    const funcParts=parts.filter(p=>p.functionCall);
+    const responseText=parts.filter(p=>p.text).map(p=>p.text).join('');
+    if(!funcParts.length){
+      const mem=_getAIMem();mem.total_messages=(mem.total_messages||0)+1;_saveAIMem(mem);
+      return responseText||'(sin respuesta)';
+    }
+    allMsgs.push({role:'assistant',content:responseText||null,tool_calls:funcParts.map((p,idx)=>({id:'c'+i+'_'+idx,type:'function',function:{name:p.functionCall.name,arguments:JSON.stringify(p.functionCall.args)}}))});
+    for(const fp of funcParts){
+      _updateThinking(_TOOL_LABELS[fp.functionCall.name]||fp.functionCall.name);
+      const result=await executeTool(fp.functionCall.name,fp.functionCall.args);
+      allMsgs.push({role:'tool',tool_call_id:'c'+i,name:fp.functionCall.name,content:JSON.stringify(result)});
+    }
+    if(i<7) await new Promise(r=>setTimeout(r,300));
+  }
+  return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────────
+function showToast(msg, ms=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+function autoGrow(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+
+function handleKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+function _addMsg(role, text){
+  const wrap=document.getElementById('messages');
+  const es=document.getElementById('empty-state');
+  if(es) es.remove();
+  const row=document.createElement('div');
+  row.className='msg '+role;
+  if(role==='ai'){
+    row.innerHTML=`<div class="msg-avatar"><img src="./images/agenda-logo.jpg"></div><div class="msg-bubble"></div>`;
+    row.querySelector('.msg-bubble').textContent=text;
+  } else {
+    row.innerHTML=`<div class="msg-bubble"></div>`;
+    row.querySelector('.msg-bubble').textContent=text;
+  }
+  wrap.appendChild(row);
+  wrap.scrollTop=wrap.scrollHeight;
+  return row;
+}
+
+function _showThinking(){
+  const wrap=document.getElementById('messages');
+  const row=document.createElement('div');
+  row.className='msg ai';
+  row.id='thinking-row';
+  row.innerHTML=`<div class="msg-avatar"><img src="./images/agenda-logo.jpg"></div>
+    <div class="msg-bubble" style="padding:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);">
+      <div class="thinking-dots"><span></span><span></span><span></span></div>
+      <div class="thinking-status" id="thinking-status"></div>
+    </div>`;
+  wrap.appendChild(row);
+  wrap.scrollTop=wrap.scrollHeight;
+  _thinkingEl=row;
+}
+
+function _updateThinking(text){
+  const el=document.getElementById('thinking-status');
+  if(el) el.textContent=text;
+}
+
+function _removeThinking(){
+  if(_thinkingEl){_thinkingEl.remove();_thinkingEl=null;}
+}
+
+function _setInputEnabled(on){
+  const btn=document.getElementById('send-btn');
+  const inp=document.getElementById('msg-input');
+  btn.disabled=!on; inp.disabled=!on;
+}
+
+async function sendMessage(){
+  if(_busy) return;
+  const inp=document.getElementById('msg-input');
+  const text=inp.value.trim();
+  if(!text) return;
+  inp.value=''; inp.style.height='auto';
+  _history.push({role:'user',content:text});
+  _addMsg('user',text);
+  _busy=true; _setInputEnabled(false); _showThinking();
+  try{
+    const reply=await runAgent(text);
+    _removeThinking();
+    _history.push({role:'assistant',content:reply});
+    _addMsg('ai',reply);
+  }catch(e){
+    _removeThinking();
+    _addMsg('ai',e.message||'Error desconocido.');
+  } finally {
+    _busy=false; _setInputEnabled(true);
+    document.getElementById('msg-input').focus();
+  }
+}
+
+function newChat(){
+  _history=[];
+  const wrap=document.getElementById('messages');
+  wrap.innerHTML='';
+  const es=document.createElement('div');
+  es.id='empty-state';
+  es.className='';
+  es.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding-bottom:60px;pointer-events:none;';
+  es.innerHTML=`<img src="./images/agenda-logo.jpg" style="width:100px;height:100px;object-fit:contain;opacity:0.9;"><p style="font-family:'Georgia',serif;font-size:22px;font-weight:400;color:rgba(255,255,255,0.78);text-align:center;line-height:1.45;">¿En qué puedo<br>ayudarte hoy?</p>`;
+  wrap.appendChild(es);
+}
+</script>
+</body>
+</html>
