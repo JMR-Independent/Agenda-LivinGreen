@@ -16657,68 +16657,102 @@ REGLAS DEL AGENTE:
             get_services:'Cargando servicios…', update_service_price:'Actualizando precio…',
             navigate_to:'Navegando…', save_memory_note:'Guardando en memoria…', get_memory:'Leyendo memoria…'};
 
-        async function _groqCall(body, attempt=0) {
+        // ── Gemini Native API helpers ─────────────────────────────────────────
+        function _toGeminiContents(messages) {
+            // Convierte mensajes formato OpenAI → formato nativo Gemini
+            let systemText='';
+            const contents=[];
+            for(const msg of messages){
+                if(msg.role==='system'){systemText=msg.content;continue;}
+                if(msg.role==='user'){
+                    const parts=[];
+                    if(typeof msg.content==='string') parts.push({text:msg.content});
+                    else if(Array.isArray(msg.content)) msg.content.forEach(item=>{
+                        if(item.type==='text') parts.push({text:item.text});
+                        if(item.type==='image_url'){
+                            const m=item.image_url.url.match(/^data:([^;]+);base64,(.+)$/);
+                            if(m) parts.push({inlineData:{mimeType:m[1],data:m[2]}});
+                        }
+                    });
+                    contents.push({role:'user',parts});
+                } else if(msg.role==='assistant'){
+                    const parts=[];
+                    if(msg.content) parts.push({text:msg.content});
+                    if(msg.tool_calls) msg.tool_calls.forEach(tc=>{
+                        let args={}; try{args=JSON.parse(tc.function.arguments);}catch{}
+                        parts.push({functionCall:{name:tc.function.name,args}});
+                    });
+                    if(parts.length) contents.push({role:'model',parts});
+                } else if(msg.role==='tool'){
+                    let response={}; try{response=JSON.parse(msg.content);}catch{response={result:msg.content};}
+                    const last=contents[contents.length-1];
+                    if(last&&last.role==='user'&&last.parts[0]?.functionResponse)
+                        last.parts.push({functionResponse:{name:msg.name,response}});
+                    else contents.push({role:'user',parts:[{functionResponse:{name:msg.name,response}}]});
+                }
+            }
+            return {systemText,contents};
+        }
+        function _toGeminiTools(tools){
+            return [{function_declarations:tools.map(t=>({name:t.function.name,description:t.function.description,parameters:t.function.parameters}))}];
+        }
+        async function _geminiCall(systemText,contents,tools=null,genConfig={},attempt=0){
             const key=localStorage.getItem('rize_gemini_key');
-            const res=await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',{
-                method:'POST',
-                headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-                body:JSON.stringify(body)
-            });
+            if(!key) throw new Error('⚠️ API Key no configurada. Ve a Configuración.');
+            const body={contents,...(systemText&&{systemInstruction:{parts:[{text:systemText}]}}),...(tools&&{tools:_toGeminiTools(tools),toolConfig:{function_calling_config:{mode:'AUTO'}}}),generationConfig:{maxOutputTokens:2048,temperature:0.6,...genConfig}};
+            const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             if(res.status===429&&attempt<2){
                 const wait=4000+attempt*3000;
                 _updateThinkingStatus(`Esperando límite de API (${Math.round(wait/1000)}s)…`);
                 await new Promise(r=>setTimeout(r,wait));
-                return _groqCall(body,attempt+1);
+                return _geminiCall(systemText,contents,tools,genConfig,attempt+1);
             }
             return res;
         }
 
         async function runAgentLoop(history) {
-            const messages=[{role:'system',content:buildAISystemPrompt()},...history];
+            const allMsgs=[{role:'system',content:buildAISystemPrompt()},...history];
             for(let i=0;i<8;i++){
-                const body={model:'gemini-2.0-flash',messages,max_tokens:2048,temperature:0.6,tools:AI_TOOLS,tool_choice:'auto'};
-                const res=await _groqCall(body);
+                const {systemText,contents}=_toGeminiContents(allMsgs);
+                const res=await _geminiCall(systemText,contents,AI_TOOLS);
                 if(!res.ok){const err=await res.json().catch(()=>({}));
-                    if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración y verifica tu key de Google AI.');
-                    if(res.status===429)throw new Error('⚠️ Límite de API alcanzado. Espera 1 minuto e intenta de nuevo.');
+                    if(res.status===400) throw new Error('⚠️ Error: '+(err.error?.message||'solicitud inválida'));
+                    if(res.status===401||res.status===403) throw new Error('⚠️ API Key inválida. Ve a Configuración.');
+                    if(res.status===429) throw new Error('⚠️ Límite de API alcanzado. Espera 1 minuto.');
                     throw new Error('⚠️ Error '+(err.error?.message||res.status));}
-                const data=await res.json(); const msg=data.choices[0].message;
-                if(!msg.tool_calls||msg.tool_calls.length===0){
+                const data=await res.json();
+                const parts=data.candidates?.[0]?.content?.parts||[];
+                const funcParts=parts.filter(p=>p.functionCall);
+                const responseText=parts.filter(p=>p.text).map(p=>p.text).join('');
+                if(!funcParts.length){
                     const mem=getAIMemory();mem.total_messages=(mem.total_messages||0)+1;saveAIMemory(mem);
-                    return msg.content;
+                    return responseText||'(sin respuesta)';
                 }
-                messages.push(msg);
-                for(const tc of msg.tool_calls){
-                    let args={}; try{args=JSON.parse(tc.function.arguments);}catch{}
-                    _updateThinkingStatus(_TOOL_LABELS[tc.function.name]||tc.function.name);
-                    const result=await executeTool(tc.function.name,args);
-                    messages.push({role:'tool',tool_call_id:tc.id,name:tc.function.name,content:JSON.stringify(result)});
+                allMsgs.push({role:'assistant',content:responseText||null,tool_calls:funcParts.map((p,idx)=>({id:'c'+i+'_'+idx,type:'function',function:{name:p.functionCall.name,arguments:JSON.stringify(p.functionCall.args)}}))});
+                for(const fp of funcParts){
+                    _updateThinkingStatus(_TOOL_LABELS[fp.functionCall.name]||fp.functionCall.name);
+                    const result=await executeTool(fp.functionCall.name,fp.functionCall.args);
+                    allMsgs.push({role:'tool',tool_call_id:'c'+i,name:fp.functionCall.name,content:JSON.stringify(result)});
                 }
                 if(i<7) await new Promise(r=>setTimeout(r,300));
             }
             return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
         }
 
-        // callGeminiAPI se mantiene solo para imágenes (vision model no soporta tools)
+        // callGeminiAPI — visión nativa Gemini
         async function callGeminiAPI(userText,imageBase64=null,imageMime='image/jpeg') {
-            // Para visión: system prompt mínimo para no desperdiciar tokens
-            const sysPrompt = imageBase64
-                ? 'Eres un asistente que extrae datos de imágenes de WhatsApp/Messenger. Responde en español, muy breve. Extrae: nombre del contacto, hora, día, ciudad, dirección, servicio, precio. Responde solo con los datos encontrados.'
-                : buildAISystemPrompt();
-            const messages=[{role:'system',content:sysPrompt}];
-            // Para visión no incluir historial (ahorra tokens)
-            if(!imageBase64){
-                for(const h of _aiHistory)messages.push({role:h.role==='assistant'?'assistant':'user',content:h.content});
-            }
-            let uc=userText;
-            if(imageBase64)uc=[{type:'image_url',image_url:{url:`data:${imageMime};base64,${imageBase64}`}},{type:'text',text:userText}];
-            messages.push({role:'user',content:uc});
-            const model='gemini-2.0-flash';
-            const maxTok=imageBase64?150:380;
+            const sysPrompt=imageBase64
+                ?'Eres un asistente que extrae datos de imágenes de WhatsApp/Messenger. Responde en español, muy breve. Extrae: nombre del contacto, hora, día, ciudad, dirección, servicio, precio. Responde solo con los datos encontrados.'
+                :buildAISystemPrompt();
+            const parts=[];
+            if(imageBase64) parts.push({inlineData:{mimeType:imageMime,data:imageBase64}});
+            parts.push({text:userText});
+            const contents=[{role:'user',parts}];
             try{
-                const res=await _groqCall({model,messages,max_tokens:maxTok,temperature:0.3});
-                if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401)return'⚠️ API Key inválida';if(res.status===429)return'⚠️ Límite Groq agotado. Espera 1 minuto.';return'⚠️ Error '+(err.error?.message||res.status);}
-                const data=await res.json();return data.choices?.[0]?.message?.content||'(sin respuesta)';
+                const res=await _geminiCall(sysPrompt,contents,null,{maxOutputTokens:imageBase64?200:800,temperature:0.3});
+                if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401||res.status===403)return'⚠️ API Key inválida';return'⚠️ Error '+(err.error?.message||res.status);}
+                const data=await res.json();
+                return data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'(sin respuesta)';
             }catch(e){return'⚠️ Error de conexión: '+e.message;}
         }
 
@@ -17098,16 +17132,15 @@ REGLAS DEL AGENTE:
         async function _autoSummarize() {
             if(_aiHistory.length<6||_aiThinking) return;
             const recent=_aiHistory.slice(-20);
-            const conv=recent.map(h=>`${h.role==='user'?'Usuario':'Asistente'}: ${h.content.slice(0,300)}`).join('\n');
+            const conv=recent.map(h=>`${h.role==='user'?'Usuario':'Asistente'}: ${(h.content||'').slice(0,300)}`).join('\n');
             try{
-                const res=await _groqCall({model:'gemini-2.0-flash',
-                    messages:[
-                        {role:'system',content:'Resume esta conversación en 3-4 líneas en español. Destaca: datos de clientes mencionados, citas agendadas, preferencias del usuario, información importante del negocio. Solo el resumen, sin comentarios extra.'},
-                        {role:'user',content:conv}
-                    ],max_tokens:200,temperature:0.3});
+                const res=await _geminiCall(
+                    'Resume esta conversación en 3-4 líneas en español. Destaca: datos de clientes mencionados, citas agendadas, preferencias del usuario, información importante del negocio. Solo el resumen, sin comentarios extra.',
+                    [{role:'user',parts:[{text:conv}]}],
+                    null,{maxOutputTokens:200,temperature:0.3});
                 if(res.ok){
                     const data=await res.json();
-                    const summary=data.choices?.[0]?.message?.content||'';
+                    const summary=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
                     if(summary){const mem=getAIMemory();mem.summary=summary;mem.summary_date=new Date().toISOString().split('T')[0];saveAIMemory(mem);}
                 }
             }catch{}
