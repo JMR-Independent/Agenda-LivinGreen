@@ -8677,7 +8677,9 @@ Incluye:
                 if (navigator.onLine) {
                     try {
                         console.log('🌐 Step 2: Attempting Supabase backup...');
-                        if (appointment.originalTimestamp || appointment.id) {
+                        // ai_ ids are temporary local IDs — always INSERT, never UPDATE
+                        const isNewRecord = !appointment.id || String(appointment.id).startsWith('ai_');
+                        if (!isNewRecord && (appointment.originalTimestamp || appointment.id)) {
                             const originalTimestamp = appointment.originalTimestamp || appointment.timestamp;
                             await updateAppointmentInSupabase(originalTimestamp, appointment);
                             console.log('✅ Appointment updated in Supabase');
@@ -9157,8 +9159,8 @@ Incluye:
                 // TODO: Add 'notes' column to Supabase appointments table
                 const { phone, notes, ...supabaseData } = appointmentData;
 
-                // Remove id from data if it's null/undefined so Supabase can auto-generate
-                if (!supabaseData.id) {
+                // Remove id if null/undefined/temporary so Supabase auto-generates a UUID
+                if (!supabaseData.id || String(supabaseData.id).startsWith('ai_')) {
                     delete supabaseData.id;
                 }
 
