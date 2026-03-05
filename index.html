@@ -16700,7 +16700,7 @@ REGLAS DEL AGENTE:
             const key=localStorage.getItem('rize_gemini_key');
             if(!key) throw new Error('⚠️ API Key no configurada. Ve a Configuración.');
             const body={contents,...(systemText&&{systemInstruction:{parts:[{text:systemText}]}}),...(tools&&{tools:_toGeminiTools(tools),toolConfig:{function_calling_config:{mode:'AUTO'}}}),generationConfig:{maxOutputTokens:2048,temperature:0.6,...genConfig}};
-            const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             if(res.status===429&&attempt<2){
                 const wait=4000+attempt*3000;
                 _updateThinkingStatus(`Esperando límite de API (${Math.round(wait/1000)}s)…`);
