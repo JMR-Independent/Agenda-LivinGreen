@@ -219,29 +219,28 @@ let _thinkingEl = null;
 
 // ── Bloquear scroll del body en iOS PWA ──────────────────────────────────
 (function lockScroll(){
-  let _lastY = 0;
+  // Bloquear cualquier scroll del window (iOS lo hace al enfocar inputs)
+  window.addEventListener('scroll', () => window.scrollTo(0, 0), { passive: true });
 
+  let _lastY = 0;
   document.addEventListener('touchstart', e => {
     _lastY = e.touches[0].clientY;
   }, { passive: true });
 
   document.addEventListener('touchmove', e => {
     const msgs = e.target.closest('#messages');
-
-    if (!msgs) {
-      // Fuera del área de mensajes: bloquear siempre
-      e.preventDefault();
-      return;
-    }
-
-    // Dentro de mensajes: bloquear solo en los bordes para evitar bounce
+    if (!msgs) { e.preventDefault(); return; }
     const deltaY = e.touches[0].clientY - _lastY;
     const atTop    = msgs.scrollTop <= 0 && deltaY > 0;
     const atBottom = msgs.scrollTop + msgs.clientHeight >= msgs.scrollHeight && deltaY < 0;
     if (atTop || atBottom) e.preventDefault();
-
     _lastY = e.touches[0].clientY;
   }, { passive: false });
+
+  // Resetear scroll cuando el input recibe foco
+  document.getElementById('msg-input').addEventListener('focus', () => {
+    setTimeout(() => window.scrollTo(0, 0), 0);
+  });
 })();
 
 // ── iOS keyboard fix via visualViewport ───────────────────────────────────
