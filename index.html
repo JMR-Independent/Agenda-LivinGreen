@@ -17108,6 +17108,17 @@ REGLAS DEL AGENTE:
             const panel=document.getElementById('ai-chat-panel');
             panel.style.display==='flex'?closeAIChat():openAIChat();
         }
+        function newAIChat() {
+            _aiHistory=[];
+            _aiWelcomed=false;
+            const wrap=document.getElementById('ai-messages');
+            wrap.innerHTML='';
+            const es=document.createElement('div');
+            es.id='ai-empty-state';
+            es.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-bottom:70px;pointer-events:none;';
+            es.innerHTML='<img id="ai-logo-img" src="./images/agenda-logo.jpg" style="width:216px;height:216px;object-fit:contain;opacity:0.92;"><p id="ai-empty-text" style="font-family:\'Lora\',Georgia,serif;font-size:27px;font-weight:400;color:rgba(255,255,255,0.82);text-align:center;margin:0;line-height:1.45;letter-spacing:-0.2px;">¿En qué puedo<br>ayudarte hoy?</p>';
+            wrap.appendChild(es);
+        }
 
         function _setMicIcon(active){
             const btn=document.getElementById('ai-mic-btn');
@@ -20137,7 +20148,11 @@ END:VCARD`;
       </svg>
       <span id="ai-panel-title" style="font-size:16px;font-weight:600;color:#fff;">Asistente IA</span>
     </div>
-    <div style="width:38px;"></div>
+    <button class="ai-chat-header-btn" onclick="newAIChat()" title="Nueva conversación">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+    </button>
   </div>
 
   <!-- Messages -->
