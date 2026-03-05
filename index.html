@@ -15085,7 +15085,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             }
 
             currentView = viewName;
-            
+
             // Initialize view-specific content
             if (viewName === 'schedule') {
                 loadAppointments(); // Update counter when showing schedule
@@ -15096,6 +15096,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 loadClientRegistry();
             } else if (viewName === 'finance') {
                 loadFinanceData();
+            } else if (viewName === 'settings') {
+                // Recargar key guardada en el campo cada vez que se abre Settings
+                const keyEl = document.getElementById('gemini-api-key');
+                if (keyEl) keyEl.value = localStorage.getItem('rize_gemini_key') || '';
             }
         }
 
@@ -16164,9 +16168,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
         function saveGeminiKey() {
             const key = (document.getElementById('gemini-api-key').value || '').trim();
-            if (!key) return;
+            if (!key) { showToast('⚠️ Ingresa una API Key'); return; }
             localStorage.setItem('rize_gemini_key', key);
-            showToast('✅ API Key guardada');
+            const masked = key.slice(0,6) + '••••••••' + key.slice(-4);
+            showToast('✅ API Key guardada: ' + masked, 3500);
         }
         function saveOpenAITTSKey() {
             const key = (document.getElementById('openai-tts-key').value || '').trim();
