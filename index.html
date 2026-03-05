@@ -16912,7 +16912,13 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             const waveform=document.getElementById('ai-waveform');
             const textarea=document.getElementById('ai-input');
             if(waveform) waveform.classList.toggle('active',active);
-            if(textarea) textarea.style.display=active?'none':'';
+            if(textarea){
+                textarea.style.display=active?'none':'';
+                if(!active && textarea.value){
+                    textarea.style.height='auto';
+                    textarea.style.height=Math.min(textarea.scrollHeight,130)+'px';
+                }
+            }
         }
         function startVoiceInput() {
             const btn=document.getElementById('ai-mic-btn');
@@ -16956,6 +16962,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                             const text=(data.text||'').trim();
                             if(text){
                                 inputEl.value=text;
+                                inputEl.style.height='auto';
+                                inputEl.style.height=Math.min(inputEl.scrollHeight,130)+'px';
                                 document.getElementById('ai-send-btn').classList.add('active');
                                 document.getElementById('ai-send-icon').style.color='#000';
                             }
