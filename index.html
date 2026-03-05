@@ -6347,9 +6347,20 @@
             z-index: 10002;
             background: none;
             border: none;
+        }
+        .ai-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 72px; height: 72px;
             border-radius: 50%;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-mask-image: radial-gradient(circle, black 30%, transparent 75%);
+            mask-image: radial-gradient(circle, black 30%, transparent 75%);
+            pointer-events: none;
+            z-index: -1;
         }
         .ai-center-btn {
             width: 143px; height: 143px;
