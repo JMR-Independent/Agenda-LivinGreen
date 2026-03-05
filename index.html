@@ -16452,13 +16452,16 @@ REGLAS DEL AGENTE:
         }
         function _toolGetStats(args) {
             const p=args.period||'all'; const now=new Date();
+            const todayStr=now.toISOString().split('T')[0];
+            const weekAgo=new Date(now-7*86400000).toISOString().split('T')[0];
+            const curY=now.getFullYear(), curM=now.getMonth()+1;
             let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
             try{const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]');dv.forEach(e=>{if(!apts.find(a=>a.id===e.id))apts.push(e);});}catch{}
-            const f=apts.filter(a=>{const d=new Date(a.date||a.fecha||'');
-                if(p==='today')return d.toDateString()===now.toDateString();
-                if(p==='week')return d>=new Date(now-7*86400000);
-                if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-                if(/^\d{4}-\d{2}$/.test(p)){const[y,m]=p.split('-').map(Number);return d.getFullYear()===y&&d.getMonth()+1===m;}
+            const f=apts.filter(a=>{const ds=(a.date||a.fecha||'').slice(0,10);
+                if(p==='today')return ds===todayStr;
+                if(p==='week')return ds>=weekAgo&&ds<=todayStr;
+                if(p==='month'){const[y,m]=ds.split('-').map(Number);return y===curY&&m===curM;}
+                if(/^\d{4}-\d{2}$/.test(p)){const[y,m]=p.split('-').map(Number);const[dy,dm]=ds.split('-').map(Number);return dy===y&&dm===m;}
                 return true;});
             const rev=f.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
             const bySvc={}; f.forEach(a=>{const s=a.service||a.servicio||a.job||'?';bySvc[s]=(bySvc[s]||0)+1;});
