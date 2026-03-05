@@ -16199,15 +16199,13 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             // Memoria
             const memBlock=(mem.notes.length>0||mem.summary)
                 ?`\nMemoria: ${mem.summary||''} ${mem.notes.slice(-5).map(n=>n.content).join(' | ')}\n`:'';
-            return `Asistente de ${bc.name}. Responde siempre en español. Sé breve y directo.
-CAPACIDADES: puedes gestionar TODA la app — citas, clientes, calendario, precios, navegación.
-TOOLS: úsalas cuando el usuario pide acción o datos. Saludos/preguntas generales: responde sin tools.
+            return `Asistente de ${bc.name}. Español. ULTRA BREVE — máximo 2-3 oraciones por respuesta.
+CAPACIDADES: gestionar TODA la app — citas, clientes, calendario, precios, navegación.
+TOOLS: úsalas para acción o datos. Saludos simples: responde sin tools.
 CONFIRMAR antes de ejecutar: create_appointment, delete_appointment, delete_client, update_service_price.
-Para update_appointment/update_client: ejecuta directo si los datos son claros.
-Para reagendar: usa update_appointment con new_date y/o new_time.
-Para marcar días libres/vacaciones: usa add_day_event (tipos: vacaciones|libre|compromiso|salida|sin-pega).
-Para ver citas: usa get_appointments con period=today|tomorrow|week|month|YYYY-MM-DD.
-Para navegar a secciones: usa navigate_to.
+Para update/reagendar: ejecuta directo si los datos son claros.
+IMÁGENES: cuando el usuario sube una imagen de WhatsApp/Messenger, extrae el nombre DEL CONTACTO visible en la imagen. NO asumas que es un cliente existente del sistema. El nombre viene de la imagen, no de la lista de citas.
+Para ver citas: get_appointments. Para marcar días: add_day_event (vacaciones|libre|compromiso|salida|sin-pega).`;
 ${memBlock}${bc.name}|${bc.phone}|${bc.email}
 Servicios: ${svcTxt}
 Stats: ${total} citas|$${ingresos.toFixed(0)}|${nClients} clientes únicos
@@ -16544,7 +16542,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             let hasToolResults=false;
             for(let i=0;i<5;i++){
                 // After tool results are in messages, omit tools (~500 tokens saved on synthesis call)
-                const body={model:'llama-3.3-70b-versatile',messages,max_tokens:700,temperature:0.65};
+                const body={model:'llama-3.3-70b-versatile',messages,max_tokens:380,temperature:0.55};
                 if(!hasToolResults){body.tools=AI_TOOLS;body.tool_choice='auto';}
                 const res=await _groqCall(body);
                 if(!res.ok){const err=await res.json().catch(()=>({}));
