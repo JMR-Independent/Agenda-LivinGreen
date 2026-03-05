@@ -183,7 +183,7 @@ body{
       spellcheck="false" inputmode="text"
       onkeydown="handleKey(event)"></div>
     <div id="input-actions">
-      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+      <button class="send-btn" id="send-btn" tabindex="-1" onclick="sendMessage()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
@@ -243,25 +243,28 @@ let _thinkingEl = null;
 
 // ── iOS keyboard fix via visualViewport ───────────────────────────────────
 (function setupViewport(){
-  const bar = document.getElementById('input-bar');
-  const msgs = document.getElementById('messages');
   const vv = window.visualViewport;
   if (!vv) return;
+  const bar = document.getElementById('input-bar');
+  const msgs = document.getElementById('messages');
 
-  function onViewportChange() {
-    // When keyboard opens, vv.height shrinks
-    const keyboardH = window.innerHeight - vv.height - vv.offsetTop;
-    bar.style.transform = keyboardH > 50
-      ? `translateY(-${keyboardH}px)`
-      : '';
-    // Scroll messages to bottom when keyboard opens
-    if (keyboardH > 50) {
-      setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
-    }
+  function update() {
+    // Resize body to exactly the visible area (shrinks when keyboard opens)
+    // This makes flexbox layout naturally push input bar up with the keyboard
+    document.body.style.height = vv.height + 'px';
+    document.body.style.top = vv.offsetTop + 'px';
+
+    // When keyboard is open, env(safe-area-inset-bottom) is wrong (adds gap)
+    // Detect keyboard: visual height is significantly less than window height
+    const kbOpen = vv.height < window.innerHeight - 80;
+    bar.style.paddingBottom = kbOpen ? '4px' : 'env(safe-area-inset-bottom)';
+
+    if (kbOpen) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 80);
   }
 
-  vv.addEventListener('resize', onViewportChange);
-  vv.addEventListener('scroll', onViewportChange);
+  vv.addEventListener('resize', update);
+  vv.addEventListener('scroll', update);
+  update();
 })();
 
 // ── Focus input: overlay captura el primer toque ──────────────────────────
