@@ -16616,7 +16616,6 @@ REGLAS DEL AGENTE:
         }
 
         // ── Agent Loop ────────────────────────────────────────────────────────
-        const _GD = 'XAJspucoj3yTo1bkTZPdgAYeYF3bydGWN4GJNjCK0b8mG3LbW9yZ_ksg'.split('').reverse().join('');
         const _TOOL_LABELS = {
             search_appointments:'Buscando citas…', get_appointments:'Cargando citas…',
             get_stats:'Calculando estadísticas…', search_clients:'Buscando clientes…',
@@ -16629,7 +16628,7 @@ REGLAS DEL AGENTE:
             navigate_to:'Navegando…', save_memory_note:'Guardando en memoria…', get_memory:'Leyendo memoria…'};
 
         async function _groqCall(body, attempt=0) {
-            const key=localStorage.getItem('rize_gemini_key')||_GD;
+            const key=localStorage.getItem('rize_gemini_key');
             const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
                 method:'POST',
                 headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
@@ -17031,7 +17030,7 @@ REGLAS DEL AGENTE:
                         fd.append('model','whisper-large-v3-turbo');
                         fd.append('language','es');
                         fd.append('response_format','json');
-                        const key=localStorage.getItem('rize_gemini_key')||_GD;
+                        const key=localStorage.getItem('rize_gemini_key');
                         const res=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',
                             {method:'POST',headers:{'Authorization':'Bearer '+key},body:fd});
                         inputEl.placeholder=prevPlaceholder;
