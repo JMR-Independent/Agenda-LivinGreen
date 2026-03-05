@@ -485,28 +485,17 @@ async function executeTool(name, args) {
 }
 
 // ── Gemini API ─────────────────────────────────────────────────────────────
-const _GEMINI_MODELS=['gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash-exp','gemini-1.5-flash-latest','gemini-1.5-flash'];
+const _GEMINI_MODELS=['gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash-exp','gemini-1.5-flash-latest','gemini-1.5-flash-002','gemini-1.5-flash','gemini-1.5-pro'];
 
 async function _resolveModel(){
   if(_geminiModel) return _geminiModel;
   const key=localStorage.getItem('rize_gemini_key');
-  if(!key) throw new Error('NO_GEMINI_KEY');
+  if(!key) throw new Error('⚠️ API Key no configurada. Ve a Configuración en la app principal.');
   for(const m of _GEMINI_MODELS){
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}?key=${encodeURIComponent(key)}`);
     if(r.ok){_geminiModel=m;localStorage.setItem('rize_gemini_model',m);return m;}
   }
-  throw new Error('⚠️ No se encontró modelo Gemini disponible.');
-}
-
-// ── Groq fallback ──────────────────────────────────────────────────────────
-async function _groqCall(systemText, messages){
-  const key=localStorage.getItem('rize_groq_key');
-  if(!key) return null;
-  const msgs=[{role:'system',content:systemText},...messages.filter(m=>m.role!=='system').map(m=>({role:m.role==='assistant'?'assistant':'user',content:typeof m.content==='string'?m.content:JSON.stringify(m.content)}))];
-  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:msgs,max_tokens:1024,temperature:0.6})});
-  if(!res.ok) return null;
-  const d=await res.json();
-  return d.choices?.[0]?.message?.content||null;
+  throw new Error('⚠️ No se encontró un modelo Gemini disponible para tu API key.');
 }
 
 function _toGeminiContents(messages){
@@ -552,21 +541,13 @@ async function _geminiCall(systemText,contents,tools=null,attempt=0){
 const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',get_services:'Cargando servicios…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
 
 async function runAgent(userText){
-  // Si no hay key de Gemini, intentar Groq directamente
-  const geminiKey=localStorage.getItem('rize_gemini_key');
-  if(!geminiKey){
-    const groqReply=await _groqCall(buildSystemPrompt(),[..._history,{role:'user',content:userText}]);
-    if(groqReply) return groqReply;
-    throw new Error('⚠️ Sin API Key configurada. Abre la app principal → Configuración → ingresa tu API Key de Gemini o Groq.');
-  }
-
-  const systemPrompt=buildSystemPrompt();
-  const allMsgs=[{role:'system',content:systemPrompt},..._history,{role:'user',content:userText}];
+  const allMsgs=[{role:'system',content:buildSystemPrompt()},..._history,{role:'user',content:userText}];
   for(let i=0;i<8;i++){
     const {systemText,contents}=_toGeminiContents(allMsgs);
     const res=await _geminiCall(systemText,contents,AI_TOOLS);
     if(!res.ok){const err=await res.json().catch(()=>({}));
-      if(res.status===401||res.status===403) throw new Error('⚠️ API Key inválida. Configúrala en la app principal → Configuración.');
+      if(res.status===400) throw new Error('⚠️ Error: '+(err.error?.message||'solicitud inválida'));
+      if(res.status===401||res.status===403) throw new Error('⚠️ API Key inválida. Ve a Configuración en la app principal.');
       if(res.status===429) throw new Error('⚠️ Límite de API alcanzado. Espera 1 minuto.');
       throw new Error('⚠️ Error '+(err.error?.message||res.status));}
     const data=await res.json();
