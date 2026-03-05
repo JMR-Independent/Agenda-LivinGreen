@@ -16194,25 +16194,29 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         }
         function saveAIMemory(mem) { try{localStorage.setItem(AI_MEMORY_KEY,JSON.stringify(mem));}catch{} }
 
-        // ── System Prompt (compacto para no exceder TPM) ──────────────────────
+        // ── System Prompt ──────────────────────────────────────────────────────
         function buildAISystemPrompt() {
             const bc=getBC(); const now=new Date(); const todayStr=now.toISOString().split('T')[0];
+            const weekday=now.toLocaleDateString('es',{weekday:'long'});
             const mem=getAIMemory();
             // Servicios
             let svcTxt='(sin configurar)';
             try {
-                const cfg=JSON.parse(localStorage.getItem('rize_services_config')||localStorage.getItem('servicesConfig')||'{}');
-                const lines=Object.entries(cfg).map(([k,v])=>`${v.name||k}:$${v.price||v.basePrice||'?'}`);
-                if(lines.length) svcTxt=lines.join(' | ');
+                const cfg=JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+                if(Array.isArray(cfg)&&cfg.length) svcTxt=cfg.map(s=>`${s.name}:$${s.price||s.basePrice||'?'}${s.priceRange?' ('+s.priceRange+')':''}`).join(' | ');
+                else {
+                    const cfg2=JSON.parse(localStorage.getItem('servicesConfig')||'{}');
+                    const lines=Object.entries(cfg2).map(([k,v])=>`${v.name||k}:$${v.price||v.basePrice||'?'}`);
+                    if(lines.length) svcTxt=lines.join(' | ');
+                }
             } catch {}
-            // Citas: appointments + dayEvents mergeados
+            // Citas
             let allApts=[];
             try { allApts=JSON.parse(localStorage.getItem('appointments')||'[]'); } catch {}
-            try { const dv=JSON.parse(localStorage.getItem('dayEvents')||'[]'); dv.forEach(e=>{if(!allApts.find(a=>a.id===e.id))allApts.push(e);}); } catch {}
-            const fmt=a=>`${a.date||a.fecha||''} ${a.time||a.hora||''} ${a.clientName||a.cliente||a.name||'?'} — ${a.service||a.servicio||a.job||''}${a.price?' $'+a.price:''}`;
+            const fmt=a=>`${a.date||a.fecha||''} ${a.time||a.hora||''} | ${a.clientName||a.cliente||a.name||'?'} | ${a.service||a.servicio||a.job||''}${a.price?' $'+a.price:''}${a.city?' ('+a.city+')':''}`;
             const hoy=allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
-            const prox=allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>((a.date||a.fecha||'')>(b.date||b.fecha||''))?1:-1).slice(0,7);
-            // Stats: contar clientes únicos en appointments + clientRegistry
+            const prox=allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>((a.date||a.fecha||'')>(b.date||b.fecha||''))?1:-1).slice(0,10);
+            // Stats
             const total=allApts.length;
             const ingresos=allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
             const uniqueNames=new Set();
@@ -16221,19 +16225,77 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             const nClients=uniqueNames.size;
             // Memoria
             const memBlock=(mem.notes.length>0||mem.summary)
-                ?`\nMemoria: ${mem.summary||''} ${mem.notes.slice(-5).map(n=>n.content).join(' | ')}\n`:'';
-            return `Asistente de ${bc.name}. Español. ULTRA BREVE — máximo 2-3 oraciones por respuesta.
-CAPACIDADES: gestionar TODA la app — citas, clientes, calendario, precios, navegación.
-TOOLS: úsalas para acción o datos. Saludos simples: responde sin tools.
-CONFIRMAR antes de ejecutar: create_appointment, delete_appointment, delete_client, update_service_price.
-Para update/reagendar: ejecuta directo si los datos son claros.
-IMÁGENES: cuando el usuario sube una imagen de WhatsApp/Messenger, extrae el nombre DEL CONTACTO visible en la imagen. NO asumas que es un cliente existente del sistema. El nombre viene de la imagen, no de la lista de citas.
-Para ver citas: get_appointments. Para marcar días: add_day_event (vacaciones|libre|compromiso|salida|sin-pega).
-${memBlock}${bc.name}|${bc.phone}|${bc.email}
-Servicios: ${svcTxt}
-Stats: ${total} citas|$${ingresos.toFixed(0)}|${nClients} clientes únicos
-Hoy(${todayStr}): ${hoy.length?hoy.map(fmt).join(' / '):'sin citas'}
-Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
+                ?`\nMEMORIA PERSISTENTE: ${mem.summary||''} ${mem.notes.slice(-8).map(n=>n.content).join(' | ')}\n`:'';
+            return `Eres el asistente inteligente de ${bc.name}, empresa de limpieza en Utah, USA. Eres un AGENTE COMPLETO con conocimiento general ilimitado y acceso total a la app. Respondes en español.
+
+NEGOCIO: ${bc.name} | Tel: ${bc.phone||'—'} | Email: ${bc.email||'—'} | Web: ${bc.website||'—'} | IG: ${bc.instagram||'—'}
+Slogan: "${bc.tagline||''}" | Base: Mapleton, Utah
+Ciudades atendidas: Alpine, American Fork, Bluffdale, Bountiful, Cedar Hills, Cottonwood Heights, Draper, Eagle Mountain, Elk Ridge, Herriman, Highland, Holladay, Kearns, Lehi, Lindon, Mapleton, Midvale, Millcreek, Murray, North Salt Lake, Orem, Payson, Pleasant Grove, Provo, Riverton, Salem, Salt Lake City, Sandy, Santaquin, Saratoga Springs, South Jordan, Spanish Fork, Springville, Taylorsville, West Jordan, West Valley City, Woodland Hills, Woods Cross
+
+FECHA HOY: ${todayStr} (${weekday})
+SERVICIOS: ${svcTxt}
+STATS GLOBALES: ${total} citas totales | $${ingresos.toFixed(0)} ingresos acumulados | ${nClients} clientes únicos
+HOY (${todayStr}): ${hoy.length?hoy.map(fmt).join(' // '):'sin citas'}
+PRÓXIMAS ${prox.length} citas: ${prox.length?prox.map(fmt).join(' // '):'ninguna'}
+${memBlock}
+APP — ARQUITECTURA:
+Archivo único HTML ~20,000 líneas. Stack: Supabase (cloud sync) + IndexedDB (cache) + localStorage (fallback offline). API: Groq llama-3.3-70b (agente), Whisper (voz→texto), ElevenLabs TTS. PDF con jsPDF. Offline-first: funciona sin internet.
+
+APP — SECCIONES (viewName para navigate_to/execute_js):
+• schedule — Agenda del día: lista de citas, crear/editar/eliminar/reagendar. Máx 3 citas/día. Incluye extractión de citas desde fotos de WhatsApp/Messenger con IA.
+• calendar — Calendario semanal: navegar semanas, ver citas por día, marcar días (vacaciones|libre|compromiso|salida|sin-pega), costo de gasolina por día calculado en base a ciudades de las citas.
+• history — Registro de clientes: búsqueda, filtros por ciudad, ver perfil completo, editar, eliminar.
+• datos — Analíticas: gráfico de ciudades atendidas, tipos de servicio más comunes, ingresos por ciudad, tendencia mensual de ingresos.
+• finance — Finanzas: ingresos semanales y mensuales, costo de gasolina acumulado (distancias reales desde Mapleton), rentabilidad por viaje.
+• messages — Mensajes: plantillas personalizables para WhatsApp/SMS (confirmación, recordatorio, recibo, cotización).
+• settings — Configuración: servicios y precios, perfil del negocio, API keys (Groq, OpenAI TTS), temas de fondo visuales.
+
+APP — ESTRUCTURA DE DATOS (localStorage):
+• appointments: [{id, date(YYYY-MM-DD), time(HH:MM), clientName, service, price, city, notes, phone, status, timestamp}]
+• clientRegistry: [{id, name, phone, email, city, notes}]
+• dayEvents: {"YYYY-MM-DD": "vacaciones"|"libre"|"compromiso"|"salida"|"sin-pega"}
+• rize_services_config: [{id, name, price, basePrice, priceRange}]
+• rize_business_config: {name, tagline, phone, email, website, instagram, emoji, logo}
+• gasPriceHistory: {"fecha": precio_galón} — precios históricos de gasolina en Utah
+• rize_ai_memory: {notes:[], summary, total_messages}
+
+APP — FUNCIONES JS GLOBALES DISPONIBLES (usar via execute_js):
+• showToast(msg, duration) — notificación flotante (duration ms, default 2200)
+• navigateToView(viewName) — navegar desde home/bento con animación de entrada
+• showView(viewName) — cambiar vista directamente sin animación (schedule|calendar|history|datos|finance|messages|settings)
+• returnToBentoGrid() — ir al home/bento grid
+• generateWeeklyCalendar() — recargar el calendario semanal
+• loadClientRegistry() — recargar lista de clientes
+• loadFinanceData() — recargar finanzas
+• loadDatosAnalytics() — recargar analíticas
+• loadAppointments() — recargar agenda/schedule
+• applyBgTheme(theme) — cambiar tema visual: bosque|midnight|violeta|carbon|oceano|bosque2
+• calculateGasCost(cities, dateString) — costo de gasolina para array de ciudades en una fecha
+• findOptimalRoute(cities) — ruta óptima desde Mapleton hacia múltiples ciudades
+• showConfirm(message, onConfirm, {icon,okLabel,okColor}) — modal de confirmación
+• generateReceiptModal() — abrir generador de recibos/facturas
+• updateAppointmentCounter() — actualizar contador de citas en la UI
+• OfflineDB.getAppointments() — Promise con todas las citas (fuente principal de datos)
+• OfflineDB.saveAppointment(apt) — guardar cita en todos los storage
+• OfflineDB.deleteAppointment(id) — eliminar cita
+
+APP — CAPACIDADES ESPECIALES:
+• Gas cost: calcula costo real de gasolina por ciudad basado en distancias desde Mapleton y precio actual en Utah
+• Route optimization: encuentra la ruta más eficiente para múltiples ciudades en un día
+• Receipt generation: genera facturas/recibos en PDF con logo del negocio
+• Image AI extraction: extrae datos de citas desde fotos de conversaciones de WhatsApp/Messenger
+• WhatsApp templates: genera mensajes personalizados para enviar por SMS/WhatsApp
+• Business card: genera tarjeta de presentación y vCard descargable
+• Themes: 6 temas visuales de fondo (bosque, midnight, violeta, carbon, oceano, bosque2)
+
+REGLAS DEL AGENTE:
+- Usa tools para leer/escribir datos de la app. Usa execute_js para acciones en la UI o funciones no cubiertas por tools.
+- Confirma ANTES de ejecutar acciones destructivas: delete_appointment, delete_client, update_service_price, execute_js que modifique datos persistentes.
+- Para reagendar/actualizar con datos claros: ejecuta directo sin confirmar.
+- Para imágenes de WhatsApp/Messenger: extrae el nombre DEL CONTACTO visible en la imagen (no de la lista de citas existente).
+- Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto con conocimiento amplio y detallado.
+- Adapta la longitud de respuesta a lo que pide el usuario: breve para saludos/preguntas simples, detallado para análisis, mejoras, o preguntas técnicas.
+- Si el usuario pide mejoras a la app, analiza el contexto real del código y da sugerencias concretas y aplicables.`;
         }
 
         // ── Herramientas (Tool Calling) ──────────────────────────────────────────
@@ -16271,7 +16333,13 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',
                 parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
             {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',
-                parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}}
+                parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}},
+            {type:'function',function:{name:'execute_js',
+                description:'Ejecuta JavaScript arbitrario en el contexto de la app. Úsalo para: cambiar tema visual, mostrar notificaciones, navegar, llamar funciones de la app no cubiertas por otras tools, leer datos del DOM, manipular la UI, calcular costos de gasolina, generar recibos, etc. Tiene acceso a window y todas las funciones globales.',
+                parameters:{type:'object',properties:{
+                    code:{type:'string',description:'Código JS a ejecutar. Accede a window, document y todas las funciones globales de la app (showToast, navigateToView, showView, applyBgTheme, calculateGasCost, findOptimalRoute, OfflineDB, etc.)'},
+                    description:{type:'string',description:'Descripción breve de qué hace este código'}
+                },required:['code']}}}
         ];
 
         // ── Ejecutores de herramientas ─────────────────────────────────────────
@@ -16294,7 +16362,22 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 case 'navigate_to':          return _toolNavigateTo(args);
                 case 'save_memory_note':     return _toolSaveNote(args);
                 case 'get_memory':           return _toolGetMem(args);
+                case 'execute_js':           return _toolExecuteJs(args);
                 default: return {error:'Herramienta desconocida: '+name};
+            }
+        }
+        function _toolExecuteJs(args) {
+            try {
+                const fn = new Function(args.code);
+                const result = fn.call(window);
+                if (result && typeof result.then === 'function') {
+                    return result
+                        .then(r => ({success:true, result: r !== undefined ? String(r).slice(0,1000) : 'Ejecutado correctamente.'}))
+                        .catch(e => ({success:false, error: e.message}));
+                }
+                return {success:true, result: result !== undefined ? String(result).slice(0,1000) : 'Ejecutado correctamente.'};
+            } catch(e) {
+                return {success:false, error: e.message};
             }
         }
         function _fmtApt(a){return{id:a.id||String(a.timestamp),date:a.date||a.fecha,time:a.time||a.hora,client:a.clientName||a.cliente||a.name,service:a.service||a.servicio||a.job,price:a.price||a.precio,city:a.city,notes:a.notes||a.notas,status:a.status};}
@@ -16537,6 +16620,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
         const _TOOL_LABELS = {
             search_appointments:'Buscando citas…', get_appointments:'Cargando citas…',
             get_stats:'Calculando estadísticas…', search_clients:'Buscando clientes…',
+            execute_js:'Ejecutando acción en la app…',
             add_client:'Agregando cliente…', update_client:'Actualizando cliente…',
             delete_client:'Eliminando cliente…', create_appointment:'Creando cita…',
             delete_appointment:'Eliminando cita…', update_appointment:'Actualizando cita…',
@@ -16562,13 +16646,8 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
 
         async function runAgentLoop(history) {
             const messages=[{role:'system',content:buildAISystemPrompt()},...history];
-            let hasToolResults=false;
-            for(let i=0;i<5;i++){
-                // After tool results are in messages, omit tools (~500 tokens saved on synthesis call)
-                // 70b para tool calling (más capaz), 8b-instant para síntesis final (5x más límite)
-                const model=hasToolResults?'llama-3.1-8b-instant':'llama-3.3-70b-versatile';
-                const body={model,messages,max_tokens:380,temperature:0.55};
-                if(!hasToolResults){body.tools=AI_TOOLS;body.tool_choice='auto';}
+            for(let i=0;i<8;i++){
+                const body={model:'llama-3.3-70b-versatile',messages,max_tokens:2048,temperature:0.6,tools:AI_TOOLS,tool_choice:'auto'};
                 const res=await _groqCall(body);
                 if(!res.ok){const err=await res.json().catch(()=>({}));
                     if(res.status===401)throw new Error('⚠️ API Key inválida. Ve a Configuración.');
@@ -16586,8 +16665,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                     const result=await executeTool(tc.function.name,args);
                     messages.push({role:'tool',tool_call_id:tc.id,name:tc.function.name,content:JSON.stringify(result)});
                 }
-                hasToolResults=true;
-                if(i<4) await new Promise(r=>setTimeout(r,300));
+                if(i<7) await new Promise(r=>setTimeout(r,300));
             }
             return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
         }
@@ -17024,7 +17102,7 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
                 document.getElementById(tid)?.remove();
                 await _streamAIBubble(reply);
                 _aiHistory.push({role:'assistant',content:reply});
-                if(_aiHistory.length>8)_aiHistory=_aiHistory.slice(-8);
+                if(_aiHistory.length>20)_aiHistory=_aiHistory.slice(-20);
                 // Auto-resumen cada 15 mensajes — espera 8s para no competir con rate limit
                 if(_aiHistory.length%15===0) setTimeout(()=>{if(!_aiThinking)_autoSummarize();},8000);
             } catch(e) {
