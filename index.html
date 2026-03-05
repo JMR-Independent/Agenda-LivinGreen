@@ -9155,23 +9155,32 @@ Incluye:
         // Supabase Functions
         async function saveAppointmentToSupabase(appointmentData) {
             try {
-                // Filter out phone and notes fields since they don't exist in Supabase schema (yet)
-                // TODO: Add 'notes' column to Supabase appointments table
-                const { phone, notes, ...supabaseData } = appointmentData;
+                // Only send columns that exist in the Supabase schema
+                const supabaseData = {
+                    name:       appointmentData.name || appointmentData.clientName || appointmentData.cliente || '',
+                    date:       appointmentData.date || appointmentData.fecha || '',
+                    time:       appointmentData.time || appointmentData.hora || '',
+                    job:        appointmentData.job  || appointmentData.service || appointmentData.servicio || '',
+                    price:      parseFloat(appointmentData.price || appointmentData.precio) || 0,
+                    city:       appointmentData.city  || '',
+                    address:    appointmentData.address || '',
+                    timestamp:  appointmentData.timestamp || Date.now(),
+                    created_at: appointmentData.created_at || new Date().toISOString(),
+                };
 
                 // Remove id if null/undefined/temporary so Supabase auto-generates a UUID
-                if (!supabaseData.id || String(supabaseData.id).startsWith('ai_')) {
-                    delete supabaseData.id;
+                if (appointmentData.id && !String(appointmentData.id).startsWith('ai_')) {
+                    supabaseData.id = appointmentData.id;
                 }
 
                 const { data, error } = await supabaseClient
                     .from('appointments')
                     .insert([supabaseData])
-                    .select(); // Return the inserted record with generated ID
+                    .select();
 
                 if (error) throw error;
                 console.log('✅ Appointment saved to Supabase:', data);
-                return data?.[0]; // Return the first (and only) inserted record
+                return data?.[0];
             } catch (error) {
                 console.error('❌ Error saving appointment:', error);
                 throw error;
