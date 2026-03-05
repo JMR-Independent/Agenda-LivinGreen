@@ -13,14 +13,18 @@
 <title>Asistente IA</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{height:100%;overflow:hidden;}
+html{
+  height:100%;overflow:hidden;
+  overscroll-behavior:none;
+}
 body{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:#0f0f0f;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   display:flex;flex-direction:column;
   overflow:hidden;
-  /* respect notch */
+  overscroll-behavior:none;
+  touch-action:none;
   padding-top:env(safe-area-inset-top);
 }
 
@@ -50,6 +54,8 @@ body{
   padding:20px 14px 16px;
   display:flex;flex-direction:column;gap:12px;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
 }
 #messages::-webkit-scrollbar{display:none;}
 
@@ -166,7 +172,7 @@ body{
 <div id="input-bar">
   <div id="input-card">
     <textarea id="msg-input" rows="1" placeholder="Escribe un mensaje…"
-      oninput="autoGrow(this)" onkeydown="handleKey(event)"></textarea>
+      autofocus oninput="autoGrow(this)" onkeydown="handleKey(event)"></textarea>
     <div id="input-actions">
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -174,6 +180,9 @@ body{
     </div>
   </div>
 </div>
+
+<!-- Overlay transparente: primer toque en cualquier lado abre el teclado -->
+<div id="focus-overlay" style="position:fixed;inset:0;z-index:50;touch-action:manipulation;"></div>
 
 <div id="toast"></div>
 
@@ -219,20 +228,31 @@ let _thinkingEl = null;
   vv.addEventListener('scroll', onViewportChange);
 })();
 
-// ── Auto-focus on load (iOS requires user gesture, so tap on messages area) ──
-window.addEventListener('load', () => {
-  // Slight delay to let PWA finish rendering
-  setTimeout(() => {
-    const inp = document.getElementById('msg-input');
+// ── Focus input: overlay captura el primer toque ──────────────────────────
+(function setupFocus(){
+  const overlay = document.getElementById('focus-overlay');
+  const inp = document.getElementById('msg-input');
+
+  function focusInput() {
+    overlay.style.display = 'none';
     inp.focus();
-  }, 400);
-});
-// Also focus when tapping empty state
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('messages').addEventListener('click', () => {
-    if (!_busy) document.getElementById('msg-input').focus();
+  }
+
+  // En iOS PWA, autofocus a veces no funciona — el overlay garantiza que el
+  // primer toque en cualquier parte de la pantalla abra el teclado
+  overlay.addEventListener('touchend', focusInput, {once: true});
+  overlay.addEventListener('click', focusInput, {once: true});
+
+  // También intentar focus programático al cargar (funciona en algunos casos)
+  window.addEventListener('load', () => {
+    setTimeout(() => { inp.focus(); }, 300);
   });
-});
+
+  // Tap en área de mensajes también enfoca
+  document.getElementById('messages').addEventListener('click', () => {
+    if (!_busy) inp.focus();
+  });
+})();
 
 // ── localStorage helpers ───────────────────────────────────────────────────
 function _getBC() {
