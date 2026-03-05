@@ -51,7 +51,7 @@ body{
 /* Messages — padding-bottom reserva espacio para el input fijo */
 #messages{
   flex:1;overflow-y:auto;overflow-x:hidden;
-  padding:20px 14px 110px;
+  padding:20px 14px 160px;
   display:flex;flex-direction:column;gap:12px;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
@@ -63,6 +63,7 @@ body{
 #empty-state{
   flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:20px;pointer-events:none;
+  padding-bottom:80px;
 }
 #empty-state img{width:150px;height:150px;object-fit:contain;opacity:0.9;}
 #empty-state p{
@@ -217,37 +218,29 @@ let _thinkingEl = null;
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
 
-// ── iOS: fijar todo en su lugar, solo mover el input bar con el teclado ───
+// ── iOS keyboard fix ──────────────────────────────────────────────────────
 (function iosKeyboardFix(){
   const bar = document.getElementById('input-bar');
-  const inp = document.getElementById('msg-input');
   const vv  = window.visualViewport;
 
-  // 1. Cancelar CUALQUIER scroll del window — iOS lo hace automáticamente al enfocar
-  window.addEventListener('scroll', () => window.scrollTo(0, 0));
-
-  // 2. Bloquear touchmove fuera del área de mensajes
+  // Bloquear touchmove fuera del área de mensajes
   document.addEventListener('touchmove', e => {
     if (!e.target.closest('#messages')) e.preventDefault();
   }, { passive: false });
 
-  // 3. Al enfocar el input, cancelar el scroll que iOS dispara
-  inp.addEventListener('focus', () => {
-    window.scrollTo(0, 0);
-    requestAnimationFrame(() => window.scrollTo(0, 0));
-    setTimeout(() => window.scrollTo(0, 0), 50);
-    setTimeout(() => window.scrollTo(0, 0), 150);
-  });
-
-  // 4. Mover input bar exactamente encima del teclado via visualViewport
   if (!vv) return;
+
   function update() {
-    window.scrollTo(0, 0); // siempre resetear
+    // vv.offsetTop > 0 cuando iOS scrollea el viewport para mostrar el input.
+    // Contrarestamos moviendo el body hacia abajo la misma cantidad → todo queda fijo visualmente.
+    document.body.style.top = vv.offsetTop + 'px';
+
+    // Altura del teclado (incluye accessory bar)
     const kbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-    const kbOpen = kbH > 60;
     bar.style.bottom = kbH + 'px';
-    bar.style.paddingBottom = kbOpen ? '0px' : 'env(safe-area-inset-bottom)';
+    bar.style.paddingBottom = kbH > 60 ? '0px' : 'env(safe-area-inset-bottom)';
   }
+
   vv.addEventListener('resize', update);
   vv.addEventListener('scroll', update);
   update();
