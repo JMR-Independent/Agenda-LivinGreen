@@ -16188,6 +16188,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             const key = (document.getElementById('gemini-api-key').value || '').trim();
             if (!key) { showToast('⚠️ Ingresa una API Key'); return; }
             localStorage.setItem('rize_gemini_key', key);
+            localStorage.removeItem('rize_gemini_model');
+            _geminiModel = null;
             const masked = key.slice(0,6) + '••••••••' + key.slice(-4);
             showToast('✅ Gemini Key guardada: ' + masked, 3500);
         }
@@ -16657,6 +16659,20 @@ REGLAS DEL AGENTE:
             get_services:'Cargando servicios…', update_service_price:'Actualizando precio…',
             navigate_to:'Navegando…', save_memory_note:'Guardando en memoria…', get_memory:'Leyendo memoria…'};
 
+        // ── Gemini model auto-detection ───────────────────────────────────────
+        const _GEMINI_CANDIDATES=['gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash-exp','gemini-1.5-flash-latest','gemini-1.5-flash-002','gemini-1.5-flash','gemini-1.5-pro'];
+        let _geminiModel=localStorage.getItem('rize_gemini_model')||null;
+        async function _resolveModel(){
+            if(_geminiModel) return _geminiModel;
+            const key=localStorage.getItem('rize_gemini_key');
+            if(!key) throw new Error('⚠️ API Key no configurada. Ve a Configuración.');
+            for(const m of _GEMINI_CANDIDATES){
+                const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}?key=${encodeURIComponent(key)}`);
+                if(r.ok){_geminiModel=m;localStorage.setItem('rize_gemini_model',m);showToast('✅ Modelo Gemini: '+m,3000);return m;}
+            }
+            throw new Error('⚠️ No se encontró un modelo Gemini disponible para tu API key.');
+        }
+
         // ── Gemini Native API helpers ─────────────────────────────────────────
         function _toGeminiContents(messages) {
             // Convierte mensajes formato OpenAI → formato nativo Gemini
@@ -16699,8 +16715,9 @@ REGLAS DEL AGENTE:
         async function _geminiCall(systemText,contents,tools=null,genConfig={},attempt=0){
             const key=localStorage.getItem('rize_gemini_key');
             if(!key) throw new Error('⚠️ API Key no configurada. Ve a Configuración.');
+            const model=await _resolveModel();
             const body={contents,...(systemText&&{systemInstruction:{parts:[{text:systemText}]}}),...(tools&&{tools:_toGeminiTools(tools),toolConfig:{function_calling_config:{mode:'AUTO'}}}),generationConfig:{maxOutputTokens:2048,temperature:0.6,...genConfig}};
-            const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             if(res.status===429&&attempt<2){
                 const wait=4000+attempt*3000;
                 _updateThinkingStatus(`Esperando límite de API (${Math.round(wait/1000)}s)…`);
