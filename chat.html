@@ -179,6 +179,8 @@ body{
   <div id="input-card">
     <div id="msg-input" contenteditable="true" role="textbox"
       data-placeholder="Escribe un mensaje…"
+      autocomplete="off" autocorrect="off" autocapitalize="off"
+      spellcheck="false" inputmode="text"
       onkeydown="handleKey(event)"></div>
     <div id="input-actions">
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
