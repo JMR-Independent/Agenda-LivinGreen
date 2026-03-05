@@ -16841,14 +16841,28 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
             setTimeout(()=>{panel.style.display='none';},320);
         }
 
+        function _resizeImageForAI(base64, mime, maxPx=480) {
+            return new Promise(resolve=>{
+                const img=new Image();
+                img.onload=()=>{
+                    const scale=Math.min(1, maxPx/Math.max(img.width,img.height));
+                    const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+                    const c=document.createElement('canvas'); c.width=w; c.height=h;
+                    c.getContext('2d').drawImage(img,0,0,w,h);
+                    resolve(c.toDataURL('image/jpeg',0.7).split(',')[1]);
+                };
+                img.src=`data:${mime};base64,${base64}`;
+            });
+        }
         function handleAIFileUpload(event) {
             const file=event.target.files[0]; if(!file) return; event.target.value='';
             _addAIBubble('user','📎 '+file.name); const tid=_addAIThinking();
             if(file.type.startsWith('image/')){
                 const reader=new FileReader();
                 reader.onload=async(e)=>{
-                    const base64=e.target.result.split(',')[1];
-                    const reply=await callGeminiAPI('Analiza esta imagen y extrae información útil para el negocio',base64,file.type);
+                    const raw=e.target.result.split(',')[1];
+                    const base64=await _resizeImageForAI(raw,file.type,480);
+                    const reply=await callGeminiAPI('Analiza esta imagen y extrae información útil para el negocio',base64,'image/jpeg');
                     document.getElementById(tid)?.remove(); await _streamAIBubble(reply);
                     _aiHistory.push({role:'user',content:'[Imagen: '+file.name+']'});
                     _aiHistory.push({role:'assistant',content:reply});
