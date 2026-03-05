@@ -48,10 +48,10 @@ body{
 .header-btn:active{background:rgba(255,255,255,0.08);}
 .header-btn svg{flex-shrink:0;}
 
-/* Messages */
+/* Messages — padding-bottom reserva espacio para el input fijo */
 #messages{
   flex:1;overflow-y:auto;overflow-x:hidden;
-  padding:20px 14px 16px;
+  padding:20px 14px 110px;
   display:flex;flex-direction:column;gap:12px;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
@@ -96,11 +96,14 @@ body{
 @keyframes dot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
 .thinking-status{font-size:11px;color:rgba(255,255,255,0.35);padding:2px 0 0 4px;font-style:italic;}
 
-/* Input bar — fixed, ajustado por JS para el teclado */
+/* Input bar — fijo en pantalla, sube con el teclado via JS */
 #input-bar{
-  flex-shrink:0;
+  position:fixed;
+  left:0;right:0;bottom:0;
   padding:8px 12px env(safe-area-inset-bottom);
   background:#0f0f0f;
+  z-index:10;
+  transition:bottom 0.22s ease, padding-bottom 0.22s ease;
 }
 /* Card estilo Claude */
 #input-card{
@@ -249,15 +252,20 @@ let _thinkingEl = null;
   const msgs = document.getElementById('messages');
 
   function update() {
-    // Resize body to exactly the visible area (shrinks when keyboard opens)
-    // This makes flexbox layout naturally push input bar up with the keyboard
-    document.body.style.height = vv.height + 'px';
-    document.body.style.top = vv.offsetTop + 'px';
+    // kbH = altura del teclado + accessory bar
+    const kbH = window.innerHeight - vv.height - vv.offsetTop;
+    const kbOpen = kbH > 60;
 
-    // When keyboard is open, env(safe-area-inset-bottom) is wrong (adds gap)
-    // Detect keyboard: visual height is significantly less than window height
-    const kbOpen = vv.height < window.innerHeight - 80;
-    bar.style.paddingBottom = kbOpen ? '4px' : 'env(safe-area-inset-bottom)';
+    // Mueve el input bar justo encima del teclado (sin gap)
+    bar.style.bottom = kbOpen ? kbH + 'px' : '0px';
+
+    // Cuando teclado abierto: sin padding-bottom (ya no hay home indicator)
+    // Cuando cerrado: usa safe-area para el home indicator
+    bar.style.paddingBottom = kbOpen ? '2px' : 'env(safe-area-inset-bottom)';
+
+    // Ajusta padding del área de mensajes para que nada quede detrás del input
+    const barH = bar.offsetHeight || 80;
+    msgs.style.paddingBottom = (kbOpen ? kbH + barH : barH + 20) + 'px';
 
     if (kbOpen) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 80);
   }
