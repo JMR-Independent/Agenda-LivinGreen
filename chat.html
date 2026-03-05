@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Asistente">
 <meta name="theme-color" content="#0d1117">
 <link rel="manifest" href="./chat-manifest.json">
-<link rel="apple-touch-icon" href="./images/chat-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/chat-icon.png">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="/images/chat-icon.png">
 <title>Asistente IA</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -144,7 +145,7 @@ body{display:flex;flex-direction:column;}
 <!-- Messages -->
 <div id="messages">
   <div id="empty-state">
-    <img src="./images/agenda-logo.jpg" alt="logo">
+    <img src="./images/agenda-logo.jpg" alt="logo" style="width:220px;height:220px;object-fit:contain;opacity:0.9;">
     <p>¿En qué puedo<br>ayudarte hoy?</p>
   </div>
 </div>
@@ -569,7 +570,7 @@ function newChat(){
   es.id='empty-state';
   es.className='';
   es.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding-bottom:60px;pointer-events:none;';
-  es.innerHTML=`<img src="./images/agenda-logo.jpg" style="width:100px;height:100px;object-fit:contain;opacity:0.9;"><p style="font-family:'Georgia',serif;font-size:22px;font-weight:400;color:rgba(255,255,255,0.78);text-align:center;line-height:1.45;">¿En qué puedo<br>ayudarte hoy?</p>`;
+  es.innerHTML=`<img src="./images/agenda-logo.jpg" style="width:220px;height:220px;object-fit:contain;opacity:0.9;"><p style="font-family:'Georgia',serif;font-size:22px;font-weight:400;color:rgba(255,255,255,0.78);text-align:center;line-height:1.45;">¿En qué puedo<br>ayudarte hoy?</p>`;
   wrap.appendChild(es);
 }
 </script>
