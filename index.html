@@ -8014,6 +8014,21 @@ Incluye:
                     </div>
                     <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en console.groq.com — sin tarjeta</div>
                   </div>
+
+                  <!-- Notifications -->
+                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">🔔 Notificaciones</label>
+                    <button id="notif-toggle-btn" onclick="requestNotifPermission()"
+                            style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                   background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                   font-size:12px;cursor:pointer;font-weight:600;margin-bottom:6px;">
+                      Activar notificaciones
+                    </button>
+                    <div id="notif-status-text" style="font-size:10px;opacity:0.4;line-height:1.4;">
+                      Toca el botón para activar.
+                    </div>
+                    <div style="font-size:10px;opacity:0.30;margin-top:4px;">• 24h antes de cada cita &nbsp;• Cada 2 días: revisar Facebook</div>
+                  </div>
                 </div>
 
                 <!-- ─── BACKGROUND THEME CAROUSEL ─── -->
@@ -20126,6 +20141,131 @@ END:VCARD`;
             loadBentoAnalytics();
             loadTodayTotal();
         }
+
+        // ─── NOTIFICATIONS SYSTEM ────────────────────────────────────────
+
+        let _swReg = null;
+
+        async function initNotifications() {
+            if (!('Notification' in window)) return;
+            // Register SW
+            if ('serviceWorker' in navigator) {
+                try {
+                    _swReg = await navigator.serviceWorker.register('./sw.js');
+                } catch(e) { console.warn('SW register failed', e); }
+            }
+            // Request permission if not decided
+            if (Notification.permission === 'default') {
+                const perm = await Notification.requestPermission();
+                localStorage.setItem('notif_permission', perm);
+                updateNotifToggleUI();
+            }
+            if (Notification.permission !== 'granted') return;
+            checkPendingNotifications();
+        }
+
+        function checkPendingNotifications() {
+            if (Notification.permission !== 'granted') return;
+            const now = Date.now();
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // ── 1. Appointment reminders — 24h before ──────────────────
+            let apts = [];
+            try { apts = JSON.parse(localStorage.getItem('appointments') || '[]'); } catch {}
+            try {
+                const dv = JSON.parse(localStorage.getItem('dayEvents') || '[]');
+                if (Array.isArray(dv)) dv.forEach(e => { if (!apts.find(a => a.id === e.id)) apts.push(e); });
+            } catch {}
+
+            apts.forEach(apt => {
+                const dateStr = apt.date || apt.fecha || '';
+                if (!dateStr) return;
+                const timeStr = apt.time || apt.hora || '09:00';
+                const aptTime = new Date(dateStr + 'T' + timeStr).getTime();
+                if (isNaN(aptTime) || aptTime < now) return; // already past
+
+                const reminderTime = aptTime - 24 * 60 * 60 * 1000;
+                const notifKey = 'notif_apt_' + (apt.id || dateStr);
+
+                if (localStorage.getItem(notifKey)) return; // already sent
+
+                const clientName = apt.clientName || apt.cliente || apt.name || 'Cliente';
+                const service = apt.service || apt.servicio || apt.job || 'Servicio';
+                const city = apt.city || apt.ciudad || '';
+                const title = '🗓 Cita mañana — ' + clientName;
+                const body = service + (timeStr ? ' a las ' + timeStr : '') + (city ? ' · ' + city : '');
+
+                if (now >= reminderTime) {
+                    // Window passed — show immediately
+                    _showNotification(title, body, notifKey);
+                    localStorage.setItem(notifKey, '1');
+                } else {
+                    const delay = reminderTime - now;
+                    // Schedule via SW if delay < 24h (SW might die after long delays, but handles most cases)
+                    _scheduleNotification(title, body, notifKey, delay);
+                }
+            });
+
+            // ── 2. Facebook promotion reminder — every 2 days ──────────
+            const lastFb = parseInt(localStorage.getItem('notif_fb_last') || '0');
+            const twoDays = 2 * 24 * 60 * 60 * 1000;
+            if (now - lastFb >= twoDays) {
+                _showNotification('📣 Revisar Facebook', 'Han pasado 2 días — revisa y actualiza tus promociones en Facebook', 'fb-promo');
+                localStorage.setItem('notif_fb_last', now.toString());
+            }
+        }
+
+        function _showNotification(title, body, tag) {
+            if (Notification.permission !== 'granted') return;
+            if (_swReg) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active && reg.active.postMessage({ type: 'SHOW_NOTIF', title, body, tag });
+                });
+            } else {
+                try { new Notification(title, { body, icon: './images/agenda-logo.jpg', tag }); } catch {}
+            }
+        }
+
+        function _scheduleNotification(title, body, tag, delay) {
+            if (Notification.permission !== 'granted') return;
+            // Schedule via SW message (handles page-close scenarios better)
+            navigator.serviceWorker.ready.then(reg => {
+                reg.active && reg.active.postMessage({ type: 'SCHEDULE_NOTIF', title, body, tag, delay });
+            }).catch(() => {
+                // Fallback: setTimeout in main thread (only works if page stays open)
+                setTimeout(() => _showNotification(title, body, tag), delay);
+            });
+        }
+
+        function updateNotifToggleUI() {
+            const btn = document.getElementById('notif-toggle-btn');
+            const status = document.getElementById('notif-status-text');
+            if (!btn || !status) return;
+            const granted = Notification.permission === 'granted';
+            btn.textContent = granted ? 'Activadas ✓' : 'Activar notificaciones';
+            btn.style.background = granted ? 'rgba(16,163,127,0.2)' : 'rgba(16,163,127,0.15)';
+            btn.style.borderColor = granted ? 'rgba(16,163,127,0.7)' : 'rgba(16,163,127,0.4)';
+            btn.style.color = granted ? '#10a37f' : 'rgba(16,163,127,0.9)';
+            status.textContent = granted ? 'Recibirás recordatorios 24h antes de cada cita y cada 2 días para revisar Facebook.' : 'Toca el botón para activar.';
+        }
+
+        async function requestNotifPermission() {
+            if (!('Notification' in window)) { alert('Tu navegador no soporta notificaciones.'); return; }
+            if (Notification.permission === 'denied') {
+                alert('Las notificaciones están bloqueadas. Ve a Configuración del navegador → Notificaciones y actívalas para esta página.');
+                return;
+            }
+            await initNotifications();
+            updateNotifToggleUI();
+        }
+
+        // Init on load
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('notif_permission') === 'granted' || Notification.permission === 'granted') {
+                initNotifications();
+            }
+            updateNotifToggleUI();
+        });
 
     </script>
 
