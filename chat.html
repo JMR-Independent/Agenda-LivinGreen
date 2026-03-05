@@ -215,12 +215,31 @@ let _thinkingEl = null;
 })();
 
 // ── Bloquear scroll del body en iOS PWA ──────────────────────────────────
-document.addEventListener('touchmove', function(e) {
-  // Solo permitir scroll dentro de #messages
-  if (!e.target.closest('#messages')) {
-    e.preventDefault();
-  }
-}, { passive: false });
+(function lockScroll(){
+  let _lastY = 0;
+
+  document.addEventListener('touchstart', e => {
+    _lastY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    const msgs = e.target.closest('#messages');
+
+    if (!msgs) {
+      // Fuera del área de mensajes: bloquear siempre
+      e.preventDefault();
+      return;
+    }
+
+    // Dentro de mensajes: bloquear solo en los bordes para evitar bounce
+    const deltaY = e.touches[0].clientY - _lastY;
+    const atTop    = msgs.scrollTop <= 0 && deltaY > 0;
+    const atBottom = msgs.scrollTop + msgs.clientHeight >= msgs.scrollHeight && deltaY < 0;
+    if (atTop || atBottom) e.preventDefault();
+
+    _lastY = e.touches[0].clientY;
+  }, { passive: false });
+})();
 
 // ── iOS keyboard fix via visualViewport ───────────────────────────────────
 (function setupViewport(){
