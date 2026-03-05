@@ -6348,8 +6348,7 @@
             background: none;
             border: none;
         }
-        .ai-bar::before {
-            content: '';
+        .ai-blur-ring {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -6357,10 +6356,10 @@
             border-radius: 50%;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            -webkit-mask-image: radial-gradient(circle, black 30%, transparent 75%);
-            mask-image: radial-gradient(circle, black 30%, transparent 75%);
+            -webkit-mask-image: radial-gradient(circle, black 25%, transparent 70%);
+            mask-image: radial-gradient(circle, black 25%, transparent 70%);
             pointer-events: none;
-            z-index: -1;
+            z-index: 0;
         }
         .ai-center-btn {
             width: 143px; height: 143px;
@@ -6374,7 +6373,9 @@
             transition: all 0.16s;
             -webkit-tap-highlight-color: transparent;
             filter: none;
+            position: relative;
         }
+        .ai-center-btn img { position: relative; z-index: 1; }
         .ai-center-btn:active { transform: scale(0.88); }
         .ai-center-btn.ai-open { color: #0d8f6f; filter: none; }
         /* ── Chat panel — ChatGPT full screen ── */
@@ -20123,6 +20124,7 @@ END:VCARD`;
 <!-- ─── AI ASSISTANT BAR ─── -->
 <div class="ai-bar" id="ai-bar">
   <button class="ai-center-btn" id="ai-main-btn" onclick="toggleAIChat()" title="Asistente IA">
+    <div class="ai-blur-ring"></div>
     <img src="./images/agenda-logo.jpg" style="width:130px;height:130px;object-fit:contain;">
   </button>
 </div>
