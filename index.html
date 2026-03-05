@@ -16334,10 +16334,10 @@ REGLAS DEL AGENTE:
         const AI_TOOLS = [
             {type:'function',function:{name:'search_appointments',description:'Busca citas por texto/fecha/cliente.',
                 parameters:{type:'object',properties:{query:{type:'string'},limit:{type:'number'}},required:['query']}}},
-            {type:'function',function:{name:'get_appointments',description:'Lista citas de un período: today, tomorrow, week, month, o fecha específica YYYY-MM-DD.',
-                parameters:{type:'object',properties:{period:{type:'string',description:'today|tomorrow|week|month|YYYY-MM-DD'}},required:['period']}}},
-            {type:'function',function:{name:'get_stats',description:'Ingresos y totales. period: today|week|month|all',
-                parameters:{type:'object',properties:{period:{type:'string',enum:['today','week','month','all']}},required:['period']}}},
+            {type:'function',function:{name:'get_appointments',description:'Lista citas de un período: today, tomorrow, week, month, fecha específica YYYY-MM-DD, o mes completo YYYY-MM (ej: 2025-02 para febrero 2025).',
+                parameters:{type:'object',properties:{period:{type:'string',description:'today|tomorrow|week|month|YYYY-MM-DD|YYYY-MM'}},required:['period']}}},
+            {type:'function',function:{name:'get_stats',description:'Ingresos y totales. period: today|week|month|all|YYYY-MM (mes específico, ej: 2025-02 para febrero 2025, 2024-12 para diciembre 2024)',
+                parameters:{type:'object',properties:{period:{type:'string',description:'today|week|month|all|YYYY-MM'}},required:['period']}}},
             {type:'function',function:{name:'search_clients',description:'Busca cliente por nombre/tel/email.',
                 parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}}},
             {type:'function',function:{name:'add_client',description:'Agrega cliente. Confirma antes.',
@@ -16432,6 +16432,7 @@ REGLAS DEL AGENTE:
             else if(p==='month'){ const mEnd=new Date(Date.now()+30*86400000).toISOString().split('T')[0];
                 filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;}); }
             else if(/^\d{4}-\d{2}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
+            else if(/^\d{4}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
             filtered.sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
             return {count:filtered.length,appointments:filtered.map(_fmtApt)};
         }
@@ -16443,6 +16444,7 @@ REGLAS DEL AGENTE:
                 if(p==='today')return d.toDateString()===now.toDateString();
                 if(p==='week')return d>=new Date(now-7*86400000);
                 if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+                if(/^\d{4}-\d{2}$/.test(p)){const[y,m]=p.split('-').map(Number);return d.getFullYear()===y&&d.getMonth()+1===m;}
                 return true;});
             const rev=f.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
             const bySvc={}; f.forEach(a=>{const s=a.service||a.servicio||a.job||'?';bySvc[s]=(bySvc[s]||0)+1;});
@@ -16756,17 +16758,45 @@ REGLAS DEL AGENTE:
             return 'Alcancé el límite de operaciones. Intenta con una pregunta más específica.';
         }
 
+        // callGroqVisionAPI — imagen via Llama Vision (Groq)
+        async function callGroqVisionAPI(userText,imageBase64,imageMime='image/jpeg'){
+            const groqKey=localStorage.getItem('rize_groq_key');
+            if(!groqKey) return null; // sin key → fallback a Gemini
+            const models=['meta-llama/llama-4-scout-17b-16e-instruct','llama-3.2-90b-vision-preview','llama-3.2-11b-vision-preview'];
+            for(const model of models){
+                try{
+                    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+                        body:JSON.stringify({
+                            model,
+                            messages:[{role:'user',content:[
+                                {type:'text',text:userText},
+                                {type:'image_url',image_url:{url:`data:${imageMime};base64,${imageBase64}`}}
+                            ]}],
+                            max_tokens:1024,temperature:0.2
+                        })
+                    });
+                    if(res.status===404||res.status===400) continue; // modelo no disponible, prueba el siguiente
+                    if(!res.ok){const err=await res.json().catch(()=>({}));return '⚠️ Error Groq: '+(err.error?.message||res.status);}
+                    const data=await res.json();
+                    return data.choices?.[0]?.message?.content||'(sin respuesta)';
+                }catch(e){ continue; }
+            }
+            return null; // todos fallaron → fallback a Gemini
+        }
+
         // callGeminiAPI — visión nativa Gemini
         async function callGeminiAPI(userText,imageBase64=null,imageMime='image/jpeg') {
             const sysPrompt=imageBase64
-                ?'Eres un asistente que extrae datos de imágenes de WhatsApp/Messenger. Responde en español, muy breve. Extrae: nombre del contacto, hora, día, ciudad, dirección, servicio, precio. Responde solo con los datos encontrados.'
+                ?'Eres el asistente de LivinGreen, empresa de limpieza en Utah. Cuando ves un screenshot de conversación (WhatsApp, Messenger, texto), tu tarea es extraer exactamente los campos del formulario de agendamiento: Nombre completo, Fecha, Hora, Ciudad, Dirección, Tipo de trabajo, Precio, Notas. Lee todos los mensajes visibles. Si un dato no aparece escribe "No especificado". Responde en español listando cada campo claramente.'
                 :buildAISystemPrompt();
             const parts=[];
             if(imageBase64) parts.push({inlineData:{mimeType:imageMime,data:imageBase64}});
             parts.push({text:userText});
             const contents=[{role:'user',parts}];
             try{
-                const res=await _geminiCall(sysPrompt,contents,null,{maxOutputTokens:imageBase64?200:800,temperature:0.3});
+                const res=await _geminiCall(sysPrompt,contents,null,{maxOutputTokens:imageBase64?1024:800,temperature:0.3});
                 if(!res.ok){const err=await res.json().catch(()=>({}));if(res.status===401||res.status===403)return'⚠️ API Key inválida';return'⚠️ Error '+(err.error?.message||res.status);}
                 const data=await res.json();
                 return data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'(sin respuesta)';
@@ -17045,7 +17075,8 @@ REGLAS DEL AGENTE:
                 reader.onload=async(e)=>{
                     const raw=e.target.result.split(',')[1];
                     const base64=await _resizeImageForAI(raw,file.type,800);
-                    const reply=await callGeminiAPI('Analiza esta imagen y extrae información útil para el negocio',base64,'image/jpeg');
+                    const prompt='Lee esta imagen con atención. Es un screenshot de conversación (WhatsApp, Messenger, texto, etc.) de un cliente que quiere agendar una limpieza. Extrae exactamente estos campos del formulario de agendamiento:\n\n- Nombre completo del cliente\n- Fecha del servicio (día, mes, año)\n- Hora del servicio\n- Ciudad (Utah: Alpine, American Fork, Bluffdale, Cedar Hills, Cottonwood Heights, Draper, Eagle Mountain, Herriman, Highland, Holladay, Kearns, Lehi, Lindon, Mapleton, Midvale, Millcreek, Murray, North Salt Lake, Orem, Payson, Pleasant Grove, Provo, Riverton, Salem, Salt Lake City, Sandy, Santaquin, Saratoga Springs, South Jordan, South Salt Lake, Spanish Fork, Springville, Taylorsville, West Jordan, West Valley City, Woodland Hills, Woods Cross)\n- Dirección exacta\n- Tipo de trabajo (standard cleaning, deep cleaning, move in/out, etc.)\n- Precio acordado\n- Notas adicionales (instrucciones especiales, acceso, mascotas, etc.)\n\nLee TODOS los mensajes visibles. Si un dato no aparece en la imagen escribe "No especificado". Responde en español listando cada campo.';
+                    const reply=(await callGroqVisionAPI(prompt,base64,'image/jpeg')) || (await callGeminiAPI(prompt,base64,'image/jpeg'));
                     document.getElementById(tid)?.remove(); await _streamAIBubble(reply);
                     _aiHistory.push({role:'user',content:'[Imagen: '+file.name+']'});
                     _aiHistory.push({role:'assistant',content:reply});
