@@ -112,11 +112,17 @@ body{
 }
 #msg-input{
   width:100%;background:none;border:none;outline:none;
-  color:#fff;font-size:16px;/* 16px evita zoom en iOS */
-  resize:none;min-height:26px;max-height:130px;line-height:1.5;
+  color:#fff;font-size:16px;
+  min-height:26px;max-height:130px;line-height:1.5;
+  overflow-y:auto;word-break:break-word;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  -webkit-user-select:text;user-select:text;
 }
-#msg-input::placeholder{color:rgba(255,255,255,0.35);}
+#msg-input:empty::before{
+  content:attr(data-placeholder);
+  color:rgba(255,255,255,0.35);
+  pointer-events:none;
+}
 #input-actions{
   display:flex;justify-content:flex-end;align-items:center;
 }
@@ -171,8 +177,9 @@ body{
 <!-- Input card estilo Claude -->
 <div id="input-bar">
   <div id="input-card">
-    <textarea id="msg-input" rows="1" placeholder="Escribe un mensaje…"
-      autofocus oninput="autoGrow(this)" onkeydown="handleKey(event)"></textarea>
+    <div id="msg-input" contenteditable="true" role="textbox"
+      data-placeholder="Escribe un mensaje…"
+      onkeydown="handleKey(event)"></div>
     <div id="input-actions">
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -556,13 +563,19 @@ function showToast(msg, ms=2200){
   setTimeout(()=>t.classList.remove('show'),ms);
 }
 
-function autoGrow(el){
-  el.style.height='auto';
-  el.style.height=Math.min(el.scrollHeight,120)+'px';
-}
+function autoGrow(el){ /* no-op: contenteditable grows naturally */ }
 
 function handleKey(e){
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+function _getInputText(){
+  const el=document.getElementById('msg-input');
+  return (el.innerText||el.textContent||'').trim();
+}
+function _clearInput(){
+  const el=document.getElementById('msg-input');
+  el.innerText='';
 }
 
 function _addMsg(role, text){
@@ -610,15 +623,16 @@ function _removeThinking(){
 function _setInputEnabled(on){
   const btn=document.getElementById('send-btn');
   const inp=document.getElementById('msg-input');
-  btn.disabled=!on; inp.disabled=!on;
+  btn.disabled=!on;
+  inp.contentEditable=on?'true':'false';
+  inp.style.opacity=on?'1':'0.5';
 }
 
 async function sendMessage(){
   if(_busy) return;
-  const inp=document.getElementById('msg-input');
-  const text=inp.value.trim();
+  const text=_getInputText();
   if(!text) return;
-  inp.value=''; inp.style.height='auto';
+  _clearInput();
   _history.push({role:'user',content:text});
   _addMsg('user',text);
   _busy=true; _setInputEnabled(false); _showThinking();
@@ -632,7 +646,15 @@ async function sendMessage(){
     _addMsg('ai',e.message||'Error desconocido.');
   } finally {
     _busy=false; _setInputEnabled(true);
-    document.getElementById('msg-input').focus();
+    const inp=document.getElementById('msg-input');
+    inp.focus();
+    // Place cursor at end
+    const range=document.createRange();
+    range.selectNodeContents(inp);
+    range.collapse(false);
+    const sel=window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 }
 
