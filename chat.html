@@ -217,58 +217,37 @@ let _thinkingEl = null;
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
 
-// ── Bloquear scroll del body en iOS PWA ──────────────────────────────────
-(function lockScroll(){
-  // Bloquear cualquier scroll del window (iOS lo hace al enfocar inputs)
-  window.addEventListener('scroll', () => window.scrollTo(0, 0), { passive: true });
+// ── iOS: fijar todo en su lugar, solo mover el input bar con el teclado ───
+(function iosKeyboardFix(){
+  const bar = document.getElementById('input-bar');
+  const inp = document.getElementById('msg-input');
+  const vv  = window.visualViewport;
 
-  let _lastY = 0;
-  document.addEventListener('touchstart', e => {
-    _lastY = e.touches[0].clientY;
-  }, { passive: true });
+  // 1. Cancelar CUALQUIER scroll del window — iOS lo hace automáticamente al enfocar
+  window.addEventListener('scroll', () => window.scrollTo(0, 0));
 
+  // 2. Bloquear touchmove fuera del área de mensajes
   document.addEventListener('touchmove', e => {
-    const msgs = e.target.closest('#messages');
-    if (!msgs) { e.preventDefault(); return; }
-    const deltaY = e.touches[0].clientY - _lastY;
-    const atTop    = msgs.scrollTop <= 0 && deltaY > 0;
-    const atBottom = msgs.scrollTop + msgs.clientHeight >= msgs.scrollHeight && deltaY < 0;
-    if (atTop || atBottom) e.preventDefault();
-    _lastY = e.touches[0].clientY;
+    if (!e.target.closest('#messages')) e.preventDefault();
   }, { passive: false });
 
-  // Resetear scroll cuando el input recibe foco
-  document.getElementById('msg-input').addEventListener('focus', () => {
-    setTimeout(() => window.scrollTo(0, 0), 0);
+  // 3. Al enfocar el input, cancelar el scroll que iOS dispara
+  inp.addEventListener('focus', () => {
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+    setTimeout(() => window.scrollTo(0, 0), 50);
+    setTimeout(() => window.scrollTo(0, 0), 150);
   });
-})();
 
-// ── iOS keyboard fix via visualViewport ───────────────────────────────────
-(function setupViewport(){
-  const vv = window.visualViewport;
+  // 4. Mover input bar exactamente encima del teclado via visualViewport
   if (!vv) return;
-  const bar = document.getElementById('input-bar');
-  const msgs = document.getElementById('messages');
-
   function update() {
-    // kbH = altura del teclado + accessory bar
-    const kbH = window.innerHeight - vv.height - vv.offsetTop;
+    window.scrollTo(0, 0); // siempre resetear
+    const kbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
     const kbOpen = kbH > 60;
-
-    // Mueve el input bar justo encima del teclado (sin gap)
-    bar.style.bottom = kbOpen ? kbH + 'px' : '0px';
-
-    // Cuando teclado abierto: sin padding-bottom (ya no hay home indicator)
-    // Cuando cerrado: usa safe-area para el home indicator
-    bar.style.paddingBottom = kbOpen ? '2px' : 'env(safe-area-inset-bottom)';
-
-    // Ajusta padding del área de mensajes para que nada quede detrás del input
-    const barH = bar.offsetHeight || 80;
-    msgs.style.paddingBottom = (kbOpen ? kbH + barH : barH + 20) + 'px';
-
-    if (kbOpen) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 80);
+    bar.style.bottom = kbH + 'px';
+    bar.style.paddingBottom = kbOpen ? '0px' : 'env(safe-area-inset-bottom)';
   }
-
   vv.addEventListener('resize', update);
   vv.addEventListener('scroll', update);
   update();
