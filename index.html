@@ -19924,12 +19924,7 @@ END:VCARD`;
         <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
       </button>
       <button class="ai-attach-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Voz">
-        <svg id="ai-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:rgba(255,255,255,0.7);display:block;">
-          <rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor"/>
-          <path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="9" y1="21" x2="15" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <span id="ai-mic-icon" style="font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);">🎤</span>
       </button>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
