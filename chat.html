@@ -212,6 +212,14 @@ let _thinkingEl = null;
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
 
+// ── Bloquear scroll del body en iOS PWA ──────────────────────────────────
+document.addEventListener('touchmove', function(e) {
+  // Solo permitir scroll dentro de #messages
+  if (!e.target.closest('#messages')) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
 // ── iOS keyboard fix via visualViewport ───────────────────────────────────
 (function setupViewport(){
   const bar = document.getElementById('input-bar');
