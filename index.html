@@ -10493,28 +10493,33 @@ Incluye:
             initBgTheme();
             // Save ElevenLabs key to localStorage on first load
             if(!localStorage.getItem('elabs_key')) localStorage.setItem('elabs_key','sk_13183fc4f15eb3f848c408956b320ea92f4ebb184361d38c');
-            // Remove black background from chat logo using canvas
+            // Remove black background from all agenda-logo images using canvas
             (function(){
-                const img=document.getElementById('ai-logo-img');
-                if(!img) return;
-                function process(){
-                    try{
-                        const c=document.createElement('canvas');
-                        c.width=img.naturalWidth; c.height=img.naturalHeight;
-                        const ctx=c.getContext('2d');
-                        ctx.drawImage(img,0,0);
-                        const d=ctx.getImageData(0,0,c.width,c.height);
-                        const px=d.data;
-                        for(let i=0;i<px.length;i+=4){
-                            const brightness=(px[i]+px[i+1]+px[i+2])/3;
-                            px[i+3]=brightness<40?0:brightness<80?Math.round((brightness-40)/40*255):255;
-                        }
-                        ctx.putImageData(d,0,0);
-                        img.src=c.toDataURL('image/png');
-                    }catch(e){}
+                function removeBg(img){
+                    function process(){
+                        try{
+                            const c=document.createElement('canvas');
+                            c.width=img.naturalWidth; c.height=img.naturalHeight;
+                            const ctx=c.getContext('2d');
+                            ctx.drawImage(img,0,0);
+                            const d=ctx.getImageData(0,0,c.width,c.height);
+                            const px=d.data;
+                            for(let i=0;i<px.length;i+=4){
+                                const brightness=(px[i]+px[i+1]+px[i+2])/3;
+                                px[i+3]=brightness<40?0:brightness<80?Math.round((brightness-40)/40*255):255;
+                            }
+                            ctx.putImageData(d,0,0);
+                            const url=c.toDataURL('image/png');
+                            img.src=url;
+                            // Apply same transparent url to all other logo images to avoid reprocessing
+                            document.querySelectorAll('img[src*="agenda-logo"]').forEach(el=>{if(el!==img)el.src=url;});
+                        }catch(e){}
+                    }
+                    if(img.complete&&img.naturalWidth) process();
+                    else img.onload=process;
                 }
-                if(img.complete&&img.naturalWidth) process();
-                else img.onload=process;
+                const first=document.querySelector('img[src*="agenda-logo"]');
+                if(first) removeBg(first);
             })();
 
             // Initialize backup system
