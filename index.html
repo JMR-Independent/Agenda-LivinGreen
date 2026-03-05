@@ -6404,6 +6404,29 @@
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; flex-shrink: 0; margin-bottom: 2px;
         }
+        /* Waveform de grabación */
+        @keyframes ai-wave {
+            0%, 100% { transform: scaleY(0.2); }
+            50%       { transform: scaleY(1); }
+        }
+        #ai-waveform {
+            display: none; align-items: center; justify-content: center;
+            gap: 3px; flex: 1; height: 34px; pointer-events: none;
+        }
+        #ai-waveform.active { display: flex; }
+        #ai-waveform span {
+            display: block; width: 3px; border-radius: 3px;
+            background: #ff5555; transform-origin: center;
+            animation: ai-wave 0.7s ease-in-out infinite;
+        }
+        #ai-waveform span:nth-child(1) { height: 10px; animation-delay: 0.00s; }
+        #ai-waveform span:nth-child(2) { height: 20px; animation-delay: 0.10s; }
+        #ai-waveform span:nth-child(3) { height: 28px; animation-delay: 0.20s; }
+        #ai-waveform span:nth-child(4) { height: 20px; animation-delay: 0.05s; }
+        #ai-waveform span:nth-child(5) { height: 28px; animation-delay: 0.15s; }
+        #ai-waveform span:nth-child(6) { height: 14px; animation-delay: 0.25s; }
+        #ai-waveform span:nth-child(7) { height: 10px; animation-delay: 0.30s; }
+
         .ai-send-btn {
             width: 34px; height: 34px; border-radius: 50%; border: none;
             background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.3);
@@ -16885,8 +16908,11 @@ Próximas: ${prox.length?prox.map(fmt).join(' / '):'ninguna'}`;
 
         function _setMicIcon(active){
             const btn=document.getElementById('ai-mic-btn');
-            if(!btn)return;
-            btn.style.color=active?'#ff5555':'rgba(255,255,255,0.7)';
+            if(btn) btn.style.color=active?'#ff5555':'rgba(255,255,255,0.7)';
+            const waveform=document.getElementById('ai-waveform');
+            const textarea=document.getElementById('ai-input');
+            if(waveform) waveform.classList.toggle('active',active);
+            if(textarea) textarea.style.display=active?'none':'';
         }
         function startVoiceInput() {
             const btn=document.getElementById('ai-mic-btn');
@@ -19928,6 +19954,7 @@ END:VCARD`;
           <path d="M12 2C10.34 2 9 3.34 9 5v6c0 1.66 1.34 3 3 3s3-1.34 3-3V5c0-1.66-1.34-3-3-3zm-1 9V5c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1zm6 0c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21H9v2h6v-2h-2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
         </svg>
       </button>
+      <div id="ai-waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <textarea id="ai-input" placeholder="Mensaje…" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
                 oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';
