@@ -7971,15 +7971,32 @@ Incluye:
                     Guardar
                   </button>
 
-                  <!-- Gemini API Key -->
+                  <!-- Google Gemini API Key -->
                   <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
-                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🤖 Groq API Key</label>
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">✨ Google Gemini API Key (chat IA)</label>
                     <div style="display:flex;gap:8px;">
-                      <input id="gemini-api-key" type="password" placeholder="gsk_..."
+                      <input id="gemini-api-key" type="password" placeholder="AIza..."
                              style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
                                     background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
                                     box-sizing:border-box;outline:none;font-family:monospace;">
                       <button onclick="saveGeminiKey()"
+                              style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                     background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                     font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
+                        Guardar
+                      </button>
+                    </div>
+                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en aistudio.google.com</div>
+                  </div>
+                  <!-- Groq API Key (voz/Whisper) -->
+                  <div style="margin-top:10px;">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🎙 Groq API Key (transcripción de voz)</label>
+                    <div style="display:flex;gap:8px;">
+                      <input id="groq-api-key" type="password" placeholder="gsk_..."
+                             style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;font-family:monospace;">
+                      <button onclick="saveGroqKey()"
                               style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
                                      background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
                                      font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
@@ -15097,9 +15114,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             } else if (viewName === 'finance') {
                 loadFinanceData();
             } else if (viewName === 'settings') {
-                // Recargar key guardada en el campo cada vez que se abre Settings
-                const keyEl = document.getElementById('gemini-api-key');
-                if (keyEl) keyEl.value = localStorage.getItem('rize_gemini_key') || '';
+                const geminiEl = document.getElementById('gemini-api-key');
+                if (geminiEl) geminiEl.value = localStorage.getItem('rize_gemini_key') || '';
+                const groqEl = document.getElementById('groq-api-key');
+                if (groqEl) groqEl.value = localStorage.getItem('rize_groq_key') || '';
             }
         }
 
@@ -16171,7 +16189,14 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             if (!key) { showToast('⚠️ Ingresa una API Key'); return; }
             localStorage.setItem('rize_gemini_key', key);
             const masked = key.slice(0,6) + '••••••••' + key.slice(-4);
-            showToast('✅ API Key guardada: ' + masked, 3500);
+            showToast('✅ Gemini Key guardada: ' + masked, 3500);
+        }
+        function saveGroqKey() {
+            const key = (document.getElementById('groq-api-key').value || '').trim();
+            if (!key) { showToast('⚠️ Ingresa una API Key'); return; }
+            localStorage.setItem('rize_groq_key', key);
+            const masked = key.slice(0,6) + '••••••••' + key.slice(-4);
+            showToast('✅ Groq Key guardada: ' + masked, 3500);
         }
         function saveOpenAITTSKey() {
             const key = (document.getElementById('openai-tts-key').value || '').trim();
@@ -17004,11 +17029,11 @@ REGLAS DEL AGENTE:
         }
         function startVoiceInput() {
             const btn=document.getElementById('ai-mic-btn');
-            // Si ya está grabando, detener
             if(window._aiRecorder){window._aiRecorder.stop();return;}
-            // Usar WebSpeech API (Whisper/Groq ya no está disponible con key de Google)
-            _startWebSpeech(btn); return;
-            if(!navigator.mediaDevices||!window.MediaRecorder){
+            const groqKey=localStorage.getItem('rize_groq_key');
+            if(!groqKey||!navigator.mediaDevices||!window.MediaRecorder){
+                _startWebSpeech(btn); return;
+            }
             navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
                 const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
                                MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
@@ -17034,9 +17059,8 @@ REGLAS DEL AGENTE:
                         fd.append('model','whisper-large-v3-turbo');
                         fd.append('language','es');
                         fd.append('response_format','json');
-                        const key=localStorage.getItem('rize_gemini_key');
                         const res=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',
-                            {method:'POST',headers:{'Authorization':'Bearer '+key},body:fd});
+                            {method:'POST',headers:{'Authorization':'Bearer '+groqKey},body:fd});
                         inputEl.placeholder=prevPlaceholder;
                         if(res.ok){
                             const data=await res.json();
@@ -17052,7 +17076,6 @@ REGLAS DEL AGENTE:
                     }catch(e){inputEl.placeholder=prevPlaceholder;showToast('Error de conexión');}
                 };
                 recorder.start();
-                // Auto-stop 60s
                 setTimeout(()=>{if(window._aiRecorder)window._aiRecorder.stop();},60000);
             }).catch(()=>_startWebSpeech(btn));
         }
