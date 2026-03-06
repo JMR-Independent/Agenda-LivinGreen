@@ -1250,9 +1250,7 @@ function _setMicIcon(active){
   const btn=document.getElementById('mic-btn');
   const waveform=document.getElementById('ai-waveform');
   const textarea=document.getElementById('msg-input');
-  const sendMic=document.getElementById('send-mic-icon');
   if(btn) btn.style.color=active?'#4ade80':'rgba(255,255,255,0.7)';
-  if(sendMic) sendMic.style.color=active?'#4ade80':(window._handsFree?'#4ade80':'rgba(255,255,255,0.6)');
   if(waveform) waveform.classList.toggle('active',active);
   if(textarea){ textarea.style.display=active?'none':''; }
 }
