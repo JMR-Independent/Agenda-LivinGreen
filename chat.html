@@ -1168,19 +1168,25 @@ async function handleFileUpload(event){
 
 // ── Hands-free mode ─────────────────────────────────────────────────────────
 window._handsFree=false;
+window._hfAudioCtx=null; // created during user gesture so iOS doesn't suspend it
+
 function toggleHandsFree(){
   window._handsFree=!window._handsFree;
   const btn=document.getElementById('handsfree-btn');
   if(btn) btn.style.color=window._handsFree?'#4ade80':'rgba(255,255,255,0.55)';
-  showToast(window._handsFree?'Manos libres activado — habla después de cada respuesta':'Manos libres desactivado');
   if(window._handsFree){
-    // Request mic permission immediately on toggle (needs user gesture — this IS the gesture)
+    // IMPORTANT: AudioContext + getUserMedia must be called here (user gesture = this tap)
+    try{
+      if(!window._hfAudioCtx) window._hfAudioCtx=new AudioContext();
+      if(window._hfAudioCtx.state==='suspended') window._hfAudioCtx.resume();
+    }catch(e){}
     if(navigator.mediaDevices) navigator.mediaDevices.getUserMedia({audio:true})
       .then(s=>s.getTracks().forEach(t=>t.stop())).catch(()=>{});
+    showToast('Manos libres activado — habla después de cada respuesta');
   } else {
-    // Cancel any pending recording
     if(window._chatRecorder){ window._chatRecorder.stop(); }
     if(window._hfSpeechRec){ try{window._hfSpeechRec.abort();}catch(e){} window._hfSpeechRec=null; }
+    showToast('Manos libres desactivado');
   }
 }
 
@@ -1210,24 +1216,27 @@ function startVoiceInput(){
     _setMicIcon(true);
 
     // Silence detection for hands-free auto-stop
-    let silenceCtx=null,silenceTimer=null,started=false;
+    // Reuses _hfAudioCtx created during user gesture (avoids iOS suspended state)
+    let silenceIv=null,silenceTimer=null;
     if(window._handsFree){
       try{
-        silenceCtx=new AudioContext();
-        const src=silenceCtx.createMediaStreamSource(stream);
-        const analyser=silenceCtx.createAnalyser(); analyser.fftSize=256;
+        const ctx=window._hfAudioCtx;
+        if(ctx.state==='suspended') ctx.resume();
+        const src=ctx.createMediaStreamSource(stream);
+        const analyser=ctx.createAnalyser(); analyser.fftSize=256;
         src.connect(analyser);
         const buf=new Uint8Array(analyser.frequencyBinCount);
-        setTimeout(()=>{started=true;},900); // ignore first 0.9s
-        const iv=setInterval(()=>{
-          if(!started||!window._chatRecorder) return clearInterval(iv);
+        let started=false;
+        setTimeout(()=>{started=true;},1500); // don't stop in first 1.5s
+        silenceIv=setInterval(()=>{
+          if(!started||!window._chatRecorder){clearInterval(silenceIv);return;}
           analyser.getByteFrequencyData(buf);
           const rms=buf.reduce((s,v)=>s+v,0)/buf.length;
-          if(rms<4){
+          if(rms<5){
             if(!silenceTimer) silenceTimer=setTimeout(()=>{
-              clearInterval(iv);
+              clearInterval(silenceIv);
               if(window._chatRecorder) window._chatRecorder.stop();
-            },1500);
+            },4000);
           } else { clearTimeout(silenceTimer); silenceTimer=null; }
         },200);
       }catch(e){}
@@ -1236,10 +1245,11 @@ function startVoiceInput(){
     recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
     recorder.onstop=async()=>{
       stream.getTracks().forEach(t=>t.stop());
-      if(silenceCtx) silenceCtx.close();
+      clearInterval(silenceIv); clearTimeout(silenceTimer);
+      // Disconnect source from shared AudioContext (don't close it — reused across sessions)
       window._chatRecorder=null;
       _setMicIcon(false);
-      if(!chunks.length) return;
+      if(!chunks.length){ if(window._handsFree) setTimeout(()=>startVoiceInput(),500); return; }
       const ext=mimeType.includes('mp4')?'mp4':'webm';
       const blob=new Blob(chunks,{type:mimeType||'audio/webm'});
       const inp=document.getElementById('msg-input');
@@ -1268,7 +1278,6 @@ function startVoiceInput(){
       }catch(e){ inp.placeholder=prev; showToast('Error de conexión'); }
     };
     recorder.start();
-    // Max 45s safety timeout
     setTimeout(()=>{ if(window._chatRecorder) window._chatRecorder.stop(); },45000);
   }).catch(()=>_startWebSpeech());
 }
