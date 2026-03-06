@@ -220,6 +220,9 @@ body{
     <button class="header-btn" onclick="openApiKeyModal()" title="Configuración">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
+    <button class="header-btn" id="handsfree-btn" onclick="toggleHandsFree()" title="Manos libres">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C10.34 2 9 3.34 9 5v6c0 1.66 1.34 3 3 3s3-1.34 3-3V5c0-1.66-1.34-3-3-3zm-1 9V5c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1zm6 0c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21H9v2h6v-2h-2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    </button>
     <button class="header-btn" onclick="window.location.href='index.html'" title="Abrir app">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span>App</span>
@@ -1122,7 +1125,8 @@ async function sendMessage(){
     await _streamBubble(e.message||'Error desconocido.');
   } finally {
     _busy=false; _setInputEnabled(true);
-    document.getElementById('msg-input').focus();
+    if(window._handsFree){ setTimeout(()=>startVoiceInput(),700); }
+    else { document.getElementById('msg-input').focus(); }
   }
 }
 
@@ -1162,6 +1166,24 @@ async function handleFileUpload(event){
   }
 }
 
+// ── Hands-free mode ─────────────────────────────────────────────────────────
+window._handsFree=false;
+function toggleHandsFree(){
+  window._handsFree=!window._handsFree;
+  const btn=document.getElementById('handsfree-btn');
+  if(btn) btn.style.color=window._handsFree?'#4ade80':'rgba(255,255,255,0.55)';
+  showToast(window._handsFree?'Manos libres activado — habla después de cada respuesta':'Manos libres desactivado');
+  if(window._handsFree){
+    // Request mic permission immediately on toggle (needs user gesture — this IS the gesture)
+    if(navigator.mediaDevices) navigator.mediaDevices.getUserMedia({audio:true})
+      .then(s=>s.getTracks().forEach(t=>t.stop())).catch(()=>{});
+  } else {
+    // Cancel any pending recording
+    if(window._chatRecorder){ window._chatRecorder.stop(); }
+    if(window._hfSpeechRec){ try{window._hfSpeechRec.abort();}catch(e){} window._hfSpeechRec=null; }
+  }
+}
+
 // ── Voice input ────────────────────────────────────────────────────────────
 function _setMicIcon(active){
   const btn=document.getElementById('mic-btn');
@@ -1186,9 +1208,35 @@ function startVoiceInput(){
     const chunks=[];
     window._chatRecorder=recorder;
     _setMicIcon(true);
+
+    // Silence detection for hands-free auto-stop
+    let silenceCtx=null,silenceTimer=null,started=false;
+    if(window._handsFree){
+      try{
+        silenceCtx=new AudioContext();
+        const src=silenceCtx.createMediaStreamSource(stream);
+        const analyser=silenceCtx.createAnalyser(); analyser.fftSize=256;
+        src.connect(analyser);
+        const buf=new Uint8Array(analyser.frequencyBinCount);
+        setTimeout(()=>{started=true;},900); // ignore first 0.9s
+        const iv=setInterval(()=>{
+          if(!started||!window._chatRecorder) return clearInterval(iv);
+          analyser.getByteFrequencyData(buf);
+          const rms=buf.reduce((s,v)=>s+v,0)/buf.length;
+          if(rms<4){
+            if(!silenceTimer) silenceTimer=setTimeout(()=>{
+              clearInterval(iv);
+              if(window._chatRecorder) window._chatRecorder.stop();
+            },1500);
+          } else { clearTimeout(silenceTimer); silenceTimer=null; }
+        },200);
+      }catch(e){}
+    }
+
     recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
     recorder.onstop=async()=>{
       stream.getTracks().forEach(t=>t.stop());
+      if(silenceCtx) silenceCtx.close();
       window._chatRecorder=null;
       _setMicIcon(false);
       if(!chunks.length) return;
@@ -1214,12 +1262,14 @@ function startVoiceInput(){
             inp.style.height='auto';
             inp.style.height=Math.min(inp.scrollHeight,130)+'px';
             _onInputChange();
-          }
+            if(window._handsFree) setTimeout(()=>sendMessage(),300);
+          } else if(window._handsFree){ setTimeout(()=>startVoiceInput(),500); }
         } else { showToast('Error al transcribir'); }
       }catch(e){ inp.placeholder=prev; showToast('Error de conexión'); }
     };
     recorder.start();
-    setTimeout(()=>{ if(window._chatRecorder) window._chatRecorder.stop(); },60000);
+    // Max 45s safety timeout
+    setTimeout(()=>{ if(window._chatRecorder) window._chatRecorder.stop(); },45000);
   }).catch(()=>_startWebSpeech());
 }
 
@@ -1227,6 +1277,7 @@ function _startWebSpeech(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ showToast('Micrófono no disponible'); return; }
   const rec=new SR(); rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
+  window._hfSpeechRec=rec;
   _setMicIcon(true);
   rec.onresult=(e)=>{
     const text=e.results[0][0].transcript;
@@ -1235,9 +1286,10 @@ function _startWebSpeech(){
     inp.style.height='auto';
     inp.style.height=Math.min(inp.scrollHeight,130)+'px';
     _onInputChange();
+    if(window._handsFree && text.trim()) setTimeout(()=>sendMessage(),300);
   };
-  rec.onend=()=>{ _setMicIcon(false); };
-  rec.onerror=()=>{ _setMicIcon(false); showToast('Error de micrófono'); };
+  rec.onend=()=>{ _setMicIcon(false); window._hfSpeechRec=null; };
+  rec.onerror=()=>{ _setMicIcon(false); window._hfSpeechRec=null; showToast('Error de micrófono'); };
   rec.start();
 }
 
