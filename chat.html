@@ -1219,31 +1219,44 @@ function _hfListen(){
   if(window._hfSpeechRec){ try{window._hfSpeechRec.abort();}catch(e){} window._hfSpeechRec=null; }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ showToast('Voz no disponible en este navegador'); return; }
-  const rec=new SR();
-  rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
-  window._hfSpeechRec=rec;
-  const wf=document.getElementById('ai-waveform');
-  if(wf) wf.classList.add('active');
-  rec.onresult=(e)=>{
-    const text=(e.results[0][0].transcript||'').trim();
-    if(!text) return;
-    // Stop word detection
-    if(/^stop$/i.test(text)){ toggleHandsFree(); return; }
-    const inp=document.getElementById('msg-input');
-    inp.value=text;
-    inp.style.height='auto';
-    inp.style.height=Math.min(inp.scrollHeight,130)+'px';
-    _onInputChange();
-    setTimeout(()=>sendMessage(),300);
+
+  const _startRec=()=>{
+    if(!window._handsFree) return;
+    const rec=new SR();
+    rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
+    window._hfSpeechRec=rec;
+    const wf=document.getElementById('ai-waveform');
+    if(wf) wf.classList.add('active');
+    rec.onresult=(e)=>{
+      const text=(e.results[0][0].transcript||'').trim();
+      if(!text) return;
+      if(/^stop$/i.test(text)){ toggleHandsFree(); return; }
+      const inp=document.getElementById('msg-input');
+      inp.value=text;
+      inp.style.height='auto';
+      inp.style.height=Math.min(inp.scrollHeight,130)+'px';
+      _onInputChange();
+      setTimeout(()=>sendMessage(),300);
+    };
+    rec.onend=()=>{ if(wf) wf.classList.remove('active'); window._hfSpeechRec=null; };
+    rec.onerror=(e)=>{
+      if(wf) wf.classList.remove('active'); window._hfSpeechRec=null;
+      if(e.error==='no-speech' && window._handsFree && !_busy){
+        setTimeout(()=>_hfListen(),500);
+      }
+    };
+    try{ rec.start(); }catch(e){ if(wf) wf.classList.remove('active'); }
   };
-  rec.onend=()=>{ if(wf) wf.classList.remove('active'); window._hfSpeechRec=null; };
-  rec.onerror=(e)=>{
-    if(wf) wf.classList.remove('active'); window._hfSpeechRec=null;
-    if(e.error==='no-speech' && window._handsFree && !_busy){
-      setTimeout(()=>_hfListen(),500);
-    }
-  };
-  try{ rec.start(); }catch(e){ if(wf) wf.classList.remove('active'); }
+
+  // Request getUserMedia first — iOS stores this permission permanently,
+  // and WebSpeech inherits it so the user is never asked again after first grant.
+  if(navigator.mediaDevices && !window._micPermGranted){
+    navigator.mediaDevices.getUserMedia({audio:true})
+      .then(s=>{ s.getTracks().forEach(t=>t.stop()); window._micPermGranted=true; _startRec(); })
+      .catch(()=>_startRec()); // if denied/already granted, try anyway
+  } else {
+    _startRec();
+  }
 }
 
 // ── Voice input ────────────────────────────────────────────────────────────
@@ -1263,7 +1276,7 @@ function startVoiceInput(){
   if(!groqKey||!navigator.mediaDevices||!window.MediaRecorder){
     _startWebSpeech(); return;
   }
-  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{ window._micPermGranted=true;
     const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':
                    MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
     const opts=mimeType?{mimeType}:{};
