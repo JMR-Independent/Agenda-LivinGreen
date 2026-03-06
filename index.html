@@ -6938,6 +6938,10 @@
                         </svg>
                         <span class="status-text">Never backed up</span>
                     </div>
+                    <button class="status-indicator" onclick="_lg_fullSync(true)" title="Sincronizar con chat PWA" style="cursor:pointer;">
+                        <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                        <span class="status-text">Sync</span>
+                    </button>
                     <button class="status-indicator dark-mode-toggle" id="dark-mode-toggle" onclick="toggleDarkMode()" title="Theme">
                         <svg class="theme-icon light-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
@@ -20267,34 +20271,72 @@ END:VCARD`;
             updateNotifToggleUI();
         });
 
-        // ── Sync business data to cookies (shared with chat PWA) ──────────────
-        function _lg_syncToCookies() {
-            try {
-                const now = new Date();
-                const cutoff = new Date(now.getTime()-90*86400000);
-                const cutoffStr=`${cutoff.getFullYear()}-${String(cutoff.getMonth()+1).padStart(2,'0')}-${String(cutoff.getDate()).padStart(2,'0')}`;
-                const futureD = new Date(now.getTime()+365*86400000);
-                const futureStr=`${futureD.getFullYear()}-${String(futureD.getMonth()+1).padStart(2,'0')}-${String(futureD.getDate()).padStart(2,'0')}`;
-                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
-                apts=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cutoffStr&&d<=futureStr;});
-                const data={
-                    appointments:apts,
-                    clientRegistry:JSON.parse(localStorage.getItem('clientRegistry')||'[]'),
-                    rize_services_config:JSON.parse(localStorage.getItem('rize_services_config')||'[]'),
-                    rize_business_config:JSON.parse(localStorage.getItem('rize_business_config')||'{}'),
-                    dayEvents:JSON.parse(localStorage.getItem('dayEvents')||'{}'),
-                };
-                const str=JSON.stringify(data);
-                const chunkSize=3800;
-                const n=Math.ceil(str.length/chunkSize);
+        // ── Bidirectional sync with chat PWA via cookies ───────────────────────
+        function _lg_cookieRead(){
+            try{
+                const jar=Object.fromEntries(document.cookie.split('; ').filter(Boolean).map(c=>{const i=c.indexOf('=');return [c.slice(0,i),c.slice(i+1)];}));
+                const n=parseInt(jar['lg_n']||'0');if(!n)return null;
+                let s='';for(let i=0;i<n;i++)s+=decodeURIComponent(jar[`lg_d${i}`]||'');
+                return s?JSON.parse(s):null;
+            }catch{return null;}
+        }
+        function _lg_cookieWrite(data){
+            try{
+                const s=JSON.stringify({...data,_ts:Date.now()});
+                const cs=3800,n=Math.ceil(s.length/cs);
                 const exp='; max-age=86400; path=/; SameSite=Lax';
                 for(let i=0;i<30;i++) document.cookie=`lg_d${i}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
                 document.cookie=`lg_n=${n}${exp}`;
-                for(let i=0;i<n;i++) document.cookie=`lg_d${i}=${encodeURIComponent(str.slice(i*chunkSize,(i+1)*chunkSize))}${exp}`;
-            } catch(e){ console.warn('lg_sync error:',e); }
+                for(let i=0;i<n;i++) document.cookie=`lg_d${i}=${encodeURIComponent(s.slice(i*cs,(i+1)*cs))}${exp}`;
+            }catch(e){console.warn('lg_cookieWrite:',e);}
         }
-        window.addEventListener('load', _lg_syncToCookies);
-        document.addEventListener('visibilitychange', ()=>{ if(document.hidden) _lg_syncToCookies(); });
+        function _lg_mergeApts(a,b){
+            const m=new Map();
+            [...a,...b].forEach(x=>{const id=x.id||String(x.timestamp||'');if(!id)return;const ex=m.get(id);if(!ex||(x.timestamp||0)>=(ex.timestamp||0))m.set(id,x);});
+            return Array.from(m.values()).sort((a,b)=>((a.date||'')+(a.time||''))<((b.date||'')+(b.time||''))?-1:1);
+        }
+        function _lg_mergeCli(a,b){
+            const m=new Map();
+            [...a,...b].forEach(c=>{const k=(c.name||'').toLowerCase().trim();if(!k)return;const ex=m.get(k);if(!ex||(c.createdAt||c.updatedAt||'')>=(ex.createdAt||ex.updatedAt||''))m.set(k,c);});
+            return Array.from(m.values());
+        }
+        function _lg_fullSync(showFeedback=false){
+            try{
+                const remote=_lg_cookieRead();
+                let lApts=[],lCli=[];
+                try{lApts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                try{lCli=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+                let apts=lApts,cli=lCli,svc,biz,events;
+                if(remote){
+                    apts=_lg_mergeApts(lApts,remote.appointments||[]);
+                    cli=_lg_mergeCli(lCli,remote.clientRegistry||[]);
+                    const rNewer=(remote._ts||0)>parseInt(localStorage.getItem('_lg_last_sync')||'0');
+                    svc=rNewer?(remote.rize_services_config||JSON.parse(localStorage.getItem('rize_services_config')||'[]')):JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+                    biz=rNewer?(remote.rize_business_config||JSON.parse(localStorage.getItem('rize_business_config')||'{}')):JSON.parse(localStorage.getItem('rize_business_config')||'{}');
+                    const lEv=JSON.parse(localStorage.getItem('dayEvents')||'{}');
+                    events={...(remote.dayEvents||{}),...lEv};
+                }else{
+                    svc=JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+                    biz=JSON.parse(localStorage.getItem('rize_business_config')||'{}');
+                    events=JSON.parse(localStorage.getItem('dayEvents')||'{}');
+                }
+                localStorage.setItem('appointments',JSON.stringify(apts));
+                localStorage.setItem('clientRegistry',JSON.stringify(cli));
+                localStorage.setItem('rize_services_config',JSON.stringify(svc));
+                localStorage.setItem('rize_business_config',JSON.stringify(biz));
+                localStorage.setItem('dayEvents',JSON.stringify(events));
+                localStorage.setItem('_lg_last_sync',String(Date.now()));
+                const now2=new Date();
+                const _ld=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const cut=_ld(new Date(now2.getTime()-90*86400000)),fut=_ld(new Date(now2.getTime()+365*86400000));
+                _lg_cookieWrite({appointments:apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cut&&d<=fut;}),clientRegistry:cli,rize_services_config:svc,rize_business_config:biz,dayEvents:events});
+                if(showFeedback&&typeof showToast==='function') showToast(`Sincronizado ✓ — ${apts.length} citas, ${cli.length} clientes`);
+                if(typeof loadAppointments==='function') loadAppointments();
+                if(typeof loadClientRegistry==='function') loadClientRegistry();
+            }catch(e){console.warn('lg_fullSync:',e);if(showFeedback&&typeof showToast==='function') showToast('Error al sincronizar');}
+        }
+        window.addEventListener('load', ()=>_lg_fullSync());
+        document.addEventListener('visibilitychange', ()=>_lg_fullSync());
 
     </script>
 

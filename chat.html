@@ -212,6 +212,9 @@ body{
     </div>
   </div>
   <div style="display:flex;gap:4px;">
+    <button class="header-btn" onclick="_lg_fullSync(true)" title="Sincronizar datos">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+    </button>
     <button class="header-btn" onclick="newChat()" title="Nueva conversación">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
     </button>
@@ -281,29 +284,83 @@ let _busy = false;
 let _geminiModel = localStorage.getItem('rize_gemini_model') || null;
 let _thinkingEl = null;
 
-// ── Sync data from cookies (written by main app, shared across contexts) ───
-function _syncFromCookies() {
-  try {
+// ── Bidirectional sync via cookies (shared between Safari & PWA same origin) ─
+function _cookieRead(){
+  try{
     const jar=Object.fromEntries(document.cookie.split('; ').filter(Boolean).map(c=>{
-      const idx=c.indexOf('='); return [c.slice(0,idx),c.slice(idx+1)];
+      const i=c.indexOf('=');return [c.slice(0,i),c.slice(i+1)];
     }));
-    const n=parseInt(jar['lg_n']||'0');
-    if(!n) return;
-    let str='';
-    for(let i=0;i<n;i++) str+=decodeURIComponent(jar[`lg_d${i}`]||'');
-    if(!str) return;
-    const data=JSON.parse(str);
-    if(data.appointments)        localStorage.setItem('appointments',        JSON.stringify(data.appointments));
-    if(data.clientRegistry)      localStorage.setItem('clientRegistry',      JSON.stringify(data.clientRegistry));
-    if(data.rize_services_config)localStorage.setItem('rize_services_config',JSON.stringify(data.rize_services_config));
-    if(data.rize_business_config)localStorage.setItem('rize_business_config',JSON.stringify(data.rize_business_config));
-    if(data.dayEvents)           localStorage.setItem('dayEvents',           JSON.stringify(data.dayEvents));
-  } catch(e){ console.warn('syncFromCookies error:',e); }
+    const n=parseInt(jar['lg_n']||'0'); if(!n) return null;
+    let s=''; for(let i=0;i<n;i++) s+=decodeURIComponent(jar[`lg_d${i}`]||'');
+    return s?JSON.parse(s):null;
+  }catch{return null;}
+}
+function _cookieWrite(data){
+  try{
+    const s=JSON.stringify({...data,_ts:Date.now()});
+    const cs=3800, n=Math.ceil(s.length/cs);
+    const exp='; max-age=86400; path=/; SameSite=Lax';
+    for(let i=0;i<30;i++) document.cookie=`lg_d${i}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+    document.cookie=`lg_n=${n}${exp}`;
+    for(let i=0;i<n;i++) document.cookie=`lg_d${i}=${encodeURIComponent(s.slice(i*cs,(i+1)*cs))}${exp}`;
+  }catch(e){console.warn('cookieWrite:',e);}
+}
+function _mergeApts(a,b){
+  const m=new Map();
+  [...a,...b].forEach(x=>{
+    const id=x.id||String(x.timestamp||'');if(!id)return;
+    const ex=m.get(id);
+    if(!ex||(x.timestamp||0)>=(ex.timestamp||0)) m.set(id,x);
+  });
+  return Array.from(m.values()).sort((a,b)=>((a.date||'')+(a.time||''))<((b.date||'')+(b.time||''))?-1:1);
+}
+function _mergeCli(a,b){
+  const m=new Map();
+  [...a,...b].forEach(c=>{
+    const k=(c.name||'').toLowerCase().trim();if(!k)return;
+    const ex=m.get(k);
+    if(!ex||(c.createdAt||c.updatedAt||'')>=(ex.createdAt||ex.updatedAt||'')) m.set(k,c);
+  });
+  return Array.from(m.values());
+}
+function _lg_fullSync(showFeedback=false){
+  try{
+    const remote=_cookieRead();
+    let lApts=[],lCli=[];
+    try{lApts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+    try{lCli=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+    let apts=lApts,cli=lCli,svc,biz,events;
+    if(remote){
+      apts=_mergeApts(lApts,remote.appointments||[]);
+      cli=_mergeCli(lCli,remote.clientRegistry||[]);
+      const rNewer=(remote._ts||0)>parseInt(localStorage.getItem('_lg_last_sync')||'0');
+      svc=rNewer?(remote.rize_services_config||JSON.parse(localStorage.getItem('rize_services_config')||'[]')):JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+      biz=rNewer?(remote.rize_business_config||JSON.parse(localStorage.getItem('rize_business_config')||'{}')):JSON.parse(localStorage.getItem('rize_business_config')||'{}');
+      const lEvents=JSON.parse(localStorage.getItem('dayEvents')||'{}');
+      events={...(remote.dayEvents||{}),...lEvents};
+    }else{
+      svc=JSON.parse(localStorage.getItem('rize_services_config')||'[]');
+      biz=JSON.parse(localStorage.getItem('rize_business_config')||'{}');
+      events=JSON.parse(localStorage.getItem('dayEvents')||'{}');
+    }
+    localStorage.setItem('appointments',JSON.stringify(apts));
+    localStorage.setItem('clientRegistry',JSON.stringify(cli));
+    localStorage.setItem('rize_services_config',JSON.stringify(svc));
+    localStorage.setItem('rize_business_config',JSON.stringify(biz));
+    localStorage.setItem('dayEvents',JSON.stringify(events));
+    localStorage.setItem('_lg_last_sync',String(Date.now()));
+    // filter to relevant dates for cookie size
+    const now2=new Date();
+    const _ld2=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const cut=_ld2(new Date(now2-90*86400000)), fut=_ld2(new Date(now2.getTime()+365*86400000));
+    _cookieWrite({appointments:apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cut&&d<=fut;}),clientRegistry:cli,rize_services_config:svc,rize_business_config:biz,dayEvents:events});
+    if(showFeedback) showToast(`Sincronizado ✓ — ${apts.length} citas, ${cli.length} clientes`);
+  }catch(e){console.warn('fullSync:',e);if(showFeedback) showToast('Error al sincronizar');}
 }
 
 // ── Bootstrap ──────────────────────────────────────────────────────────────
 (function init(){
-  _syncFromCookies(); // pull business data from cookies (shared with main app)
+  _lg_fullSync(); // merge business data from cookies (bidirectional with main app)
   const bc = _getBC();
   if (bc.name) {
     document.getElementById('header-title').textContent = bc.name;
@@ -312,6 +369,8 @@ function _syncFromCookies() {
   if (bc.logo) document.getElementById('header-logo').src = bc.logo;
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   if (!localStorage.getItem('rize_gemini_key')) openApiKeyModal();
+  // Sync when chat comes to foreground (user switches back)
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) _lg_fullSync(); });
 })();
 
 // ── API Keys modal ─────────────────────────────────────────────────────────
@@ -939,6 +998,7 @@ async function sendMessage(){
     _history.push({role:'assistant',content:reply});
     await _streamBubble(reply);
     if(_history.length>20) _history=_history.slice(-20);
+    _lg_fullSync(); // propagate any tool-created data back to cookies
   }catch(e){
     _removeThinking();
     await _streamBubble(e.message||'Error desconocido.');
