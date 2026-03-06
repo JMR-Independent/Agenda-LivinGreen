@@ -21,7 +21,6 @@ body{
   display:flex;flex-direction:column;
   overflow:hidden;overscroll-behavior:none;touch-action:none;
   padding-top:env(safe-area-inset-top);
-  transition:top 0.25s ease;
 }
 
 /* Header */
@@ -106,7 +105,7 @@ body{
   position:fixed;left:0;right:0;bottom:0;
   padding:10px 12px env(safe-area-inset-bottom);
   background:#212121;z-index:10;
-  transition:bottom 0.25s ease, padding-bottom 0.25s ease;
+  will-change:transform;
 }
 /* Pill */
 .input-pill{
@@ -504,10 +503,12 @@ function saveApiKeys(){
   }, { passive: false });
   if (!vv) return;
   function update() {
-    document.body.style.top = vv.offsetTop + 'px';
     const kbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-    bar.style.bottom = kbH + 'px';
+    bar.style.transform = `translateY(${-kbH}px)`;
     bar.style.paddingBottom = kbH > 60 ? '0px' : 'env(safe-area-inset-bottom)';
+    // Compensate body if iOS shifts layout viewport (instant, no transition)
+    if (vv.offsetTop) document.body.style.top = vv.offsetTop + 'px';
+    else document.body.style.top = '';
   }
   vv.addEventListener('resize', update);
   vv.addEventListener('scroll', update);
