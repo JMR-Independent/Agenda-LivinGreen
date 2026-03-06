@@ -28,6 +28,7 @@ body{
   display:flex;align-items:center;justify-content:space-between;
   padding:12px 16px;background:#0f0f0f;
   border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
+  position:relative;z-index:60;
 }
 #chat-header .logo-wrap{display:flex;align-items:center;gap:10px;}
 #chat-header img{width:30px;height:30px;border-radius:50%;object-fit:cover;}
@@ -1177,6 +1178,9 @@ function toggleHandsFree(){
   if(btn) btn.style.color=window._handsFree?'#4ade80':'rgba(255,255,255,0.55)';
   if(window._handsFree){
     showToast('Manos libres activado');
+    // Dismiss keyboard before starting so it doesn't pop up
+    document.activeElement && document.activeElement.blur();
+    document.getElementById('msg-input').blur();
     // Start listening immediately (this tap IS the user gesture)
     _hfListen();
   } else {
