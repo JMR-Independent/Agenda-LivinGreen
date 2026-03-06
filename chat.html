@@ -105,7 +105,7 @@ body{
 #input-bar{
   position:fixed;left:0;right:0;bottom:0;
   padding:10px 12px env(safe-area-inset-bottom);
-  background:#0f0f0f;z-index:10;
+  background:#0f0f0f;z-index:60;
   will-change:transform;
 }
 /* Pill */
@@ -1201,7 +1201,8 @@ function toggleHandsFree(){
   if(mic) mic.style.color=window._handsFree?'#4ade80':'rgba(255,255,255,0.6)';
   if(window._handsFree){
     showToast('Manos libres activado');
-    // Dismiss keyboard before starting so it doesn't pop up
+    // Dismiss focus overlay and keyboard
+    const ov=document.getElementById('focus-overlay'); if(ov) ov.style.display='none';
     document.activeElement && document.activeElement.blur();
     document.getElementById('msg-input').blur();
     // Start listening immediately (this tap IS the user gesture)
@@ -1221,7 +1222,8 @@ function _hfListen(){
   const rec=new SR();
   rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
   window._hfSpeechRec=rec;
-  _setMicIcon(true);
+  const wf=document.getElementById('ai-waveform');
+  if(wf) wf.classList.add('active');
   rec.onresult=(e)=>{
     const text=(e.results[0][0].transcript||'').trim();
     if(!text) return;
@@ -1234,15 +1236,14 @@ function _hfListen(){
     _onInputChange();
     setTimeout(()=>sendMessage(),300);
   };
-  rec.onend=()=>{ _setMicIcon(false); window._hfSpeechRec=null; };
+  rec.onend=()=>{ if(wf) wf.classList.remove('active'); window._hfSpeechRec=null; };
   rec.onerror=(e)=>{
-    _setMicIcon(false); window._hfSpeechRec=null;
-    // 'no-speech' is normal (silence timeout) — just restart
+    if(wf) wf.classList.remove('active'); window._hfSpeechRec=null;
     if(e.error==='no-speech' && window._handsFree && !_busy){
       setTimeout(()=>_hfListen(),500);
     }
   };
-  try{ rec.start(); }catch(e){ _setMicIcon(false); }
+  try{ rec.start(); }catch(e){ if(wf) wf.classList.remove('active'); }
 }
 
 // ── Voice input ────────────────────────────────────────────────────────────
@@ -1257,6 +1258,7 @@ function _setMicIcon(active){
 
 function startVoiceInput(){
   if(window._chatRecorder){ window._chatRecorder.stop(); return; }
+  const ov=document.getElementById('focus-overlay'); if(ov) ov.style.display='none';
   const groqKey=localStorage.getItem('rize_groq_key');
   if(!groqKey||!navigator.mediaDevices||!window.MediaRecorder){
     _startWebSpeech(); return;
