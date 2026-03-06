@@ -380,7 +380,7 @@ const OfflineDB = {
 function buildSystemPrompt() {
   const bc = _getBC();
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const weekday = now.toLocaleDateString('es', {weekday:'long'});
   const mem = _getAIMem();
   // Servicios: intenta ambas claves igual que la app
@@ -466,13 +466,14 @@ async function executeTool(name, args) {
     }
     case 'get_appointments': {
       const apts=await OfflineDB.getAppointments();
-      const today=new Date().toISOString().split('T')[0];
-      const tomorrow=new Date(Date.now()+86400000).toISOString().split('T')[0];
+      const _ld=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const today=_ld(new Date());
+      const tomorrow=_ld(new Date(Date.now()+86400000));
       const p=args.period||'today'; let filtered=apts;
       if(p==='today') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(today));
       else if(p==='tomorrow') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(tomorrow));
-      else if(p==='week'){const wEnd=new Date(Date.now()+7*86400000).toISOString().split('T')[0];filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=wEnd;});}
-      else if(p==='month'){const mEnd=new Date(Date.now()+30*86400000).toISOString().split('T')[0];filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;});}
+      else if(p==='week'){const wEnd=_ld(new Date(Date.now()+7*86400000));filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=wEnd;});}
+      else if(p==='month'){const mEnd=_ld(new Date(Date.now()+30*86400000));filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;});}
       else if(/^\d{4}-\d{2}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
       else if(/^\d{4}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
       filtered.sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
@@ -480,8 +481,9 @@ async function executeTool(name, args) {
     }
     case 'get_stats': {
       const p=args.period||'all'; const now=new Date();
-      const todayStr=now.toISOString().split('T')[0];
-      const weekAgo=new Date(now-7*86400000).toISOString().split('T')[0];
+      const _lds=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const todayStr=_lds(now);
+      const weekAgo=_lds(new Date(now-7*86400000));
       const curY=now.getFullYear(), curM=now.getMonth()+1;
       let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
       const f=apts.filter(a=>{const ds=(a.date||a.fecha||'').slice(0,10);
@@ -624,7 +626,8 @@ async function executeTool(name, args) {
     }
     case 'save_memory_note': {
       const mem=_getAIMem();
-      mem.notes.push({content:args.content,category:args.category||'general',date:new Date().toISOString().split('T')[0]});
+      const _nd=new Date();const _nds=`${_nd.getFullYear()}-${String(_nd.getMonth()+1).padStart(2,'0')}-${String(_nd.getDate()).padStart(2,'0')}`;
+      mem.notes.push({content:args.content,category:args.category||'general',date:_nds});
       if(mem.notes.length>20)mem.notes=mem.notes.slice(-20);
       _saveAIMem(mem); return {success:true,message:'Nota guardada.'};
     }
