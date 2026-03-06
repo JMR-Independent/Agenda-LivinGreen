@@ -1198,6 +1198,8 @@ function _hfListen(){
   rec.onresult=(e)=>{
     const text=(e.results[0][0].transcript||'').trim();
     if(!text) return;
+    // Stop word detection
+    if(/^stop$/i.test(text)){ toggleHandsFree(); return; }
     const inp=document.getElementById('msg-input');
     inp.value=text;
     inp.style.height='auto';
