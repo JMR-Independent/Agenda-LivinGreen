@@ -100,6 +100,48 @@ body{
 .bubble-ai .md-sources a{color:#4ade80;text-decoration:none;}
 .bubble-ai .md-sources a:active{opacity:0.7;}
 
+/* ── Artifact panel (bottom sheet) ── */
+#artifact-backdrop{position:fixed;inset:0;z-index:490;background:rgba(0,0,0,0.55);opacity:0;pointer-events:none;transition:opacity 0.28s;}
+#artifact-backdrop.open{opacity:1;pointer-events:all;}
+#artifact-panel{
+  position:fixed;bottom:0;left:0;right:0;height:78vh;
+  background:#1c1c1e;border-radius:18px 18px 0 0;
+  z-index:491;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  overflow:hidden;
+}
+#artifact-panel.open{transform:translateY(0);}
+.artifact-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2);margin:10px auto 0;}
+.artifact-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.artifact-header-left{display:flex;align-items:center;gap:8px;min-width:0;}
+.artifact-title{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.artifact-badge{font-size:11px;font-weight:500;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:2px 7px;border-radius:10px;flex-shrink:0;}
+.artifact-close{background:none;border:none;color:rgba(255,255,255,0.5);font-size:20px;cursor:pointer;padding:0 2px;line-height:1;-webkit-tap-highlight-color:transparent;}
+.artifact-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+.artifact-tab{flex:1;padding:9px;font-size:13px;font-weight:500;background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;-webkit-tap-highlight-color:transparent;}
+.artifact-tab.active{color:#fff;border-bottom-color:#fff;}
+#artifact-preview{flex:1;border:none;background:#fff;width:100%;}
+#artifact-code-wrap{flex:1;overflow-y:auto;padding:16px;}
+#artifact-code-wrap pre{font-family:ui-monospace,'SF Mono',monospace;font-size:12.5px;line-height:1.6;color:rgba(255,255,255,0.85);white-space:pre-wrap;word-break:break-all;margin:0;}
+.artifact-footer{display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+.artifact-footer-btn{flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.artifact-footer-btn:active{background:rgba(255,255,255,0.12);}
+.artifact-nav{display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 16px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;color:rgba(255,255,255,0.5);}
+.artifact-nav button{background:none;border:none;color:rgba(255,255,255,0.6);font-size:18px;cursor:pointer;padding:0 6px;-webkit-tap-highlight-color:transparent;}
+/* Artifact card in chat bubble */
+.artifact-card{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;padding:12px 14px;margin:6px 0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background 0.15s;
+}
+.artifact-card:active{background:rgba(255,255,255,0.1);}
+.artifact-card-icon{font-size:22px;flex-shrink:0;}
+.artifact-card-info{min-width:0;}
+.artifact-card-title{font-size:14px;font-weight:600;color:#fff;}
+.artifact-card-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-top:2px;}
+.artifact-card-open{font-size:12px;color:#4ade80;font-weight:500;flex-shrink:0;margin-left:auto;}
+
 /* Thinking dots */
 .thinking-wrap{display:flex;flex-direction:column;gap:5px;padding:8px 0;margin-top:2px;}
 .thinking-dots{display:flex;gap:5px;align-items:center;}
@@ -1135,6 +1177,15 @@ function _inlineMd(t){
 }
 function _renderMd(text){
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Extract HTML blocks into placeholders BEFORE line processing (avoids escaping)
+  const blocks=[];
+  const ph=s=>{const i=blocks.length;blocks.push(s);return `\x00B${i}\x00`;};
+  // 1. Artifact cards (already rendered HTML)
+  text=text.replace(/<div class="artifact-card"[\s\S]*?<\/div>/g,m=>ph(m));
+  // 2. Sources block
+  text=text.replace(/<div class="md-sources">[\s\S]*?<\/div>/g,m=>ph(m));
+  // 3. Fenced code blocks → rendered <pre>
+  text=text.replace(/```(\w+)?\n([\s\S]+?)```/g,(_,lang,code)=>ph(`<pre style="background:rgba(255,255,255,0.07);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:6px 0"><code style="font-family:ui-monospace,monospace;font-size:12.5px;color:rgba(255,255,255,0.85)">${esc(code.trim())}</code></pre>`));
   const lines=text.split('\n');
   let html='',inUl=false,inOl=false;
   const closeL=()=>{ if(inUl){html+='</ul>';inUl=false;} if(inOl){html+='</ol>';inOl=false;} };
@@ -1152,6 +1203,8 @@ function _renderMd(text){
     html+=`<p>${_inlineMd(esc(line))}</p>`;
   }
   closeL();
+  // Restore HTML blocks from placeholders
+  html=html.replace(/\x00B(\d+)\x00/g,(_,i)=>blocks[+i]||'');
   return html;
 }
 
@@ -1186,9 +1239,26 @@ async function _streamBubble(text){
     await new Promise(r=>setTimeout(r,delay));
   }
   cursor.remove();
-  // Replace plain text with rendered markdown (preserve raw HTML blocks like sources)
-  const srcMatch=text.match(/^([\s\S]*?)(<div class="md-sources">[\s\S]*<\/div>)$/);
-  bub.innerHTML=srcMatch ? _renderMd(srcMatch[1])+srcMatch[2] : _renderMd(text);
+  // Extract artifacts and replace code blocks with cards
+  const newArts=_extractArtifacts(text);
+  if(newArts.length){
+    const startIdx=window._artifacts.length;
+    window._artifacts.push(...newArts);
+    let rendered=text;
+    newArts.forEach((art,i)=>{
+      const idx=startIdx+i;
+      const card=`<div class="artifact-card" onclick="openArtifact(${idx})"><span class="artifact-card-icon">${_ART_ICONS[art.lang]||_ART_ICONS.default}</span><div class="artifact-card-info"><div class="artifact-card-title">${art.title}</div><div class="artifact-card-sub">${_ART_LABELS[art.lang]||'Código'}</div></div><span class="artifact-card-open">Abrir →</span></div>`;
+      rendered=rendered.replace(art.full,card);
+    });
+    // Preserve sources block
+    const srcMatch=rendered.match(/^([\s\S]*?)(<div class="md-sources">[\s\S]*<\/div>)$/);
+    bub.innerHTML=srcMatch?_renderMd(srcMatch[1])+srcMatch[2]:_renderMd(rendered);
+    // Auto-open first artifact
+    openArtifact(startIdx);
+  } else {
+    const srcMatch=text.match(/^([\s\S]*?)(<div class="md-sources">[\s\S]*<\/div>)$/);
+    bub.innerHTML=srcMatch ? _renderMd(srcMatch[1])+srcMatch[2] : _renderMd(text);
+  }
   wrap.scrollTop=wrap.scrollHeight;
 }
 
@@ -1467,6 +1537,7 @@ function _startWebSpeech(){
 // ── New chat ───────────────────────────────────────────────────────────────
 function newChat(){
   _history=[];
+  window._artifacts=[];
   if(window._chatRecorder){ window._chatRecorder.stop(); }
   _setMicIcon(false);
   _thinkingEl=null; // puede haber sido eliminado por innerHTML=''
@@ -1479,6 +1550,130 @@ function newChat(){
   es.innerHTML=`<img src="./images/agenda-logo.jpg" style="width:150px;height:150px;object-fit:contain;opacity:0.9;"><p style="font-family:'Georgia',serif;font-size:28px;font-weight:400;color:rgba(255,255,255,0.78);text-align:center;line-height:1.4;">¿En qué puedo<br>ayudarte hoy?</p>`;
   wrap.appendChild(es);
 }
+
+// ── Artifacts ────────────────────────────────────────────────────────────────
+window._artifacts=[];
+window._artIdx=0;
+
+const _ART_ICONS={html:'🌐',svg:'🎨',javascript:'⚡',js:'⚡',typescript:'⚡',ts:'⚡',python:'🐍',py:'🐍',css:'🎨',json:'📋',markdown:'📄',md:'📄',sql:'🗄️',bash:'💻',sh:'💻',default:'📄'};
+const _ART_LABELS={html:'HTML',svg:'SVG',javascript:'JavaScript',js:'JavaScript',typescript:'TypeScript',ts:'TypeScript',python:'Python',py:'Python',css:'CSS',json:'JSON',markdown:'Markdown',md:'Markdown',sql:'SQL',bash:'Shell',sh:'Shell',default:'Código'};
+const _ART_PREVIEW=['html','svg'];
+
+function _artifactTitle(lang,code){
+  const lines=code.split('\n').length;
+  const label=_ART_LABELS[lang]||_ART_LABELS.default;
+  const titleMatch=code.match(/<title>([^<]+)<\/title>/i)||code.match(/^#\s+(.+)/m);
+  if(titleMatch) return titleMatch[1].slice(0,40);
+  return label+' · '+lines+' líneas';
+}
+
+function _extractArtifacts(text){
+  const arts=[];
+  const re=/```(\w+)?\n([\s\S]+?)```/g;
+  let m;
+  while((m=re.exec(text))!==null){
+    const lang=(m[1]||'text').toLowerCase();
+    const code=m[2].trim();
+    if(code.split('\n').length<4&&code.length<120) continue; // skip tiny snippets
+    arts.push({lang,code,title:_artifactTitle(lang,code),full:m[0]});
+  }
+  return arts;
+}
+
+function openArtifact(idx){
+  window._artIdx=Math.max(0,Math.min(idx,window._artifacts.length-1));
+  const art=window._artifacts[window._artIdx];
+  if(!art) return;
+  // Header
+  document.getElementById('artifact-icon').textContent=_ART_ICONS[art.lang]||_ART_ICONS.default;
+  document.getElementById('artifact-title').textContent=art.title;
+  document.getElementById('artifact-badge').textContent=_ART_LABELS[art.lang]||_ART_LABELS.default;
+  // Nav
+  const nav=document.getElementById('artifact-nav');
+  if(window._artifacts.length>1){nav.style.display='flex';document.getElementById('artifact-counter').textContent=`${window._artIdx+1} / ${window._artifacts.length}`;}
+  else nav.style.display='none';
+  // Tabs (only for previewable types)
+  const canPreview=_ART_PREVIEW.includes(art.lang);
+  document.getElementById('artifact-tabs').style.display=canPreview?'flex':'none';
+  // Show code by default
+  _artifactTab(canPreview?'preview':'code');
+  // Open panel
+  document.getElementById('artifact-panel').classList.add('open');
+  document.getElementById('artifact-backdrop').classList.add('open');
+}
+
+function closeArtifact(){
+  document.getElementById('artifact-panel').classList.remove('open');
+  document.getElementById('artifact-backdrop').classList.remove('open');
+}
+
+function _artifactGo(dir){
+  openArtifact(window._artIdx+dir);
+}
+
+function _artifactTab(tab){
+  const art=window._artifacts[window._artIdx];
+  if(!art) return;
+  const pre=document.getElementById('artifact-preview');
+  const codeWrap=document.getElementById('artifact-code-wrap');
+  document.getElementById('tab-preview')?.classList.toggle('active',tab==='preview');
+  document.getElementById('tab-code')?.classList.toggle('active',tab==='code');
+  if(tab==='preview'&&_ART_PREVIEW.includes(art.lang)){
+    pre.style.display='block'; codeWrap.style.display='none';
+    if(art.lang==='html') pre.srcdoc=art.code;
+    else if(art.lang==='svg') pre.srcdoc=`<!DOCTYPE html><html><body style="margin:0;background:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh">${art.code}</body></html>`;
+  } else {
+    pre.style.display='none'; codeWrap.style.display='block';
+    document.getElementById('artifact-code').textContent=art.code;
+  }
+}
+
+function _artifactCopy(){
+  const art=window._artifacts[window._artIdx];
+  if(!art) return;
+  navigator.clipboard&&navigator.clipboard.writeText(art.code).then(()=>showToast('Copiado ✓'));
+}
+
+function _artifactDownload(){
+  const art=window._artifacts[window._artIdx];
+  if(!art) return;
+  const ext={html:'html',svg:'svg',javascript:'js',js:'js',typescript:'ts',ts:'ts',python:'py',py:'py',css:'css',json:'json',markdown:'md',md:'md',sql:'sql',bash:'sh',sh:'sh'}[art.lang]||'txt';
+  const blob=new Blob([art.code],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`artifact.${ext}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 </script>
+
+<!-- ── Artifact panel ── -->
+<div id="artifact-backdrop" onclick="closeArtifact()"></div>
+<div id="artifact-panel">
+  <div class="artifact-handle"></div>
+  <div class="artifact-header">
+    <div class="artifact-header-left">
+      <span id="artifact-icon" style="font-size:18px;"></span>
+      <span class="artifact-title" id="artifact-title">Artifact</span>
+      <span class="artifact-badge" id="artifact-badge"></span>
+    </div>
+    <button class="artifact-close" onclick="closeArtifact()">✕</button>
+  </div>
+  <div class="artifact-nav" id="artifact-nav" style="display:none">
+    <button onclick="_artifactGo(-1)">‹</button>
+    <span id="artifact-counter"></span>
+    <button onclick="_artifactGo(1)">›</button>
+  </div>
+  <div class="artifact-tabs" id="artifact-tabs" style="display:none">
+    <button class="artifact-tab active" id="tab-preview" onclick="_artifactTab('preview')">Vista previa</button>
+    <button class="artifact-tab" id="tab-code" onclick="_artifactTab('code')">Código</button>
+  </div>
+  <iframe id="artifact-preview" style="display:none" sandbox="allow-scripts allow-same-origin"></iframe>
+  <div id="artifact-code-wrap"><pre id="artifact-code"></pre></div>
+  <div class="artifact-footer">
+    <button class="artifact-footer-btn" onclick="_artifactCopy()">Copiar</button>
+    <button class="artifact-footer-btn" onclick="_artifactDownload()">⬇ Descargar</button>
+  </div>
+</div>
 </body>
 </html>
