@@ -281,8 +281,29 @@ let _busy = false;
 let _geminiModel = localStorage.getItem('rize_gemini_model') || null;
 let _thinkingEl = null;
 
+// ── Sync data from cookies (written by main app, shared across contexts) ───
+function _syncFromCookies() {
+  try {
+    const jar=Object.fromEntries(document.cookie.split('; ').filter(Boolean).map(c=>{
+      const idx=c.indexOf('='); return [c.slice(0,idx),c.slice(idx+1)];
+    }));
+    const n=parseInt(jar['lg_n']||'0');
+    if(!n) return;
+    let str='';
+    for(let i=0;i<n;i++) str+=decodeURIComponent(jar[`lg_d${i}`]||'');
+    if(!str) return;
+    const data=JSON.parse(str);
+    if(data.appointments)        localStorage.setItem('appointments',        JSON.stringify(data.appointments));
+    if(data.clientRegistry)      localStorage.setItem('clientRegistry',      JSON.stringify(data.clientRegistry));
+    if(data.rize_services_config)localStorage.setItem('rize_services_config',JSON.stringify(data.rize_services_config));
+    if(data.rize_business_config)localStorage.setItem('rize_business_config',JSON.stringify(data.rize_business_config));
+    if(data.dayEvents)           localStorage.setItem('dayEvents',           JSON.stringify(data.dayEvents));
+  } catch(e){ console.warn('syncFromCookies error:',e); }
+}
+
 // ── Bootstrap ──────────────────────────────────────────────────────────────
 (function init(){
+  _syncFromCookies(); // pull business data from cookies (shared with main app)
   const bc = _getBC();
   if (bc.name) {
     document.getElementById('header-title').textContent = bc.name;

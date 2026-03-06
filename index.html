@@ -20267,6 +20267,35 @@ END:VCARD`;
             updateNotifToggleUI();
         });
 
+        // ── Sync business data to cookies (shared with chat PWA) ──────────────
+        function _lg_syncToCookies() {
+            try {
+                const now = new Date();
+                const cutoff = new Date(now.getTime()-90*86400000);
+                const cutoffStr=`${cutoff.getFullYear()}-${String(cutoff.getMonth()+1).padStart(2,'0')}-${String(cutoff.getDate()).padStart(2,'0')}`;
+                const futureD = new Date(now.getTime()+365*86400000);
+                const futureStr=`${futureD.getFullYear()}-${String(futureD.getMonth()+1).padStart(2,'0')}-${String(futureD.getDate()).padStart(2,'0')}`;
+                let apts=[]; try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+                apts=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cutoffStr&&d<=futureStr;});
+                const data={
+                    appointments:apts,
+                    clientRegistry:JSON.parse(localStorage.getItem('clientRegistry')||'[]'),
+                    rize_services_config:JSON.parse(localStorage.getItem('rize_services_config')||'[]'),
+                    rize_business_config:JSON.parse(localStorage.getItem('rize_business_config')||'{}'),
+                    dayEvents:JSON.parse(localStorage.getItem('dayEvents')||'{}'),
+                };
+                const str=JSON.stringify(data);
+                const chunkSize=3800;
+                const n=Math.ceil(str.length/chunkSize);
+                const exp='; max-age=86400; path=/; SameSite=Lax';
+                for(let i=0;i<30;i++) document.cookie=`lg_d${i}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                document.cookie=`lg_n=${n}${exp}`;
+                for(let i=0;i<n;i++) document.cookie=`lg_d${i}=${encodeURIComponent(str.slice(i*chunkSize,(i+1)*chunkSize))}${exp}`;
+            } catch(e){ console.warn('lg_sync error:',e); }
+        }
+        window.addEventListener('load', _lg_syncToCookies);
+        document.addEventListener('visibilitychange', ()=>{ if(document.hidden) _lg_syncToCookies(); });
+
     </script>
 
 <!-- ─── AI ASSISTANT BAR ─── -->
