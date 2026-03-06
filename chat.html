@@ -1125,7 +1125,7 @@ async function sendMessage(){
     await _streamBubble(e.message||'Error desconocido.');
   } finally {
     _busy=false; _setInputEnabled(true);
-    if(window._handsFree){ setTimeout(()=>startVoiceInput(),700); }
+    if(window._handsFree){ setTimeout(()=>_hfListen(),700); }
     else { document.getElementById('msg-input').focus(); }
   }
 }
@@ -1167,27 +1167,53 @@ async function handleFileUpload(event){
 }
 
 // ── Hands-free mode ─────────────────────────────────────────────────────────
+// Uses WebSpeech (webkitSpeechRecognition) — native iOS, no AudioContext needed,
+// auto-detects end of speech, works programmatically after permission granted.
 window._handsFree=false;
-window._hfAudioCtx=null; // created during user gesture so iOS doesn't suspend it
 
 function toggleHandsFree(){
   window._handsFree=!window._handsFree;
   const btn=document.getElementById('handsfree-btn');
   if(btn) btn.style.color=window._handsFree?'#4ade80':'rgba(255,255,255,0.55)';
   if(window._handsFree){
-    // IMPORTANT: AudioContext + getUserMedia must be called here (user gesture = this tap)
-    try{
-      if(!window._hfAudioCtx) window._hfAudioCtx=new AudioContext();
-      if(window._hfAudioCtx.state==='suspended') window._hfAudioCtx.resume();
-    }catch(e){}
-    if(navigator.mediaDevices) navigator.mediaDevices.getUserMedia({audio:true})
-      .then(s=>s.getTracks().forEach(t=>t.stop())).catch(()=>{});
-    showToast('Manos libres activado — habla después de cada respuesta');
+    showToast('Manos libres activado');
+    // Start listening immediately (this tap IS the user gesture)
+    _hfListen();
   } else {
     if(window._chatRecorder){ window._chatRecorder.stop(); }
     if(window._hfSpeechRec){ try{window._hfSpeechRec.abort();}catch(e){} window._hfSpeechRec=null; }
     showToast('Manos libres desactivado');
   }
+}
+
+function _hfListen(){
+  if(!window._handsFree || _busy) return;
+  if(window._hfSpeechRec){ try{window._hfSpeechRec.abort();}catch(e){} window._hfSpeechRec=null; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ showToast('Voz no disponible en este navegador'); return; }
+  const rec=new SR();
+  rec.lang='es-US'; rec.interimResults=false; rec.maxAlternatives=1;
+  window._hfSpeechRec=rec;
+  _setMicIcon(true);
+  rec.onresult=(e)=>{
+    const text=(e.results[0][0].transcript||'').trim();
+    if(!text) return;
+    const inp=document.getElementById('msg-input');
+    inp.value=text;
+    inp.style.height='auto';
+    inp.style.height=Math.min(inp.scrollHeight,130)+'px';
+    _onInputChange();
+    setTimeout(()=>sendMessage(),300);
+  };
+  rec.onend=()=>{ _setMicIcon(false); window._hfSpeechRec=null; };
+  rec.onerror=(e)=>{
+    _setMicIcon(false); window._hfSpeechRec=null;
+    // 'no-speech' is normal (silence timeout) — just restart
+    if(e.error==='no-speech' && window._handsFree && !_busy){
+      setTimeout(()=>_hfListen(),500);
+    }
+  };
+  try{ rec.start(); }catch(e){ _setMicIcon(false); }
 }
 
 // ── Voice input ────────────────────────────────────────────────────────────
