@@ -263,7 +263,7 @@ body{
       </svg>
     </button>
     <div id="ai-waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <textarea id="msg-input" placeholder="Mensaje…" rows="1"
+    <textarea id="msg-input" placeholder="" rows="1"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
       oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';_onInputChange();"></textarea>
     <button class="send-btn" id="send-btn" onclick="_sendOrHF()">
