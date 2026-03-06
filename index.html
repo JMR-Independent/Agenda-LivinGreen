@@ -36,63 +36,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
 
-    <!-- Favicons con bordes redondeados para pestañas de navegador -->
+    <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png">
-    
-    <!-- PWA Manifest -->
-    <script>
-        // Create manifest dynamically to ensure it works
-        const currentUrl = window.location.href;
-        const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
 
-        const manifest = {
-            "name": "LivinGreen - Agendamiento",
-            "short_name": "LivinGreen",
-            "description": "Plataforma de agendamiento inteligente LivinGreen para gestionar citas y clientes",
-            "start_url": baseUrl,
-            "display": "standalone",
-            "orientation": "portrait-primary",
-            "theme_color": "#10a37f",
-            "background_color": "#ffffff",
-            "scope": baseUrl,
-            "icons": [
-                {
-                    "src": "icon-192x192.png",
-                    "sizes": "192x192",
-                    "type": "image/png",
-                    "purpose": "any"
-                },
-                {
-                    "src": "icon-512x512.png",
-                    "sizes": "512x512",
-                    "type": "image/png",
-                    "purpose": "any"
-                },
-                {
-                    "src": "icon-192x192.png",
-                    "sizes": "192x192",
-                    "type": "image/png",
-                    "purpose": "maskable"
-                },
-                {
-                    "src": "icon-512x512.png",
-                    "sizes": "512x512",
-                    "type": "image/png",
-                    "purpose": "maskable"
-                }
-            ]
-        };
-        
-        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(manifestBlob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = manifestURL;
-        document.head.appendChild(link);
-    </script>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
     <style>
         /* ================================
            MODULAR CSS ORGANIZATION
