@@ -354,6 +354,9 @@ function _lg_fullSync(showFeedback=false){
     const _ld2=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const cut=_ld2(new Date(now2-90*86400000)), fut=_ld2(new Date(now2.getTime()+365*86400000));
     _cookieWrite({appointments:apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cut&&d<=fut;}),clientRegistry:cli,rize_services_config:svc,rize_business_config:biz,dayEvents:events});
+    // Update header subtitle with loaded count
+    const subEl=document.getElementById('header-sub');
+    if(subEl) subEl.textContent=`${apts.length} citas · ${cli.length} clientes`;
     if(showFeedback) showToast(`Sincronizado ✓ — ${apts.length} citas, ${cli.length} clientes`);
   }catch(e){console.warn('fullSync:',e);if(showFeedback) showToast('Error al sincronizar');}
 }
@@ -478,8 +481,16 @@ function buildSystemPrompt() {
   let allApts = [];
   try { allApts = JSON.parse(localStorage.getItem('appointments') || '[]'); } catch {}
   const fmt = a => `${a.date||a.fecha||''} ${a.time||a.hora||''} | ${a.clientName||a.cliente||a.name||'?'} | ${a.service||a.servicio||a.job||''}${a.price?' $'+a.price:''}${a.city?' ('+a.city+')':''}`;
-  const hoy = allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
-  const prox = allApts.filter(a=>(a.date||a.fecha||'')>todayStr).sort((a,b)=>((a.date||a.fecha||'')>(b.date||b.fecha||''))?1:-1).slice(0,10);
+  // Fechas útiles
+  const _ld = d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const in14  = _ld(new Date(now.getTime()+14*86400000));
+  const in60  = _ld(new Date(now.getTime()+60*86400000));
+  const hoy   = allApts.filter(a=>(a.date||a.fecha||'').startsWith(todayStr));
+  // Próximas 14 días completo (no limitado a 10)
+  const prox14 = allApts.filter(a=>{const d=a.date||a.fecha||'';return d>todayStr&&d<=in14;})
+    .sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
+  // Resumen 15-60 días
+  const prox60 = allApts.filter(a=>{const d=a.date||a.fecha||'';return d>in14&&d<=in60;});
   const total = allApts.length;
   const ingresos = allApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const uniqueNames = new Set();
@@ -495,9 +506,10 @@ Ciudades atendidas: Alpine, American Fork, Bluffdale, Bountiful, Cedar Hills, Co
 
 FECHA HOY: ${todayStr} (${weekday})
 SERVICIOS: ${svcTxt}
-STATS GLOBALES: ${total} citas totales | $${ingresos.toFixed(0)} ingresos acumulados | ${uniqueNames.size} clientes únicos
+STATS GLOBALES: ${total} citas en storage | $${ingresos.toFixed(0)} ingresos acumulados | ${uniqueNames.size} clientes únicos
 HOY (${todayStr}): ${hoy.length?hoy.map(fmt).join(' // '):'sin citas'}
-PRÓXIMAS ${prox.length} citas: ${prox.length?prox.map(fmt).join(' // '):'ninguna'}
+PRÓXIMOS 14 DÍAS (${prox14.length} citas): ${prox14.length?prox14.map(fmt).join(' // '):'ninguna'}
+DÍAS 15-60 (${prox60.length} citas): ${prox60.length?prox60.map(a=>`${a.date||a.fecha} ${a.clientName||a.cliente||a.name||'?'}`).join(' | '):'ninguna'}
 ${memBlock}
 DATOS EN STORAGE:
 • appointments: [{id, date(YYYY-MM-DD), time(HH:MM), clientName, service, price, city, notes, timestamp}]
@@ -506,6 +518,7 @@ DATOS EN STORAGE:
 • rize_services_config: [{id, name, price, basePrice, priceRange}]
 
 REGLAS DEL AGENTE:
+- Para consultas sobre días específicos ("el lunes", "el sábado", "esta semana") SIEMPRE usa get_appointments con la fecha exacta YYYY-MM-DD. No respondas solo desde el contexto.
 - Usa tools para leer/escribir todos los datos. Confirma ANTES de eliminar o modificar.
 - Para reagendar/actualizar con datos claros: ejecuta sin pedir confirmación adicional.
 - Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto.
@@ -549,11 +562,15 @@ async function executeTool(name, args) {
       const _ld=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       const today=_ld(new Date());
       const tomorrow=_ld(new Date(Date.now()+86400000));
-      const p=args.period||'today'; let filtered=apts;
+      // Resolver nombre de día de la semana a fecha
+      const _wdMap={lunes:1,martes:2,miercoles:3,miércoles:3,jueves:4,viernes:5,sabado:6,sábado:6,domingo:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6,sunday:0};
+      function _nextWd(n){const now=new Date();let diff=n-now.getDay();if(diff<=0)diff+=7;return _ld(new Date(now.getTime()+diff*86400000));}
+      function _resolveP(p){const wdNum=_wdMap[p.toLowerCase().trim()];return wdNum!==undefined?_nextWd(wdNum):p;}
+      let p=_resolveP(args.period||'today'); let filtered=apts;
       if(p==='today') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(today));
       else if(p==='tomorrow') filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(tomorrow));
-      else if(p==='week'){const wEnd=_ld(new Date(Date.now()+7*86400000));filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=wEnd;});}
-      else if(p==='month'){const mEnd=_ld(new Date(Date.now()+30*86400000));filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;});}
+      else if(p==='week'||p==='esta semana'){const wEnd=_ld(new Date(Date.now()+7*86400000));filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=wEnd;});}
+      else if(p==='month'||p==='este mes'){const mEnd=_ld(new Date(Date.now()+30*86400000));filtered=apts.filter(a=>{const d=a.date||a.fecha||'';return d>=today&&d<=mEnd;});}
       else if(/^\d{4}-\d{2}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
       else if(/^\d{4}-\d{2}$/.test(p)) filtered=apts.filter(a=>(a.date||a.fecha||'').startsWith(p));
       filtered.sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
