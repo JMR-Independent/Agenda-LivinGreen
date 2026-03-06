@@ -974,8 +974,42 @@ function _resizeImageForAI(base64, mime, maxPx=800){
 // ── Agent tool labels ──────────────────────────────────────────────────────
 const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',update_client:'Actualizando cliente…',delete_client:'Eliminando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',add_day_event:'Marcando día…',remove_day_event:'Quitando evento…',get_services:'Cargando servicios…',update_service_price:'Actualizando precio…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
 
+// ── Google Search grounding ────────────────────────────────────────────────
+const _SEARCH_INTENT=/\b(busca(?:me|r|lo|la|nos)?|b[uú]squeda|googlea(?:me|lo|la|s)?|investiga|consulta|mira|checa|revisa|dime qu[eé]|qu[eé] es|qu[eé] hay|qu[eé] dice|buscar)\b/i;
+const _SEARCH_WEB=/\b(internet|google|la web|la\s+red|online|en\s+l[ií]nea|en\s+la\s+web)\b/i;
+function _isSearchReq(t){ return (_SEARCH_INTENT.test(t)&&_SEARCH_WEB.test(t))||/\bgooglea\b/i.test(t); }
+
+async function _webSearch(userText,systemText){
+  const key=localStorage.getItem('rize_gemini_key');
+  if(!key) throw new Error('⚠️ API Key no configurada.');
+  const model=await _resolveModel();
+  const body={
+    contents:[{role:'user',parts:[{text:userText}]}],
+    tools:[{googleSearch:{}}],
+    ...(systemText&&{systemInstruction:{parts:[{text:systemText}]}}),
+    generationConfig:{maxOutputTokens:2048,temperature:0.6}
+  };
+  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+
 // ── Agent loop ─────────────────────────────────────────────────────────────
 async function runAgent(userText){
+  // Internet search trigger
+  if(_isSearchReq(userText)){
+    _updateThinking('Buscando en internet…');
+    const {systemText}=_toGeminiContents([{role:'system',content:buildSystemPrompt()}]);
+    try{
+      const res=await _webSearch(userText,systemText);
+      if(res.ok){
+        const data=await res.json();
+        const text=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+        if(text) return text;
+      }
+    }catch(e){}
+    // fallback to normal if search fails
+  }
+
   const allMsgs=[{role:'system',content:buildSystemPrompt()},..._history,{role:'user',content:userText}];
   for(let i=0;i<8;i++){
     const {systemText,contents}=_toGeminiContents(allMsgs);
