@@ -1278,15 +1278,12 @@ async function _streamBubble(text){
     const textBefore=splitIdx>0?text.substring(0,splitIdx).trim():'';
     const textAfter=text.substring(splitIdx+art0.full.length).trim();
 
-    // Animate only the text before the code (brief description)
+    // Render text before artifact immediately (formatted)
     if(textBefore){
-      const words=textBefore.split(' ');
-      const delay=words.length>80?10:16;
-      for(let i=0;i<words.length;i++){
-        bub.insertBefore(document.createTextNode((i===0?'':' ')+words[i]),cursor);
-        wrap.scrollTop=wrap.scrollHeight;
-        await new Promise(r=>setTimeout(r,delay));
-      }
+      const tmpDiv=document.createElement('div');
+      tmpDiv.innerHTML=_renderMd(textBefore);
+      while(tmpDiv.firstChild) bub.insertBefore(tmpDiv.firstChild,cursor);
+      wrap.scrollTop=wrap.scrollHeight;
     }
 
     // Show "Creando documento..." loader (code stays hidden)
@@ -1324,17 +1321,11 @@ async function _streamBubble(text){
     // NO auto-open — user taps the card to open
 
   } else {
-    // No artifacts: stream normally word by word
-    const words=text.split(' ');
-    const delay=words.length>200?8:words.length>80?13:18;
-    for(let i=0;i<words.length;i++){
-      bub.insertBefore(document.createTextNode((i===0?'':' ')+words[i]),cursor);
-      wrap.scrollTop=wrap.scrollHeight;
-      await new Promise(r=>setTimeout(r,delay));
-    }
+    // Render markdown immediately — no word-by-word plain text
     cursor.remove();
     const srcMatch=text.match(/^([\s\S]*?)(<div class="md-sources">[\s\S]*<\/div>)$/);
     bub.innerHTML=srcMatch?_renderMd(srcMatch[1])+srcMatch[2]:_renderMd(text);
+    bub.style.animation='aiFadeIn 0.22s ease';
   }
   wrap.scrollTop=wrap.scrollHeight;
   // Ensure keyboard stays down after streaming
