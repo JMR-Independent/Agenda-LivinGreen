@@ -112,11 +112,12 @@ body{
 }
 #artifact-panel.open{transform:translateY(0);}
 .artifact-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2);margin:10px auto 0;}
-.artifact-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.artifact-header-left{display:flex;align-items:center;gap:8px;min-width:0;}
-.artifact-title{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.artifact-badge{font-size:11px;font-weight:500;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:2px 7px;border-radius:10px;flex-shrink:0;}
-.artifact-close{background:none;border:none;color:rgba(255,255,255,0.5);font-size:20px;cursor:pointer;padding:0 2px;line-height:1;-webkit-tap-highlight-color:transparent;}
+.artifact-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;}
+.artifact-header-left{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.artifact-title{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.2px;}
+.artifact-badge{font-size:11px;color:rgba(255,255,255,0.35);font-weight:400;}
+.artifact-close{background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.6);width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;font-size:13px;}
+.artifact-close:active{background:rgba(255,255,255,0.14);}
 .artifact-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
 .artifact-tab{flex:1;padding:9px;font-size:13px;font-weight:500;background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;-webkit-tap-highlight-color:transparent;}
 .artifact-tab.active{color:#fff;border-bottom-color:#fff;}
@@ -1747,11 +1748,12 @@ function _artifactDownload(){
   <div class="artifact-handle"></div>
   <div class="artifact-header">
     <div class="artifact-header-left">
-      <span id="artifact-icon" style="font-size:18px;"></span>
-      <span class="artifact-title" id="artifact-title">Artifact</span>
+      <span class="artifact-title" id="artifact-title">Documento</span>
       <span class="artifact-badge" id="artifact-badge"></span>
     </div>
-    <button class="artifact-close" onclick="closeArtifact()">✕</button>
+    <button class="artifact-close" onclick="closeArtifact()">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+    </button>
   </div>
   <div class="artifact-nav" id="artifact-nav" style="display:none">
     <button onclick="_artifactGo(-1)">‹</button>
