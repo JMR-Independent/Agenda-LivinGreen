@@ -1337,6 +1337,8 @@ async function _streamBubble(text){
     bub.innerHTML=srcMatch?_renderMd(srcMatch[1])+srcMatch[2]:_renderMd(text);
   }
   wrap.scrollTop=wrap.scrollHeight;
+  // Ensure keyboard stays down after streaming
+  setTimeout(()=>{ const i=document.getElementById('msg-input'); if(i) i.blur(); },50);
 }
 
 // ── Thinking indicator ─────────────────────────────────────────────────────
@@ -1390,7 +1392,7 @@ async function sendMessage(){
   } finally {
     _busy=false; _setInputEnabled(true);
     if(window._handsFree){ setTimeout(()=>_hfListen(),700); }
-    else { document.activeElement && document.activeElement.blur(); }
+    else { setTimeout(()=>{ document.getElementById('msg-input').blur(); document.activeElement&&document.activeElement.blur(); },80); }
   }
 }
 
