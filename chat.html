@@ -612,6 +612,12 @@ function saveApiKeys(){
   overlay.addEventListener('touchend', focusInput, {once: true});
   overlay.addEventListener('click', focusInput, {once: true});
   // Focus only when user taps input directly
+  // Dismiss keyboard when scrolling messages
+  document.getElementById('messages').addEventListener('touchstart', () => {
+    if(document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  }, {passive: true});
 })();
 
 // ── localStorage helpers ───────────────────────────────────────────────────
