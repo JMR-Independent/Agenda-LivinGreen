@@ -712,7 +712,7 @@ REGLAS DEL AGENTE:
 - Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto.
 - Adapta la longitud de respuesta a lo que pide el usuario.
 - Para navegar la app, dile al usuario que toque "App" arriba a la derecha.
-- DOCUMENTOS: Si el usuario pide "pon en un documento", "hazme un archivo", "descargable", "en un documento", "crea un doc", "ponlo bonito", "dame el formulario", "ponla en un doc", o cualquier variante — genera HTML en un bloque de código con lenguaje html. NUNCA digas que no puedes. USA SIEMPRE ESTA ESTRUCTURA EXACTA (reemplazando [TITULO] y [CONTENIDO] con lo que corresponda):
+- DOCUMENTOS: Si el usuario pide "pon en un documento", "hazme un archivo", "descargable", "en un documento", "crea un doc", "ponlo bonito", "dame el formulario", "ponla en un doc", o cualquier variante — genera HTML en un bloque de código con lenguaje html. NUNCA digas que no puedes. ENVUELVE SIEMPRE el HTML completo entre ```html y ``` (code fence). USA SIEMPRE ESTA ESTRUCTURA EXACTA (reemplazando [TITULO] y [CONTENIDO] con lo que corresponda). EJEMPLO de formato de respuesta: "Aquí está tu documento:" seguido de un bloque code fence html con el HTML completo:
 
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>[TITULO]</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Inter,sans-serif;background:#f5f6f8;color:#1a1a2e;min-height:100vh;}.page{max-width:800px;margin:0 auto;padding:24px 20px 40px;}.header{background:linear-gradient(135deg,#0d8c6b,#10a37f);border-radius:14px;padding:22px 24px;margin-bottom:24px;display:flex;align-items:center;gap:14px;}.header-icon{width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}.header-text h1{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.3px;}.header-text p{font-size:12px;color:rgba(255,255,255,0.75);margin-top:3px;}.card{background:#fff;border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.07);}.card-title{font-size:13px;font-weight:600;color:#10a37f;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;}table{width:100%;border-collapse:collapse;}th{background:#f8f9fa;font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.4px;padding:10px 12px;text-align:left;}td{padding:11px 12px;font-size:14px;border-bottom:1px solid #f0f4f0;vertical-align:top;}tr:last-child td{border-bottom:none;}tr:nth-child(even) td{background:#fafcfa;}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:#e8f5f1;color:#0d8c6b;}.info-row{display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;}.info-label{font-size:12px;font-weight:600;color:#888;min-width:110px;margin-top:1px;}.info-value{font-size:14px;color:#1a1a2e;}label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px;margin-top:14px;}input,textarea,select{width:100%;padding:10px 12px;border:1.5px solid #e8e8e8;border-radius:8px;font-size:14px;font-family:inherit;color:#1a1a2e;background:#fafafa;outline:none;}.footer{text-align:center;padding:20px 0 0;font-size:12px;color:#aaa;}.footer span{color:#10a37f;font-weight:500;}</style></head><body><div class="page"><div class="header"><div class="header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 2 5 5 5 9c0 2.4 1.1 4.5 2.9 5.9L8 20h8l.1-5.1C17.9 13.5 19 11.4 19 9c0-4-3-7-7-7z" fill="rgba(255,255,255,0.9)"/><circle cx="12" cy="9" r="2.5" fill="rgba(255,255,255,0.4)"/></svg></div><div class="header-text"><h1>[TITULO]</h1><p>LivinGreen — Generado el [FECHA]</p></div></div>[CONTENIDO]<div class="footer"><p>Documento generado por <span>Asistente LivinGreen</span></p></div></div></body></html>
 
@@ -1622,13 +1622,24 @@ function _artifactTitle(lang,code){
 
 function _extractArtifacts(text){
   const arts=[];
+  // 1. Standard fenced code blocks
   const re=/```(\w+)?\n([\s\S]+?)```/g;
   let m;
   while((m=re.exec(text))!==null){
     const lang=(m[1]||'text').toLowerCase();
     const code=m[2].trim();
-    if(code.split('\n').length<4&&code.length<120) continue; // skip tiny snippets
+    if(code.split('\n').length<4&&code.length<120) continue;
     arts.push({lang,code,title:_artifactTitle(lang,code),full:m[0]});
+  }
+  // 2. Raw HTML without code fences (AI sometimes outputs directly)
+  if(!arts.length){
+    const hm=text.match(/<!DOCTYPE\s+html[\s\S]+?<\/html>/i);
+    if(hm){const code=hm[0].trim();arts.push({lang:'html',code,title:_artifactTitle('html',code),full:hm[0]});}
+  }
+  // 3. <html> without DOCTYPE
+  if(!arts.length){
+    const hm=text.match(/<html[\s\S]+?<\/html>/i);
+    if(hm&&hm[0].length>200){const code=hm[0].trim();arts.push({lang:'html',code,title:_artifactTitle('html',code),full:hm[0]});}
   }
   return arts;
 }
