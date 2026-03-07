@@ -1325,18 +1325,14 @@ async function _streamBubble(text){
     cursor.remove();
     const srcMatch=text.match(/^([\s\S]*?)(<div class="md-sources">[\s\S]*<\/div>)$/);
     bub.innerHTML=srcMatch?_renderMd(srcMatch[1])+srcMatch[2]:_renderMd(text);
-    // Reveal blocks one by one — force repaint first so initial opacity:0 is painted
+    // Remove all blocks from DOM, then re-append one by one with delay
     const blocks=Array.from(bub.children);
-    const delay=blocks.length>12?30:blocks.length>6?45:60;
-    // Set hidden state (no transition yet)
-    blocks.forEach(b=>{b.style.opacity='0';b.style.transform='translateY(6px)';});
-    // Force browser to paint the hidden state before animating
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    // Reveal each block with transition
+    blocks.forEach(b=>b.remove());
+    const delay=blocks.length>15?40:blocks.length>8?60:80;
     for(let i=0;i<blocks.length;i++){
-      blocks[i].style.transition='opacity 0.18s ease,transform 0.18s ease';
-      blocks[i].style.opacity='1';
-      blocks[i].style.transform='translateY(0)';
+      const b=blocks[i];
+      b.style.animation='aiFadeIn 0.15s ease';
+      bub.appendChild(b);
       wrap.scrollTop=wrap.scrollHeight;
       await new Promise(r=>setTimeout(r,delay));
     }
