@@ -274,10 +274,20 @@ body{
 <!-- Header -->
 <div id="chat-header">
   <div class="logo-wrap">
-    <img id="header-logo" src="./images/agenda-logo.jpg" alt="logo">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0d8c6b,#10a37f);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="16" cy="13" rx="7" ry="9" fill="white" opacity="0.92"/>
+        <path d="M10 22 Q16 28 22 22" stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+        <circle cx="16" cy="13" r="3" fill="rgba(16,163,127,0.5)"/>
+        <path d="M11 9 Q13 6 16 7" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
     <div>
-      <div class="title" id="header-title">Asistente IA</div>
-      <div class="subtitle" id="header-sub">LivinGreen</div>
+      <div class="title" id="header-title" style="font-size:15px;font-weight:700;letter-spacing:-0.2px;">LivinGreen IA</div>
+      <div id="header-sub" style="font-size:11px;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:4px;margin-top:1px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0;"></span>
+        <span>En línea</span>
+      </div>
     </div>
   </div>
   <div style="display:flex;gap:4px;">
@@ -702,7 +712,8 @@ REGLAS DEL AGENTE:
 - Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto.
 - Adapta la longitud de respuesta a lo que pide el usuario.
 - Para navegar la app, dile al usuario que toque "App" arriba a la derecha.
-- ARTIFACTS: Cuando el usuario pida crear un documento, formulario, página HTML, script, tabla, o cualquier archivo de código, SIEMPRE genera el contenido completo dentro de un bloque de código markdown con el lenguaje correspondiente (html, python, csv, etc.). Nunca digas que no puedes crear documentos — siempre puedes generarlos como código.
+- DOCUMENTOS/ARTIFACTS: Si el usuario dice CUALQUIER variación de: "pon eso en un documento", "hazme un archivo", "quiero descargarlo", "ponlo en formato", "crea un documento", "dame un pdf", "en un documento", "exporta", "hazlo descargable", "guárdalo", "genera el documento", "ponlo bonito", "dame el formulario", "necesito el archivo", "pon esa información en un documento", "ponla en un doc", "descargable" — SIEMPRE genera HTML completo dentro de un bloque ```html. NUNCA digas que no puedes crear documentos. Si el usuario ya te dio el contenido antes, úsalo; si no, inférelo del contexto de la conversación.
+- ESTILO DOCUMENTOS HTML: Todo documento HTML que generes debe tener este estilo profesional LivinGreen: fondo blanco, fuente Inter o Segoe UI, header verde (#10a37f) con ícono SVG de hoja verde + texto "LivinGreen" en blanco, título del documento en negro bold centrado, contenido bien espaciado con líneas separadoras sutiles, footer con fecha generación y "Asistente LivinGreen". Si es tabla: filas alternas gris claro, bordes suaves. Si es formulario: campos con border-radius 8px, labels claros. El resultado debe verse profesional al imprimirlo o al abrirlo en el navegador.
 - FORMATO: Usa markdown estructurado. **Negrita** para términos clave, ## para secciones cuando haya varias ideas, listas con - para enumeraciones, párrafos cortos. Nunca un bloque de texto plano sin estructura cuando haya más de 2 ideas.`;
 }
 
