@@ -1393,7 +1393,14 @@ async function sendMessage(){
   } finally {
     _busy=false; _setInputEnabled(true);
     if(window._handsFree){ setTimeout(()=>_hfListen(),700); }
-    else { setTimeout(()=>{ document.getElementById('msg-input').blur(); document.activeElement&&document.activeElement.blur(); },80); }
+    else {
+      // inputmode=none prevents iOS from showing keyboard even if element gets focused
+      const inp=document.getElementById('msg-input');
+      inp.setAttribute('inputmode','none');
+      inp.blur();
+      // Restore normal inputmode after 600ms so user can tap to type normally
+      setTimeout(()=>inp.setAttribute('inputmode','text'),600);
+    }
   }
 }
 
