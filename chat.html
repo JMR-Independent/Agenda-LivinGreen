@@ -210,7 +210,7 @@ body{
   flex:1;resize:none;border:none;outline:none;
   background:transparent;color:#fff;
   font-size:16px;line-height:1.45;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-family:'Georgia',Georgia,serif;
   max-height:130px;padding:6px 0;
   -webkit-text-fill-color:#fff;
 }
@@ -718,6 +718,7 @@ REGLAS DEL AGENTE:
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>[TITULO]</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Georgia,serif;background:#fff;color:#111;font-size:16px;line-height:1.7;word-wrap:break-word;overflow-wrap:break-word;}.page{max-width:100%;padding:32px 20px 48px;}.doc-title{font-size:26px;font-weight:700;color:#111;margin-bottom:6px;line-height:1.3;}.doc-meta{font-size:13px;color:#999;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid #ebebeb;font-family:Georgia,serif;}.section{margin-bottom:24px;}.section-title{font-size:18px;font-weight:700;color:#111;margin-bottom:10px;line-height:1.3;}p{margin-bottom:10px;font-size:16px;}strong{font-weight:700;}em{font-style:italic;color:#333;}ul,ol{padding-left:20px;margin-bottom:12px;}li{margin-bottom:6px;font-size:16px;}table{width:100%;border-collapse:collapse;font-size:15px;margin-bottom:16px;}th{text-align:left;font-size:13px;font-weight:700;color:#555;padding:8px 10px;border-bottom:2px solid #ddd;}td{padding:10px;border-bottom:1px solid #ebebeb;color:#222;word-wrap:break-word;overflow-wrap:break-word;max-width:200px;}.row{display:flex;gap:8px;padding:9px 0;border-bottom:1px solid #f0f0f0;font-size:15px;flex-wrap:wrap;}.row:last-child{border-bottom:none;}.label{color:#888;min-width:120px;flex-shrink:0;font-size:14px;}.value{color:#111;flex:1;}label{display:block;font-size:14px;color:#666;margin-bottom:4px;margin-top:14px;font-weight:600;}input,textarea,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;font-family:Georgia,serif;color:#111;background:#fafafa;}.footer{margin-top:36px;padding-top:14px;border-top:1px solid #ebebeb;font-size:12px;color:#bbb;display:flex;justify-content:space-between;}@media print{body{background:#fff;}.page{padding:20px;}}</style></head><body><div class="page"><h1 class="doc-title">[TITULO]</h1><p class="doc-meta">Generado el [FECHA]</p>[CONTENIDO]<div class="footer"><span>LivinGreen</span><span>[FECHA]</span></div></div></body></html>
 
 IMPORTANTE: Usa titulos h2 con class section-title para cada seccion. Incluye emojis relevantes en titulos y listas. Usa bold y cursivas cuando sea util. Usa checkmarks (✓) para listas de items completados. Reemplaza [FECHA] con la fecha actual. El HTML debe ser responsivo y sin texto que se salga del ancho.
+- REPOSITORIO: Tienes acceso al repositorio GitHub de esta app via la herramienta github_repo. Puedes leer cualquier archivo del proyecto (index.html, chat.html, sw.js, etc.) para dar opiniones técnicas, sugerir mejoras, revisar código o responder preguntas sobre la implementación.
 - FORMATO: Usa markdown estructurado. **Negrita** para términos clave, ## para secciones cuando haya varias ideas, listas con - para enumeraciones, párrafos cortos. Nunca un bloque de texto plano sin estructura cuando haya más de 2 ideas.`;
 }
 
@@ -739,6 +740,7 @@ const AI_TOOLS = [
   {type:'function',function:{name:'update_service_price',description:'Actualiza el precio de un servicio.',parameters:{type:'object',properties:{service_name:{type:'string',description:'Nombre del servicio'},price:{type:'number',description:'Nuevo precio en dólares'}},required:['service_name','price']}}},
   {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
   {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}},
+  {type:'function',function:{name:'github_repo',description:'Accede al repositorio GitHub de la app LivinGreen (JMR-Independent/Agenda-LivinGreen). Usa action=list para listar archivos de un directorio, action=read para leer el contenido de un archivo específico.',parameters:{type:'object',properties:{action:{type:'string',enum:['list','read'],description:'list=listar directorio, read=leer archivo'},path:{type:'string',description:'Ruta del archivo o directorio, ej: index.html o images o '}},required:['action','path']}}},
 ];
 
 // ── Tool executors ─────────────────────────────────────────────────────────
@@ -927,6 +929,22 @@ async function executeTool(name, args) {
       const mem=_getAIMem(); let notes=mem.notes;
       if(args.category)notes=notes.filter(n=>n.category===args.category);
       return {notes,summary:mem.summary,total:mem.notes.length};
+    }
+    case 'github_repo': {
+      try{
+        const base='https://api.github.com/repos/JMR-Independent/Agenda-LivinGreen/contents/';
+        const url=base+(args.path||'').replace(/^\/+/,'');
+        const res=await fetch(url,{headers:{'Accept':'application/vnd.github.v3+json','User-Agent':'LivinGreen-Chat'}});
+        if(!res.ok) return {error:'GitHub API error '+res.status};
+        const data=await res.json();
+        if(args.action==='list'){
+          if(Array.isArray(data)) return {files:data.map(f=>({name:f.name,type:f.type,size:f.size,path:f.path}))};
+          return data;
+        } else {
+          if(data.content) return {content:atob(data.content.replace(/\n/g,'')),encoding:'utf8',path:data.path,size:data.size};
+          return {error:'No content found'};
+        }
+      }catch(e){return {error:String(e)};}
     }
     default: return {error:'Herramienta no disponible: '+name};
   }
