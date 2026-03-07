@@ -1661,11 +1661,12 @@ function openArtifact(idx){
   // Tabs (only for previewable types)
   const canPreview=_ART_PREVIEW.includes(art.lang);
   document.getElementById('artifact-tabs').style.display=canPreview?'flex':'none';
-  // Show code by default
-  _artifactTab(canPreview?'preview':'code');
-  // Open panel
+  // Dismiss keyboard before opening panel
+  document.activeElement && document.activeElement.blur();
+  // Open panel first, then load tab content after keyboard has time to dismiss
   document.getElementById('artifact-panel').classList.add('open');
   document.getElementById('artifact-backdrop').classList.add('open');
+  setTimeout(()=>_artifactTab(canPreview?'preview':'code'), 120);
 }
 
 function closeArtifact(){
@@ -1680,6 +1681,8 @@ function _artifactGo(dir){
 function _artifactTab(tab){
   const art=window._artifacts[window._artIdx];
   if(!art) return;
+  // Always dismiss keyboard when switching tabs
+  document.activeElement && document.activeElement.blur();
   const pre=document.getElementById('artifact-preview');
   const codeWrap=document.getElementById('artifact-code-wrap');
   document.getElementById('tab-preview')?.classList.toggle('active',tab==='preview');
