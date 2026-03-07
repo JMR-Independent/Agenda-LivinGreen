@@ -1652,7 +1652,6 @@ function openArtifact(idx){
   const art=window._artifacts[window._artIdx];
   if(!art) return;
   // Header
-  document.getElementById('artifact-icon').textContent=_ART_ICONS[art.lang]||_ART_ICONS.default;
   document.getElementById('artifact-title').textContent=art.title;
   document.getElementById('artifact-badge').textContent=_ART_LABELS[art.lang]||_ART_LABELS.default;
   // Nav
