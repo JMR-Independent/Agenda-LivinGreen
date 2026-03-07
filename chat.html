@@ -611,8 +611,7 @@ function saveApiKeys(){
   function focusInput() { overlay.style.display = 'none'; inp.focus(); }
   overlay.addEventListener('touchend', focusInput, {once: true});
   overlay.addEventListener('click', focusInput, {once: true});
-  window.addEventListener('load', () => { setTimeout(()=>inp.focus(), 300); });
-  document.getElementById('messages').addEventListener('click', () => { if (!_busy) inp.focus(); });
+  // Focus only when user taps input directly
 })();
 
 // ── localStorage helpers ───────────────────────────────────────────────────
@@ -1363,6 +1362,7 @@ function _removeThinking(){
 
 // ── Send message ───────────────────────────────────────────────────────────
 async function sendMessage(){
+  document.getElementById('msg-input').blur();
   if(_busy) return;
   const text=_getInputText();
   if(!text) return;
@@ -1384,7 +1384,7 @@ async function sendMessage(){
   } finally {
     _busy=false; _setInputEnabled(true);
     if(window._handsFree){ setTimeout(()=>_hfListen(),700); }
-    else { document.getElementById('msg-input').focus(); }
+    else { document.activeElement && document.activeElement.blur(); }
   }
 }
 
@@ -1420,7 +1420,7 @@ async function handleFileUpload(event){
     await _streamBubble(e.message||'Error al procesar el archivo.');
   } finally {
     _busy=false; _setInputEnabled(true);
-    document.getElementById('msg-input').focus();
+    document.activeElement && document.activeElement.blur();
   }
 }
 
