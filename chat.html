@@ -702,6 +702,7 @@ REGLAS DEL AGENTE:
 - Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto.
 - Adapta la longitud de respuesta a lo que pide el usuario.
 - Para navegar la app, dile al usuario que toque "App" arriba a la derecha.
+- ARTIFACTS: Cuando el usuario pida crear un documento, formulario, página HTML, script, tabla, o cualquier archivo de código, SIEMPRE genera el contenido completo dentro de un bloque de código markdown con el lenguaje correspondiente (html, python, csv, etc.). Nunca digas que no puedes crear documentos — siempre puedes generarlos como código.
 - FORMATO: Usa markdown estructurado. **Negrita** para términos clave, ## para secciones cuando haya varias ideas, listas con - para enumeraciones, párrafos cortos. Nunca un bloque de texto plano sin estructura cuando haya más de 2 ideas.`;
 }
 
