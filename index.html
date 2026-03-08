@@ -7103,7 +7103,10 @@
                         <!-- Notas - Full width -->
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label for="notes">Notas (Opcional)</label>
-                            <textarea id="notes" name="notes" rows="3" placeholder="Escribe notas adicionales sobre este trabajo..."></textarea>
+                            <textarea id="notes" name="notes" rows="3"
+                                placeholder="Escribe notas adicionales sobre este trabajo..."
+                                onfocus="this.setAttribute('data-ph',this.placeholder);this.placeholder=''"
+                                onblur="if(!this.value)this.placeholder=this.getAttribute('data-ph')"></textarea>
                         </div>
                         <button type="submit" class="submit-btn" id="submit-btn">Agendar Cita</button>
                     </form>
