@@ -15896,7 +15896,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         function initServicesConfig() {
             try {
                 const stored = localStorage.getItem(SERVICES_STORAGE_KEY);
-                servicesConfig = stored ? JSON.parse(stored) : [...DEFAULT_SERVICES_CONFIG];
+                const parsed = stored ? JSON.parse(stored) : null;
+                servicesConfig = (Array.isArray(parsed) && parsed.length > 0) ? parsed : [...DEFAULT_SERVICES_CONFIG];
             } catch(e) {
                 servicesConfig = [...DEFAULT_SERVICES_CONFIG];
             }
