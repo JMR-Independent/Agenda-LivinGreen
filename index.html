@@ -768,18 +768,18 @@
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 32px;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
             display: flex;
             align-items: center;
-            gap: 12px;
-            text-align: center;
-            justify-content: center;
+            gap: 10px;
+            text-align: left;
+            justify-content: flex-start;
         }
 
         .upload-section::before {
@@ -813,31 +813,30 @@
         }
 
         .upload-icon {
-            width: 24px;
-            height: 24px;
-            color: rgba(255, 255, 255, 0.7);
+            width: 18px;
+            height: 18px;
+            color: rgba(255, 255, 255, 0.6);
             flex-shrink: 0;
         }
 
         .upload-btn {
-            background: rgba(16, 163, 127, 0.9);
+            background: rgba(16, 163, 127, 0.85);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 14px;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 16px rgba(16, 163, 127, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(16, 163, 127, 0.25);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .upload-btn:hover {
             background: rgba(16, 163, 127, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(16, 163, 127, 0.4);
+            box-shadow: 0 4px 12px rgba(16, 163, 127, 0.35);
         }
 
         .upload-info {
@@ -6921,18 +6920,16 @@
             <div class="content-area">
                 <!-- Upload Section -->
                 <div class="upload-section" id="upload-area">
-                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17,8 12,3 7,8"/>
                         <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    <div style="flex: 1;">
-                        <span style="color: rgba(255, 255, 255, 0.95); font-weight: 600; font-size: 15px;">Subir imágenes</span>
-                        <span style="color: rgba(255, 255, 255, 0.6); font-size: 13px; margin-left: 8px;">o arrastra aquí</span>
+                    <div style="flex:1; min-width:0;">
+                        <span style="color:rgba(255,255,255,0.9); font-weight:600; font-size:13px;">Subir imágenes</span>
+                        <span style="color:rgba(255,255,255,0.45); font-size:11px; margin-left:6px;">o arrastra aquí</span>
                     </div>
-                    <button class="upload-btn" onclick="document.getElementById('file-input').click()" style="padding: 8px 16px; font-size: 13px;">
-                        Seleccionar
-                    </button>
+                    <button class="upload-btn" onclick="document.getElementById('file-input').click()">Seleccionar</button>
                     <input type="file" id="file-input" accept="image/*" multiple>
                 </div>
 
