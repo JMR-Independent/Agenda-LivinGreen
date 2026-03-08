@@ -690,6 +690,29 @@ function buildSystemPrompt() {
   const uniqueNames = new Set();
   allApts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});
   try{JSON.parse(localStorage.getItem('clientRegistry')||'[]').forEach(c=>{const n=(c.name||'').trim().toLowerCase();if(n)uniqueNames.add(n);});}catch{}
+  // Notas de clientes (resumen de las más recientes)
+  let clientNotesSummary = '';
+  try {
+    const cn = JSON.parse(localStorage.getItem('rize_client_notes') || '{}');
+    const entries = Object.entries(cn);
+    if (entries.length) {
+      clientNotesSummary = '\nNOTAS DE CLIENTES: ' + entries.slice(-12).map(([name, notes]) =>
+        `${name}: ${notes.slice(-2).map(n=>n.note).join('; ')}`
+      ).join(' | ') + '\n';
+    }
+  } catch {}
+  // Top clientes por frecuencia (para contexto en el prompt)
+  let topClientsTxt = '';
+  try {
+    const freq = {}; const sp = {};
+    allApts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim();if(!n)return;freq[n]=(freq[n]||0)+1;sp[n]=(sp[n]||0)+(parseFloat(a.price)||0);});
+    const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    if (top.length) topClientsTxt = '\nTOP CLIENTES: ' + top.map(([n,c])=>`${n}(${c} citas/$${(sp[n]||0).toFixed(0)})`).join(' | ') + '\n';
+  } catch {}
+  // Mes actual
+  const curM = now.getMonth()+1, curY = now.getFullYear();
+  const mtdApts = allApts.filter(a=>{const[y,m]=(a.date||a.fecha||'').split('-').map(Number);return y===curY&&m===curM;});
+  const mtdRevenue = mtdApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const memBlock = (mem.notes.length>0||mem.summary)
     ? `\nMEMORIA PERSISTENTE: ${mem.summary||''} ${mem.notes.slice(-8).map(n=>n.content).join(' | ')}\n` : '';
   return `Eres el asistente inteligente de ${bc.name||'LivinGreen'}, empresa de limpieza en Utah, USA. Eres un AGENTE COMPLETO con conocimiento general ilimitado y acceso total a los datos del negocio. Respondes en español.
@@ -697,19 +720,22 @@ function buildSystemPrompt() {
 NEGOCIO: ${bc.name||'LivinGreen'} | Tel: ${bc.phone||'—'} | Email: ${bc.email||'—'} | Web: ${bc.website||'—'} | IG: ${bc.instagram||'—'}
 Slogan: "${bc.tagline||''}" | Base: Mapleton, Utah
 Ciudades atendidas: Alpine, American Fork, Bluffdale, Bountiful, Cedar Hills, Cottonwood Heights, Draper, Eagle Mountain, Elk Ridge, Herriman, Highland, Holladay, Kearns, Lehi, Lindon, Mapleton, Midvale, Millcreek, Murray, North Salt Lake, Orem, Payson, Pleasant Grove, Provo, Riverton, Salem, Salt Lake City, Sandy, Santaquin, Saratoga Springs, South Jordan, Spanish Fork, Springville, Taylorsville, West Jordan, West Valley City, Woodland Hills, Woods Cross
+Horario típico: Lunes–Sábado 8am–6pm
 
 FECHA HOY: ${todayStr} (${weekday})
 SERVICIOS: ${svcTxt}
 STATS GLOBALES: ${total} citas en storage | $${ingresos.toFixed(0)} ingresos acumulados | ${uniqueNames.size} clientes únicos
+MES ACTUAL: ${mtdApts.length} citas | $${mtdRevenue.toFixed(0)} ingresos hasta hoy (día ${now.getDate()})
 HOY (${todayStr}): ${hoy.length?hoy.map(fmt).join(' // '):'sin citas'}
 PRÓXIMOS 14 DÍAS (${prox14.length} citas): ${prox14.length?prox14.map(fmt).join(' // '):'ninguna'}
 DÍAS 15-60 (${prox60.length} citas): ${prox60.length?prox60.map(a=>`${a.date||a.fecha} ${a.clientName||a.cliente||a.name||'?'}`).join(' | '):'ninguna'}
-${memBlock}
+${topClientsTxt}${clientNotesSummary}${memBlock}
 DATOS EN STORAGE:
 • appointments: [{id, date(YYYY-MM-DD), time(HH:MM), clientName, service, price, city, notes, timestamp}]
 • clientRegistry: [{id, name, phone, email, city, notes}]
 • dayEvents: {"YYYY-MM-DD": "vacaciones"|"libre"|"compromiso"|"salida"|"sin-pega"}
 • rize_services_config: [{id, name, price, basePrice, priceRange}]
+• rize_client_notes: {clientName: [{note, date}]} — usa save_client_note/get_client_profile
 
 REGLAS DEL AGENTE:
 - Para consultas sobre días específicos ("el lunes", "el sábado", "esta semana") SIEMPRE usa get_appointments con la fecha exacta YYYY-MM-DD. No respondas solo desde el contexto.
@@ -718,6 +744,9 @@ REGLAS DEL AGENTE:
 - Para preguntas generales (código, ciencias, idiomas, historia, consejos, etc.): responde como experto.
 - Adapta la longitud de respuesta a lo que pide el usuario.
 - Para navegar la app, dile al usuario que toque "App" arriba a la derecha.
+- CLIENTE FRECUENTE: Cuando el usuario mencione a un cliente, usa get_client_profile para traer su historial y notas antes de responder. Usa save_client_note para guardar preferencias cuando las mencionen.
+- BÚSQUEDA WEB: Usa web_search para preguntas sobre mercado, competencia, consejos de limpieza, o cualquier dato externo. No respondas sobre datos externos sin buscarlo.
+- ANÁLISIS: Cuando el usuario pida análisis, reportes o estadísticas del negocio, usa generate_report con el tipo apropiado.
 - DOCUMENTOS: Si el usuario pide "pon en un documento", "hazme un archivo", "descargable", "en un documento", "crea un doc", "ponlo bonito", "dame el formulario", "ponla en un doc", o cualquier variante — genera HTML en un bloque de codigo con lenguaje html. NUNCA digas que no puedes. USA SIEMPRE ESTA ESTRUCTURA:
 
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>[TITULO]</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Georgia,serif;background:#fff;color:#111;font-size:16px;line-height:1.7;word-wrap:break-word;overflow-wrap:break-word;}.page{max-width:100%;padding:32px 20px 48px;}.doc-title{font-size:26px;font-weight:700;color:#111;margin-bottom:6px;line-height:1.3;}.doc-meta{font-size:13px;color:#999;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid #ebebeb;font-family:Georgia,serif;}.section{margin-bottom:24px;}.section-title{font-size:18px;font-weight:700;color:#111;margin-bottom:10px;line-height:1.3;}p{margin-bottom:10px;font-size:16px;}strong{font-weight:700;}em{font-style:italic;color:#333;}ul,ol{padding-left:20px;margin-bottom:12px;}li{margin-bottom:6px;font-size:16px;}table{width:100%;border-collapse:collapse;font-size:15px;margin-bottom:16px;}th{text-align:left;font-size:13px;font-weight:700;color:#555;padding:8px 10px;border-bottom:2px solid #ddd;}td{padding:10px;border-bottom:1px solid #ebebeb;color:#222;word-wrap:break-word;overflow-wrap:break-word;max-width:200px;}.row{display:flex;gap:8px;padding:9px 0;border-bottom:1px solid #f0f0f0;font-size:15px;flex-wrap:wrap;}.row:last-child{border-bottom:none;}.label{color:#888;min-width:120px;flex-shrink:0;font-size:14px;}.value{color:#111;flex:1;}label{display:block;font-size:14px;color:#666;margin-bottom:4px;margin-top:14px;font-weight:600;}input,textarea,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;font-family:Georgia,serif;color:#111;background:#fafafa;}.footer{margin-top:36px;padding-top:14px;border-top:1px solid #ebebeb;font-size:12px;color:#bbb;display:flex;justify-content:space-between;}@media print{body{background:#fff;}.page{padding:20px;}}</style></head><body><div class="page"><h1 class="doc-title">[TITULO]</h1><p class="doc-meta">Generado el [FECHA]</p>[CONTENIDO]<div class="footer"><span>LivinGreen</span><span>[FECHA]</span></div></div></body></html>
@@ -746,6 +775,10 @@ const AI_TOOLS = [
   {type:'function',function:{name:'save_memory_note',description:'Guarda nota para recordar.',parameters:{type:'object',properties:{content:{type:'string'},category:{type:'string',enum:['preference','client_info','business_note','general']}},required:['content']}}},
   {type:'function',function:{name:'get_memory',description:'Lee notas guardadas.',parameters:{type:'object',properties:{category:{type:'string'}},required:[]}}},
   {type:'function',function:{name:'github_repo',description:'Accede al repositorio GitHub de la app LivinGreen (JMR-Independent/Agenda-LivinGreen). Usa action=list para listar archivos de un directorio, action=read para leer el contenido de un archivo específico.',parameters:{type:'object',properties:{action:{type:'string',enum:['list','read'],description:'list=listar directorio, read=leer archivo'},path:{type:'string',description:'Ruta del archivo o directorio, ej: index.html o images o '}},required:['action','path']}}},
+  {type:'function',function:{name:'web_search',description:'Busca información actualizada en internet. Úsalo para: precios de competidores, noticias del sector, consejos de limpieza, tarifas de mercado, o cualquier pregunta que requiera datos actuales.',parameters:{type:'object',properties:{query:{type:'string',description:'Términos de búsqueda'}},required:['query']}}},
+  {type:'function',function:{name:'save_client_note',description:'Guarda una preferencia o nota permanente de un cliente específico (ej: "prefiere los jueves", "tiene 3 perros", "paga con Zelle", "casa de 2 pisos"). Se acumula en el perfil del cliente.',parameters:{type:'object',properties:{client_name:{type:'string'},note:{type:'string'}},required:['client_name','note']}}},
+  {type:'function',function:{name:'get_client_profile',description:'Obtiene el perfil completo de un cliente: contacto, historial de citas, total gastado, ticket promedio y notas guardadas.',parameters:{type:'object',properties:{client_name:{type:'string'}},required:['client_name']}}},
+  {type:'function',function:{name:'generate_report',description:'Genera análisis del negocio. type: top_clients (clientes frecuentes), retention (fidelización), peak_hours (horas pico), projection (proyección mensual), full (todo).',parameters:{type:'object',properties:{type:{type:'string',enum:['top_clients','retention','peak_hours','projection','full']}},required:['type']}}},
 ];
 
 // ── Tool executors ─────────────────────────────────────────────────────────
@@ -951,12 +984,66 @@ async function executeTool(name, args) {
         }
       }catch(e){return {error:String(e)};}
     }
+    case 'web_search': {
+      try{
+        const {systemText}=_toGeminiContents([{role:'system',content:buildSystemPrompt()}]);
+        const {text,sources}=await _webSearch(args.query,systemText);
+        return {result:text,sources:sources.map(s=>({title:s.title||'',url:s.uri||''}))};
+      }catch(e){return {error:'Búsqueda fallida: '+e.message};}
+    }
+    case 'save_client_note': {
+      try{
+        let notes={};try{notes=JSON.parse(localStorage.getItem('rize_client_notes')||'{}');}catch{}
+        const key=(args.client_name||'').toLowerCase().trim();
+        if(!notes[key])notes[key]=[];
+        const nd=new Date();const ds=`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`;
+        notes[key].push({note:args.note,date:ds});
+        if(notes[key].length>30)notes[key]=notes[key].slice(-30);
+        localStorage.setItem('rize_client_notes',JSON.stringify(notes));
+        return {success:true,message:`Nota guardada para "${args.client_name}": ${args.note}`};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'get_client_profile': {
+      try{
+        const q=(args.client_name||'').toLowerCase();
+        let reg={}; let clients=[];try{clients=JSON.parse(localStorage.getItem('clientRegistry')||'[]');}catch{}
+        const found=clients.filter(c=>(c.name||'').toLowerCase().includes(q));
+        if(found.length)reg=found[0];
+        let apts=[];try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+        const clientApts=apts.filter(a=>(a.clientName||a.cliente||a.name||'').toLowerCase().includes(q))
+          .sort((a,b)=>((a.date||a.fecha||'')+(a.time||a.hora||''))<((b.date||b.fecha||'')+(b.time||b.hora||''))?-1:1);
+        const totalSpent=clientApts.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
+        const avgTicket=clientApts.length?totalSpent/clientApts.length:0;
+        let notesList=[];try{const n=JSON.parse(localStorage.getItem('rize_client_notes')||'{}');notesList=n[q]||[];}catch{}
+        return {contact:reg,total_appointments:clientApts.length,total_spent:'$'+totalSpent.toFixed(2),avg_ticket:'$'+avgTicket.toFixed(2),last_5_appointments:clientApts.slice(-5).map(_fmtApt),notes:notesList};
+      }catch(e){return{success:false,error:e.message};}
+    }
+    case 'generate_report': {
+      try{
+        let apts=[];try{apts=JSON.parse(localStorage.getItem('appointments')||'[]');}catch{}
+        const now=new Date();const curY=now.getFullYear(),curM=now.getMonth()+1;
+        const freq={};const spent={};
+        apts.forEach(a=>{const n=(a.clientName||a.cliente||a.name||'').trim();if(!n)return;freq[n]=(freq[n]||0)+1;spent[n]=(spent[n]||0)+(parseFloat(a.price||a.precio)||0);});
+        const topClients=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([name,count])=>({name,visits:count,total_spent:'$'+(spent[name]||0).toFixed(2)}));
+        const returning=Object.values(freq).filter(v=>v>1).length;const total=Object.keys(freq).length;
+        const retention=total?Math.round(returning/total*100):0;
+        const hours={};apts.forEach(a=>{const h=(a.time||a.hora||'').slice(0,2);if(h)hours[h]=(hours[h]||0)+1;});
+        const peakHours=Object.entries(hours).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([h,c])=>({hour:h+':00',appointments:c}));
+        const svcs={};const svcRev={};apts.forEach(a=>{const s=a.service||a.servicio||a.job||'?';svcs[s]=(svcs[s]||0)+1;svcRev[s]=(svcRev[s]||0)+(parseFloat(a.price||a.precio)||0);});
+        const topServices=Object.entries(svcs).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([s,c])=>({service:s,count:c,revenue:'$'+(svcRev[s]||0).toFixed(2)}));
+        const thisMonthApts=apts.filter(a=>{const[y,m]=(a.date||a.fecha||'').split('-').map(Number);return y===curY&&m===curM;});
+        const dayOfMonth=now.getDate();const daysInMonth=new Date(curY,curM,0).getDate();
+        const mtdRevenue=thisMonthApts.reduce((s,a)=>s+(parseFloat(a.price||a.precio)||0),0);
+        const projectedRevenue=dayOfMonth>0?Math.round(mtdRevenue/dayOfMonth*daysInMonth):0;
+        return {type:args.type||'full',top_clients:topClients,retention:{returning_clients:returning,total_clients:total,rate:retention+'%'},peak_hours:peakHours,top_services:topServices,monthly:{mtd_revenue:'$'+mtdRevenue.toFixed(2),projected:'$'+projectedRevenue,days_elapsed:dayOfMonth,days_remaining:daysInMonth-dayOfMonth,appointments_this_month:thisMonthApts.length}};
+      }catch(e){return{success:false,error:e.message};}
+    }
     default: return {error:'Herramienta no disponible: '+name};
   }
 }
 
 // ── Gemini API ─────────────────────────────────────────────────────────────
-const _GEMINI_MODELS=['gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash-exp','gemini-1.5-flash-latest','gemini-1.5-flash-002','gemini-1.5-flash','gemini-1.5-pro'];
+const _GEMINI_MODELS=['gemini-2.5-pro-preview-05-06','gemini-2.5-pro-exp-03-25','gemini-2.5-pro','gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash-exp','gemini-1.5-flash-latest','gemini-1.5-flash-002','gemini-1.5-flash','gemini-1.5-pro'];
 
 async function _resolveModel(){
   if(_geminiModel) return _geminiModel;
@@ -1066,7 +1153,7 @@ function _resizeImageForAI(base64, mime, maxPx=800){
 }
 
 // ── Agent tool labels ──────────────────────────────────────────────────────
-const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',update_client:'Actualizando cliente…',delete_client:'Eliminando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',add_day_event:'Marcando día…',remove_day_event:'Quitando evento…',get_services:'Cargando servicios…',update_service_price:'Actualizando precio…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…'};
+const _TOOL_LABELS={search_appointments:'Buscando citas…',get_appointments:'Cargando citas…',get_stats:'Calculando estadísticas…',search_clients:'Buscando clientes…',add_client:'Agregando cliente…',update_client:'Actualizando cliente…',delete_client:'Eliminando cliente…',create_appointment:'Creando cita…',delete_appointment:'Eliminando cita…',update_appointment:'Actualizando cita…',add_day_event:'Marcando día…',remove_day_event:'Quitando evento…',get_services:'Cargando servicios…',update_service_price:'Actualizando precio…',save_memory_note:'Guardando en memoria…',get_memory:'Leyendo memoria…',web_search:'Buscando en internet…',save_client_note:'Guardando nota del cliente…',get_client_profile:'Cargando perfil del cliente…',generate_report:'Generando análisis…'};
 
 // ── Google Search grounding ────────────────────────────────────────────────
 const _SEARCH_INTENT=/\b(busca(?:me|r|lo|la|nos)?|b[uú]squeda|googlea(?:me|lo|la|s)?|investiga|consulta|mira|checa|revisa|dime qu[eé]|qu[eé] es|qu[eé] hay|qu[eé] dice|buscar)\b/i;
@@ -1175,7 +1262,8 @@ function _setInputEnabled(on){
   const btn=document.getElementById('send-btn');
   const inp=document.getElementById('msg-input');
   btn.disabled=!on;
-  inp.disabled=!on;
+  // Never disable/readOnly the textarea — iOS triggers keyboard on re-enable
+  // Use opacity only as visual feedback; _busy flag blocks double-sends
   if(on){ inp.style.opacity='1'; } else { inp.style.opacity='0.5'; }
 }
 
@@ -1393,14 +1481,6 @@ async function sendMessage(){
   } finally {
     _busy=false; _setInputEnabled(true);
     if(window._handsFree){ setTimeout(()=>_hfListen(),700); }
-    else {
-      // inputmode=none prevents iOS from showing keyboard even if element gets focused
-      const inp=document.getElementById('msg-input');
-      inp.setAttribute('inputmode','none');
-      inp.blur();
-      // Restore normal inputmode after 600ms so user can tap to type normally
-      setTimeout(()=>inp.setAttribute('inputmode','text'),600);
-    }
   }
 }
 

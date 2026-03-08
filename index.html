@@ -10918,12 +10918,101 @@ Incluye:
             updateJobSelection();
         }
 
+        async function extractDataWithGeminiVision(imagesData) {
+            try {
+                const key = localStorage.getItem('rize_gemini_key');
+                if (!key) { console.log('⚠️ Gemini key not found (rize_gemini_key)'); return null; }
+                console.log('🤖 Attempting Gemini Vision OCR...');
+
+                // Use cached model or discover one
+                let model = localStorage.getItem('rize_gemini_model');
+                if (!model) {
+                    const candidates = ['gemini-2.5-flash-preview-05-20','gemini-2.5-flash','gemini-2.0-flash-exp','gemini-1.5-flash'];
+                    for (const m of candidates) {
+                        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}?key=${encodeURIComponent(key)}`);
+                        if (r.ok) { model = m; localStorage.setItem('rize_gemini_model', m); break; }
+                    }
+                }
+                if (!model) { console.log('⚠️ No Gemini model available'); return null; }
+
+                const prompt = `Analiza esta imagen de conversación (WhatsApp, Messenger, SMS, texto) y extrae los datos de la cita de limpieza.
+
+CAMPOS:
+- name: Nombre completo del cliente (busca en el encabezado del contacto, en el texto, firma, presentación)
+- time: Hora en formato 24h HH:MM (convierte: "2pm"→"14:00", "10am"→"10:00", "3 de la tarde"→"15:00", "noon"→"12:00")
+- day: Día de la semana en español (lunes/martes/miércoles/jueves/viernes/sábado/domingo) O fecha MM/DD si aparece
+- city: Ciudad donde se realiza el trabajo
+- address: Dirección completa (incluye formatos Utah como "123 N 400 W" o "5 N 100 E Apt 2")
+- job: Tipo de servicio (Standard Clean, Deep Clean, Move In, Move Out, AirBnB, Office Clean, Carpet Cleaning, etc.)
+- price: Solo el número del precio (sin símbolo $)
+
+REGLAS: Lee TODO el texto. Si un dato no aparece deja el campo vacío. NO inventes datos.
+Responde ÚNICAMENTE con JSON válido sin texto adicional:
+{"name":"","time":"","day":"","city":"","address":"","job":"","price":""}`;
+
+                const extractedDataArray = [];
+
+                for (let i = 0; i < imagesData.length; i++) {
+                    console.log(`📷 Gemini Vision: image ${i+1}/${imagesData.length}`);
+                    const loadingEl = document.getElementById('loading');
+                    if (loadingEl) {
+                        const pt = loadingEl.querySelector('p');
+                        if (pt) pt.textContent = `Analizando imagen ${i+1}/${imagesData.length} con IA...`;
+                    }
+
+                    const body = {
+                        contents: [{ role: 'user', parts: [
+                            { inlineData: { mimeType: 'image/jpeg', data: imagesData[i].base64 } },
+                            { text: prompt }
+                        ]}],
+                        generationConfig: { maxOutputTokens: 400, temperature: 0.1 }
+                    };
+
+                    const res = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+                        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+                    );
+
+                    if (!res.ok) { console.warn(`⚠️ Gemini Vision error image ${i+1}: ${res.status}`); continue; }
+
+                    const data = await res.json();
+                    const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+                    if (!text) { console.warn(`⚠️ No text from Gemini image ${i+1}`); continue; }
+
+                    let clean = text.trim().replace(/```json\s*/g, '').replace(/```\s*/g, '');
+                    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        try {
+                            const parsed = JSON.parse(jsonMatch[0]);
+                            console.log(`✅ Gemini Vision image ${i+1}:`, parsed);
+                            extractedDataArray.push(parsed);
+                        } catch (e) { console.warn(`⚠️ JSON parse failed image ${i+1}`, e); }
+                    }
+                }
+
+                if (!extractedDataArray.length) return null;
+                return combineExtractedData(extractedDataArray);
+            } catch (e) {
+                console.error('❌ Gemini Vision failed:', e);
+                return null;
+            }
+        }
+
         async function extractDataFromMultipleImages(imagesData) {
             console.log(`🔄 Processing ${imagesData.length} images for data extraction...`);
 
             try {
-                // Try OpenAI GPT-4 Vision first (best for WhatsApp/Messenger screenshots)
-                console.log('🤖 Attempting OpenAI GPT-4 Vision OCR (optimized for screenshots)...');
+                // Try Gemini Vision first (uses existing rize_gemini_key, no backend needed)
+                console.log('🤖 Attempting Gemini Vision OCR...');
+                const geminiResult = await extractDataWithGeminiVision(imagesData);
+                if (geminiResult && Object.values(geminiResult).some(v => v && String(v).trim())) {
+                    console.log('✅ Gemini Vision extraction successful:', geminiResult);
+                    return geminiResult;
+                }
+                console.log('⚠️ Gemini Vision failed, trying OpenAI...');
+
+                // Try OpenAI GPT-4 Vision as second option
+                console.log('🤖 Attempting OpenAI GPT-4 Vision OCR...');
                 const openaiResult = await extractDataWithOpenAI(imagesData);
                 if (openaiResult && Object.values(openaiResult).some(v => v && String(v).trim())) {
                     console.log('✅ OpenAI extraction successful:', openaiResult);
@@ -11467,13 +11556,14 @@ Incluye:
                 }
             }
 
-            // Extract address - improved for Utah addresses
+            // Extract address - improved for Utah addresses (multiple formats)
             console.log('🔍 Searching for address...');
             const addressPatterns = [
                 { name: 'dirección:', pattern: /(?:direcci[oó]n|address):\s*(.+)/i },
-                { name: 'Utah format', pattern: /\b(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew](?:\s+[A-Z][a-z]+)?)\b/i },
-                { name: 'Standard', pattern: /\b(\d+\s+[A-Z][a-z]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Lane|Way|Circle|Court)\.?(?:\s*,?\s*(?:Apt|Unit|#)?\s*[A-Z]?\d+)?)/i },
-                { name: 'Estoy en', pattern: /(?:En|Estoy\s+en)\s+(\d+\s+[NSEWnsew]\s+\d+\s+[NSEWnsew])/i }
+                { name: 'Utah N/S/E/W digits', pattern: /\b(\d+\s+[NSEWnsew](?:orth|outh|ast|est)?\s+\d+\s+[NSEWnsew](?:orth|outh|ast|est)?(?:\s+(?:Apt|Unit|#|Ste)\.?\s*\w+)?)\b/i },
+                { name: 'Utah short N S E W', pattern: /\b(\d+\s+[NSEW]\s+\d+\s+[NSEW])\b/i },
+                { name: 'Standard street', pattern: /\b(\d+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Lane|Ln|Way|Cir|Ct|Court|Pl|Place)\.?(?:\s*(?:Apt|Unit|#|Ste)\.?\s*\w+)?)\b/i },
+                { name: 'En/Estoy en', pattern: /(?:en|estoy\s+en|vivo\s+en|mi\s+direcci[oó]n(?:\s+es)?)\s+(\d+[^\n]{5,60})/i }
             ];
             for (const { name: patternName, pattern } of addressPatterns) {
                 const match = text.match(pattern);
@@ -11488,13 +11578,19 @@ Incluye:
                 console.log('❌ Address not found');
             }
 
-            // Extract job/service - improved for natural language
+            // Extract job/service - expanded patterns
             console.log('🔍 Searching for job/service...');
             const jobPatterns = [
-                { name: 'trabajo:', pattern: /(?:trabajo|job|servicio|service):\s*(.+)/i },
-                { name: 'limpiar X cuartos', pattern: /(limpiar\s+\d+\s+cuartos?)/i },
-                { name: 'deep clean', pattern: /\b(deep\s+clean(?:ing)?|office\s+clean(?:ing)?|house\s+clean(?:ing)?|carpet\s+clean(?:ing)?)\b/i },
-                { name: 'limpieza', pattern: /\b(limpieza|cleaning)\b/i }
+                { name: 'trabajo/job:', pattern: /(?:trabajo|job|servicio|service|tipo):\s*(.+)/i },
+                { name: 'move in/out', pattern: /\b(move[\s\-]?(?:in|out)|movein|moveout)\b/i },
+                { name: 'airbnb', pattern: /\b(airbnb|air\s*bnb|vacation\s*rental)\b/i },
+                { name: 'deep clean', pattern: /\b(deep\s+clean(?:ing)?)\b/i },
+                { name: 'standard/regular clean', pattern: /\b(standard\s+clean(?:ing)?|regular\s+clean(?:ing)?|recurring\s+clean(?:ing)?)\b/i },
+                { name: 'office clean', pattern: /\b(office\s+clean(?:ing)?|commercial\s+clean(?:ing)?)\b/i },
+                { name: 'carpet', pattern: /\b(carpet\s+clean(?:ing)?|carpet\s+shampo(?:o|ing))\b/i },
+                { name: 'limpiar cuartos', pattern: /(limpiar\s+\d+\s+cuartos?)/i },
+                { name: 'limpieza tipo', pattern: /\b(limpieza\s+(?:profunda|regular|de\s+\w+))\b/i },
+                { name: 'limpieza/cleaning', pattern: /\b(limpieza|cleaning|clean)\b/i }
             ];
             for (const { name: patternName, pattern } of jobPatterns) {
                 const match = text.match(pattern);
@@ -12119,6 +12215,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 const nameEl = document.getElementById('name');
                 nameEl.value = data.name;
                 nameEl.dispatchEvent(new Event('input', { bubbles: true }));
+                // Force iOS WebKit repaint + fix color (text inputs need explicit inline style after programmatic fill)
+                nameEl.style.color = 'rgba(255,255,255,0.95)';
+                nameEl.style.webkitTextFillColor = 'rgba(255,255,255,0.95)';
+                void nameEl.offsetWidth;
                 console.log('✅ Set name:', data.name);
             }
             
@@ -12169,6 +12269,10 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                 const addressEl = document.getElementById('address');
                 addressEl.value = data.address;
                 addressEl.dispatchEvent(new Event('input', { bubbles: true }));
+                // Force iOS WebKit repaint + fix color
+                addressEl.style.color = 'rgba(255,255,255,0.95)';
+                addressEl.style.webkitTextFillColor = 'rgba(255,255,255,0.95)';
+                void addressEl.offsetWidth;
                 console.log('✅ Set address:', data.address);
             }
             
@@ -12183,9 +12287,11 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     checkbox.checked = false;
                 });
                 
-                // Try to match options
+                // Try to match options — case-insensitive, bidirectional substring
                 checkboxes.forEach(checkbox => {
-                    if (jobText.includes(checkbox.value)) {
+                    const cbVal = checkbox.value.toLowerCase();
+                    if (jobText.includes(cbVal) || cbVal.includes(jobText) ||
+                        jobText.split(/[\s,\/]+/).some(word => word.length > 3 && cbVal.includes(word))) {
                         checkbox.checked = true;
                         matchedAny = true;
                     }
@@ -12337,7 +12443,26 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
             const cleanDate = dateString.toLowerCase().trim();
 
-            // Formato: "20 de diciembre", "December 20", "20 diciembre"
+            // Formato: "March 15", "Mar 15", "December 20" (mes primero, en inglés)
+            const monthFirstPattern = /([a-záéíóúñ]+)\s+(\d{1,2})(?:\s*,?\s*(\d{4}))?/i;
+            const mfMatch = cleanDate.match(monthFirstPattern);
+            if (mfMatch) {
+                const monthName = mfMatch[1].toLowerCase();
+                const day = parseInt(mfMatch[2]);
+                const month = months[monthName];
+                if (month !== undefined && day >= 1 && day <= 31) {
+                    const today = new Date();
+                    let year = mfMatch[3] ? parseInt(mfMatch[3]) : today.getFullYear();
+                    const testDate = new Date(year, month, day);
+                    if (testDate < today) year++;
+                    const finalDate = new Date(year, month, day);
+                    const r = `${finalDate.getFullYear()}-${(finalDate.getMonth()+1).toString().padStart(2,'0')}-${finalDate.getDate().toString().padStart(2,'0')}`;
+                    console.log(`✅ Parsed month-first date: ${mfMatch[0]} → ${r}`);
+                    return r;
+                }
+            }
+
+            // Formato: "20 de diciembre", "20 diciembre"
             const monthDayPattern = /(\d{1,2})\s*(?:de\s+)?([a-záéíóúñ]+)/i;
             const match = cleanDate.match(monthDayPattern);
 
