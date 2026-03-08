@@ -10674,13 +10674,6 @@ Incluye:
             const dropdown = document.getElementById('job-dropdown');
             const header = dropdown.querySelector('.dropdown-header');
             const list = document.getElementById('job-list');
-            // Use fixed position to avoid overflow clipping on iOS
-            const rect = header.getBoundingClientRect();
-            list.style.position = 'fixed';
-            list.style.top = rect.bottom + 'px';
-            list.style.left = rect.left + 'px';
-            list.style.width = rect.width + 'px';
-            list.style.zIndex = '99999';
             header.classList.add('open');
             list.classList.add('show');
         }
@@ -10691,10 +10684,6 @@ Incluye:
             const list = document.getElementById('job-list');
             header.classList.remove('open');
             list.classList.remove('show');
-            list.style.position = '';
-            list.style.top = '';
-            list.style.left = '';
-            list.style.width = '';
         }
 
         function updateJobSelection() {
