@@ -10614,16 +10614,16 @@ Incluye:
             const fresh = jobList.cloneNode(true);
             jobList.parentNode.replaceChild(fresh, jobList);
             fresh.addEventListener('change', function(e) {
-                if (e.target.type === 'checkbox') updateJobSelection();
+                if (e.target.type === 'checkbox') { updateJobSelection(); closeJobDropdown(); }
             });
             fresh.addEventListener('click', function(e) {
-                // Clicking the label or item row toggles the checkbox
                 const item = e.target.closest('.dropdown-item');
                 if (!item) return;
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 if (checkbox && e.target !== checkbox) {
                     checkbox.checked = !checkbox.checked;
                     updateJobSelection();
+                    closeJobDropdown();
                 }
             });
             fresh.addEventListener('touchend', function(e) {
@@ -10633,7 +10633,7 @@ Incluye:
                 e.stopPropagation();
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 if (checkbox) {
-                    setTimeout(() => { checkbox.checked = !checkbox.checked; updateJobSelection(); }, 50);
+                    setTimeout(() => { checkbox.checked = !checkbox.checked; updateJobSelection(); closeJobDropdown(); }, 50);
                 }
             }, { passive: false });
             updateJobSelection();
