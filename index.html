@@ -3221,29 +3221,39 @@
         /* Loading spinner */
         .loading {
             display: none;
-            text-align: center;
-            padding: 20px;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 16px;
         }
 
-        .loading p,
+        .loading.active {
+            display: flex;
+        }
+
         #loading-text {
-            color: rgba(255, 255, 255, 0.95) !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-size: 13px;
             font-weight: 500;
+            margin: 0;
         }
 
         .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid #10a37f;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
+            border: 2.5px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #10a37f;
+            border-right-color: rgba(16, 163, 127, 0.5);
+            animation: spin 0.75s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            flex-shrink: 0;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* Force white text in main schedule view */
@@ -6936,25 +6946,12 @@
                 <!-- Loading -->
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
-                    <p id="loading-text">Procesando imágenes y extrayendo datos...</p>
+                    <p id="loading-text">Analizando imagen...</p>
                 </div>
 
-                <!-- Preview Section -->
-                <div class="preview-section" id="preview-section">
-                    <h3>Imágenes cargadas:</h3>
-                    <div class="images-grid" id="images-grid">
-                        <!-- Images will be dynamically added here -->
-                    </div>
-                    <div class="preview-actions">
-                        <button type="button" class="clear-images-btn" onclick="clearAllImages()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                <line x1="10" y1="11" x2="10" y2="17"/>
-                                <line x1="14" y1="11" x2="14" y2="17"/>
-                            </svg>
-                            Limpiar todas
-                        </button>
-                    </div>
+                <!-- Preview Section (hidden, kept for JS refs) -->
+                <div id="preview-section" style="display:none;">
+                    <div id="images-grid"></div>
                 </div>
 
                 <!-- Form Section -->
@@ -10834,7 +10831,7 @@ Incluye:
             }
 
             // Show loading
-            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading').classList.add('active');
             document.getElementById('upload-area').style.display = 'none';
 
             try {
@@ -10862,8 +10859,8 @@ Incluye:
                 console.error('Error processing images:', error);
                 showError('Error al procesar las imágenes. Inténtalo de nuevo.');
             } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('upload-area').style.display = 'block';
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('upload-area').style.display = 'flex';
             }
         }
 
@@ -10882,36 +10879,7 @@ Incluye:
         }
 
         function updateImagePreview() {
-            const imagesGrid = document.getElementById('images-grid');
-            const previewSection = document.getElementById('preview-section');
-            
-            // Clear existing images
-            imagesGrid.innerHTML = '';
-            
-            if (uploadedImages.length === 0) {
-                previewSection.style.display = 'none';
-                return;
-            }
-            
-            // Show preview section
-            previewSection.style.display = 'block';
-            
-            // Add each image to the grid
-            uploadedImages.forEach((imageData, index) => {
-                const imageItem = document.createElement('div');
-                imageItem.className = 'image-item';
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageItem.innerHTML = `
-                        <img src="${e.target.result}" class="image-preview" alt="${imageData.name}">
-                        <button class="image-remove" onclick="removeImage(${index})" title="Eliminar imagen">×</button>
-                    `;
-                };
-                reader.readAsDataURL(imageData.file);
-                
-                imagesGrid.appendChild(imageItem);
-            });
+            // Preview section is hidden by design — no thumbnail display
         }
 
         function removeImage(index) {
