@@ -3218,38 +3218,44 @@
             color: rgba(255, 255, 255, 0.9) !important;
         }
 
-        /* Loading spinner */
+        /* Loading — modern */
         .loading {
             display: none;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             padding: 10px 16px;
             background: rgba(30, 41, 59, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             margin-bottom: 16px;
         }
-
-        .loading.active {
-            display: flex;
-        }
+        .loading.active { display: flex; }
 
         #loading-text {
-            color: rgba(255, 255, 255, 0.8) !important;
-            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75) !important;
+            font-size: 12px;
             font-weight: 500;
             margin: 0;
+            letter-spacing: 0.3px;
         }
 
+        /* Modern spinner: conic gradient arc */
         .spinner {
-            width: 22px;
-            height: 22px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            border: 2.5px solid rgba(255, 255, 255, 0.15);
-            border-top-color: #10a37f;
-            border-right-color: rgba(16, 163, 127, 0.5);
-            animation: spin 0.75s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            background: conic-gradient(from 0deg, #10a37f 0%, rgba(16,163,127,0.3) 60%, transparent 100%);
+            animation: spin 0.9s linear infinite;
             flex-shrink: 0;
+            position: relative;
+        }
+        /* Inner mask to create ring shape */
+        .spinner::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: #1a2535;
         }
 
         @keyframes spin {
@@ -6936,8 +6942,7 @@
                         <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
                     <div style="flex:1; min-width:0;">
-                        <span style="color:rgba(255,255,255,0.9); font-weight:600; font-size:13px;">Subir imágenes</span>
-                        <span style="color:rgba(255,255,255,0.45); font-size:11px; margin-left:6px;">o arrastra aquí</span>
+                        <span style="color:rgba(255,255,255,0.9); font-weight:600; font-size:13px;">Sube tu imagen</span>
                     </div>
                     <button class="upload-btn" onclick="document.getElementById('file-input').click()">Seleccionar</button>
                     <input type="file" id="file-input" accept="image/*" multiple>
