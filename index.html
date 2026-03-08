@@ -10607,46 +10607,46 @@ Incluye:
         }
 
         function setupJobCheckboxes() {
-            // Setup event listeners for the custom dropdown
-            const checkboxes = document.querySelectorAll('#job-list input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateJobSelection);
-                
-                // Add touch-friendly click handler for PWA mode
-                checkbox.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setTimeout(() => {
-                        this.checked = !this.checked;
-                        updateJobSelection();
-                    }, 50);
-                });
+            // Use event delegation on #job-list so listeners survive re-renders
+            const jobList = document.getElementById('job-list');
+            if (!jobList) return;
+            // Clone node to remove any previous delegated listeners
+            const fresh = jobList.cloneNode(true);
+            jobList.parentNode.replaceChild(fresh, jobList);
+            fresh.addEventListener('change', function(e) {
+                if (e.target.type === 'checkbox') updateJobSelection();
             });
-            
-            // Setup dropdown item click handlers for PWA mode
-            const dropdownItems = document.querySelectorAll('#job-list .dropdown-item');
-            dropdownItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const checkbox = this.querySelector('input[type="checkbox"]');
-                    if (checkbox && e.target !== checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        updateJobSelection();
-                    }
-                });
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                const dropdown = document.getElementById('job-dropdown');
-                if (!dropdown.contains(event.target)) {
-                    closeJobDropdown();
+            fresh.addEventListener('click', function(e) {
+                // Clicking the label or item row toggles the checkbox
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox && e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    updateJobSelection();
                 }
             });
-            
-            updateJobSelection(); // Initialize
+            fresh.addEventListener('touchend', function(e) {
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    setTimeout(() => { checkbox.checked = !checkbox.checked; updateJobSelection(); }, 50);
+                }
+            }, { passive: false });
+            updateJobSelection();
         }
+
+        // Single outside-click listener (registered once at startup)
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('job-dropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                const list = document.getElementById('job-list');
+                if (list && list.classList.contains('show')) closeJobDropdown();
+            }
+        });
 
         function toggleJobDropdown() {
             const isDevelopment = window.location.hostname === 'localhost' || window.location.protocol === 'file:';
@@ -15926,6 +15926,8 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
             jobSelect.innerHTML = servicesConfig.map(svc =>
                 `<option value="${svc.id}">${svc.name}</option>`
             ).join('');
+            // Re-attach listeners every time items are re-rendered
+            setupJobCheckboxes();
         }
 
         function renderServiceTypeSelect() {
