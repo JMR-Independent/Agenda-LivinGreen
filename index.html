@@ -4988,6 +4988,20 @@
             background: rgba(255, 255, 255, 0.05) !important;
         }
 
+        /* Unified form field backgrounds — all boxes same style */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background: rgba(255, 255, 255, 0.07) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+        }
+        .dropdown-header {
+            background: rgba(255, 255, 255, 0.07) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
+
         /* Focus state - minimal accent */
         input:focus,
         textarea:not(#ai-input):focus,
@@ -10657,19 +10671,30 @@ Incluye:
         }
 
         function openJobDropdown() {
-            const header = document.querySelector('.dropdown-header');
+            const dropdown = document.getElementById('job-dropdown');
+            const header = dropdown.querySelector('.dropdown-header');
             const list = document.getElementById('job-list');
-            
+            // Use fixed position to avoid overflow clipping on iOS
+            const rect = header.getBoundingClientRect();
+            list.style.position = 'fixed';
+            list.style.top = rect.bottom + 'px';
+            list.style.left = rect.left + 'px';
+            list.style.width = rect.width + 'px';
+            list.style.zIndex = '99999';
             header.classList.add('open');
             list.classList.add('show');
         }
 
         function closeJobDropdown() {
-            const header = document.querySelector('.dropdown-header');
+            const dropdown = document.getElementById('job-dropdown');
+            const header = dropdown.querySelector('.dropdown-header');
             const list = document.getElementById('job-list');
-            
             header.classList.remove('open');
             list.classList.remove('show');
+            list.style.position = '';
+            list.style.top = '';
+            list.style.left = '';
+            list.style.width = '';
         }
 
         function updateJobSelection() {
