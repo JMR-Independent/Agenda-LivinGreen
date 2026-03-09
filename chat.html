@@ -153,6 +153,12 @@ body{
 .artifact-card-title{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .artifact-card-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;}
 
+/* Copy action bar */
+.copy-bar{display:flex;gap:2px;margin-top:4px;}
+.copy-bar.user{justify-content:flex-end;}
+.copy-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;cursor:pointer;background:transparent;border:none;padding:0;font-size:15px;line-height:1;color:rgba(255,255,255,0.45);-webkit-tap-highlight-color:transparent;transition:color 0.15s;}
+.copy-icon-btn:active{color:rgba(255,255,255,0.8);}
+
 /* Thinking dots */
 .thinking-wrap{display:flex;flex-direction:column;gap:5px;padding:8px 0;margin-top:2px;}
 .thinking-dots{display:flex;gap:5px;align-items:center;}
@@ -1277,6 +1283,22 @@ function _ensureSpacer(){
   }
 }
 
+// ── Copy button helper ─────────────────────────────────────────────────────
+function _makeCopyBar(text, isUser){
+  const bar=document.createElement('div');
+  bar.className='copy-bar'+(isUser?' user':'');
+  const btn=document.createElement('button');
+  btn.className='copy-icon-btn';
+  btn.textContent='⧉';
+  btn.onclick=()=>{
+    const copy=()=>{ btn.textContent='✓'; btn.style.color='#10a37f'; setTimeout(()=>{ btn.textContent='⧉'; btn.style.color=''; },1500); };
+    if(navigator.clipboard){ navigator.clipboard.writeText(text).then(copy).catch(copy); }
+    else{ try{ const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);copy(); }catch(e){} }
+  };
+  bar.appendChild(btn);
+  return bar;
+}
+
 // ── Add user bubble (sync scroll — leer scrollHeight fuerza reflow) ────────
 function _addUserBubble(text){
   const wrap=document.getElementById('messages');
@@ -1288,7 +1310,11 @@ function _addUserBubble(text){
   const bub=document.createElement('div');
   bub.className='bubble-user';
   bub.textContent=text;
-  row.appendChild(bub);
+  const userCol=document.createElement('div');
+  userCol.style.cssText='display:flex;flex-direction:column;align-items:flex-end;';
+  userCol.appendChild(bub);
+  userCol.appendChild(_makeCopyBar(text, true));
+  row.appendChild(userCol);
   wrap.appendChild(row);
   wrap.scrollTop=wrap.scrollHeight; // sincrónico: leer scrollHeight fuerza reflow
 }
@@ -1426,6 +1452,8 @@ async function _streamBubble(text){
     }
   }
   wrap.scrollTop=wrap.scrollHeight;
+  // Add copy bar below AI bubble
+  row.appendChild(_makeCopyBar(text, false));
   // Ensure keyboard stays down after streaming
   setTimeout(()=>{ const i=document.getElementById('msg-input'); if(i) i.blur(); },50);
 }
