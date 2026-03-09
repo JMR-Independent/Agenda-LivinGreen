@@ -5571,26 +5571,6 @@
             border-color: rgba(255, 255, 255, 0.18) !important;
         }
 
-        /* Slider inside message card */
-        #messages-view .msg-slides {
-            display: flex;
-            width: 200%;
-            height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(0);
-        }
-        #messages-view .msg-slides.show-second {
-            transform: translateX(-50%);
-        }
-        #messages-view .msg-slide {
-            width: 50%;
-            flex-shrink: 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         /* Copy button inside card */
         #messages-view .copy-btn {
             background: rgba(255, 255, 255, 0.15) !important;
@@ -7943,19 +7923,11 @@
 
                     <!-- Card 1: Alfombras — azul -->
                     <div class="message-card" onclick="copyMessage('carpet')" style="background: rgba(59, 130, 246, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-carpet">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Alfombras</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.7); display: block; margin-bottom: 3px;">Tarifa</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Limpieza de alfombras</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Alfombras</span>
                         </div>
                         <div id="carpet-message" style="display:none;">El costo del lavado de alfombras varía según el área que necesite limpiar:
 
@@ -7974,19 +7946,11 @@
 
                     <!-- Card 2: Sillones — púrpura -->
                     <div class="message-card" onclick="copyMessage('furniture')" style="background: rgba(139, 92, 246, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-furniture">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sillones</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.7); display: block; margin-bottom: 3px;">Tarifa</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Limpieza de sillones</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sillones</span>
                         </div>
                         <div id="furniture-message" style="display:none;">El valor por la limpieza de sillones depende del tamaño:
 
@@ -8009,20 +7973,11 @@ Incluye:
 
                     <!-- Card 3: Cotización específica sillones — verde -->
                     <div class="message-card" onclick="copyMessage('general')" style="background: rgba(16, 163, 127, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-general">
-                            <!-- Slide 1: icono -->
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Cotización sillones</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.7); display: block; margin-bottom: 3px;">Precio a medida</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Cotización sillones</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Cotización sillones</span>
                         </div>
                         <div id="general-message" style="display:none;">El valor por la limpieza de un sillón como ese es $
 
@@ -8041,19 +7996,11 @@ Incluye:
 
                     <!-- ── Auto ES — ámbar (completa la fila de ES) ── -->
                     <div class="message-card" onclick="copyMessage('auto-es')" style="background: rgba(245, 158, 11, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-auto-es">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(252, 211, 77, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M21 17h-2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1"/><rect x="5" y="7" width="14" height="10" rx="2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.8);">Autos</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.7); display: block; margin-bottom: 3px;">Detailing</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Detailing a domicilio</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(252, 211, 77, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M21 17h-2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1"/><rect x="5" y="7" width="14" height="10" rx="2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.8);">Autos</span>
                         </div>
                         <div id="auto-es-message" style="display:none;">Tenemos 2 opciones de servicio:
 
@@ -8077,19 +8024,11 @@ Servicio a domicilio solo para casas, no apartamentos. El servicio tarda de 1 a 
 
                     <!-- Card EN: Carpet -->
                     <div class="message-card" onclick="copyMessage('carpet-en')" style="background: rgba(59, 130, 246, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-carpet-en">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Carpets</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.7); display: block; margin-bottom: 3px;">Pricing</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Carpet cleaning</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Carpets</span>
                         </div>
                         <div id="carpet-en-message" style="display:none;">Carpet cleaning pricing depends on the area:
 
@@ -8108,19 +8047,11 @@ Servicio a domicilio solo para casas, no apartamentos. El servicio tarda de 1 a 
 
                     <!-- Card EN: Furniture -->
                     <div class="message-card" onclick="copyMessage('furniture-en')" style="background: rgba(139, 92, 246, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-furniture-en">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sofas</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.7); display: block; margin-bottom: 3px;">Pricing</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Upholstery cleaning</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sofas</span>
                         </div>
                         <div id="furniture-en-message" style="display:none;">Upholstery cleaning pricing depends on size:
 
@@ -8143,19 +8074,11 @@ Includes:
 
                     <!-- Card EN: Quote -->
                     <div class="message-card" onclick="copyMessage('general-en')" style="background: rgba(16, 163, 127, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-general-en">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Custom quote</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.7); display: block; margin-bottom: 3px;">Custom price</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Specific sofa quote</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Custom quote</span>
                         </div>
                         <div id="general-en-message" style="display:none;">The price for cleaning a sofa like that is $
 
@@ -8174,19 +8097,11 @@ Includes:
 
                     <!-- Card EN: Auto -->
                     <div class="message-card" onclick="copyMessage('auto-en')" style="background: rgba(245, 158, 11, 0.15); cursor:pointer;">
-                        <div class="msg-slides" id="msg-slides-auto-en">
-                            <div class="msg-slide" style="flex-direction: column; gap: 6px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(252, 211, 77, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M21 17h-2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1"/><rect x="5" y="7" width="14" height="10" rx="2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>
-                                </svg>
-                                <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.8);">Car Detailing</span>
-                            </div>
-                            <div class="msg-slide" style="justify-content: flex-start; padding: 0 14px;">
-                                <div>
-                                    <span style="font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.7); display: block; margin-bottom: 3px;">Mobile detailing</span>
-                                    <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.95);">Car cleaning at your door</span>
-                                </div>
-                            </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(252, 211, 77, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M21 17h-2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1"/><rect x="5" y="7" width="14" height="10" rx="2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.8);">Car Detailing</span>
                         </div>
                         <div id="auto-en-message" style="display:none;">We offer 2 service options:
 
@@ -20519,22 +20434,6 @@ END:VCARD`;
         }
 
         // Message cards sliders
-        function initMessageSliders() {
-            const ids = ['msg-slides-carpet', 'msg-slides-furniture', 'msg-slides-general',
-                         'msg-slides-carpet-en', 'msg-slides-furniture-en', 'msg-slides-general-en',
-                         'msg-slides-auto-es', 'msg-slides-auto-en'];
-            let isSecond = false;
-            function toggleAll() {
-                isSecond = !isSecond;
-                ids.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.toggle('show-second', isSecond);
-                });
-                setTimeout(toggleAll, isSecond ? 3000 : 4000);
-            }
-            setTimeout(toggleAll, 2500);
-        }
-
         // Nueva cita button slider
         function initNuevaCitaSlider() {
             const slides = document.getElementById('nueva-cita-slides');
@@ -20554,7 +20453,7 @@ END:VCARD`;
                 initAnalyticsSlider();
                 initRegistrySlider();
                 initNuevaCitaSlider();
-                initMessageSliders();
+
                 loadBentoAnalytics();
                 loadTodayTotal();
             });
