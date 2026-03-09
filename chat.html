@@ -373,6 +373,223 @@ let _busy = false;
 let _geminiModel = localStorage.getItem('rize_gemini_model') || null;
 let _thinkingEl = null;
 
+// ── Memory System v2: IndexedDB + Embeddings + RAG ─────────────────────────
+const _MEM_DB = 'RizeChatDB';
+const _MEM_DB_VER = 1;
+let _memDB = null;
+let _SESSION_ID = 'S' + Date.now().toString(36);
+let _semanticCtx = '';        // populated by semantic search before each runAgent
+let _inactivityTimer = null;
+const _INACTIVITY_MS = 10 * 60 * 1000; // 10 min
+
+// Open IndexedDB with two stores: history + embeddings
+function _openMemDB() {
+  return new Promise(resolve => {
+    if (_memDB) { resolve(_memDB); return; }
+    const req = indexedDB.open(_MEM_DB, _MEM_DB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('history')) {
+        const hs = db.createObjectStore('history', {keyPath: 'id', autoIncrement: true});
+        hs.createIndex('ts', 'ts', {unique: false});
+      }
+      if (!db.objectStoreNames.contains('embeddings')) {
+        const es = db.createObjectStore('embeddings', {keyPath: 'id'});
+        es.createIndex('ts', 'ts', {unique: false});
+      }
+    };
+    req.onsuccess = e => { _memDB = e.target.result; resolve(_memDB); };
+    req.onerror = () => resolve(null);
+  });
+}
+
+// Phase 1 – save one turn to persistent history
+async function _saveHistoryMsg(role, content) {
+  try {
+    const db = await _openMemDB(); if (!db) return;
+    await new Promise((res, rej) => {
+      const tx = db.transaction('history', 'readwrite');
+      tx.objectStore('history').add({session: _SESSION_ID, role, content: String(content).slice(0, 4000), ts: Date.now()});
+      tx.oncomplete = res; tx.onerror = rej;
+    });
+  } catch {}
+}
+
+// Phase 1 – load last N turns from IndexedDB
+async function _loadHistory(n = 20) {
+  try {
+    const db = await _openMemDB(); if (!db) return [];
+    return await new Promise(resolve => {
+      const tx = db.transaction('history', 'readonly');
+      const req = tx.objectStore('history').index('ts').openCursor(null, 'prev');
+      const rows = [];
+      req.onsuccess = e => {
+        const cur = e.target.result;
+        if (cur && rows.length < n) { rows.push(cur.value); cur.continue(); }
+        else resolve(rows.reverse());
+      };
+      req.onerror = () => resolve([]);
+    });
+  } catch { return []; }
+}
+
+// Phase 1 – restore history from IndexedDB into _history + render in UI
+async function _restoreHistory() {
+  const msgs = await _loadHistory(20);
+  if (!msgs.length) return;
+  const wrap = document.getElementById('messages');
+  const es = document.getElementById('empty-state');
+  if (es) es.remove();
+  _ensureSpacer();
+  for (const m of msgs) {
+    _history.push({role: m.role, content: m.content});
+    if (m.role === 'user') {
+      const row = document.createElement('div');
+      row.className = 'ai-msg user';
+      const bub = document.createElement('div');
+      bub.className = 'bubble-user';
+      bub.textContent = m.content;
+      row.appendChild(bub); wrap.appendChild(row);
+    } else if (m.role === 'assistant') {
+      const row = document.createElement('div');
+      row.className = 'ai-msg';
+      row.innerHTML = `<div class="msg-av"><img src="./images/agenda-logo.jpg" onerror="this.style.display='none'"></div><div class="bubble-ai">${_renderMd(m.content)}</div>`;
+      wrap.appendChild(row);
+    }
+  }
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+// Phase 3 – call Gemini text-embedding-004 (free, 768 dims)
+async function _embed(text) {
+  const key = localStorage.getItem('rize_gemini_key'); if (!key) return null;
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${key}`,
+      {method: 'POST', headers: {'Content-Type': 'application/json'},
+       body: JSON.stringify({model: 'models/text-embedding-004', content: {parts: [{text: text.slice(0, 2000)}]}})}
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    return d.embedding?.values || null;
+  } catch { return null; }
+}
+
+function _cosineSim(a, b) {
+  if (!a || !b || a.length !== b.length) return 0;
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
+  const d = Math.sqrt(na) * Math.sqrt(nb);
+  return d === 0 ? 0 : dot / d;
+}
+
+// Phase 3 – save embedding for a user+AI pair (runs in background, non-blocking)
+async function _saveEmbedding(userText, aiText) {
+  try {
+    const db = await _openMemDB(); if (!db) return;
+    const combined = `Usuario: ${userText}\nAsistente: ${aiText}`;
+    const vector = await _embed(combined); if (!vector) return;
+    await new Promise((res, rej) => {
+      const tx = db.transaction('embeddings', 'readwrite');
+      tx.objectStore('embeddings').put({
+        id: _SESSION_ID + '_' + Date.now(), session: _SESSION_ID,
+        text: combined.slice(0, 1000), vector, ts: Date.now()
+      });
+      tx.oncomplete = res; tx.onerror = rej;
+    });
+  } catch {}
+}
+
+// Phase 3 – semantic search: embed query, cosine sim vs all past sessions
+async function _semanticSearch(query, topK = 3) {
+  try {
+    const db = await _openMemDB(); if (!db) return '';
+    const qVec = await _embed(query); if (!qVec) return '';
+    const rows = await new Promise(resolve => {
+      const tx = db.transaction('embeddings', 'readonly');
+      const req = tx.objectStore('embeddings').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+    const scored = rows
+      .filter(r => r.session !== _SESSION_ID)
+      .map(r => ({text: r.text, score: _cosineSim(qVec, r.vector)}))
+      .filter(r => r.score > 0.75)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+    return scored.map(r => `• ${r.text.slice(0, 300)}`).join('\n');
+  } catch { return ''; }
+}
+
+// Phase 2 – session summaries helpers
+function _getSessionSummaries() {
+  try { return JSON.parse(localStorage.getItem('rize_session_summaries') || '[]'); } catch { return []; }
+}
+function _saveSessionSummaries(arr) {
+  localStorage.setItem('rize_session_summaries', JSON.stringify(arr.slice(-10)));
+}
+
+// Phase 2 – summarize current session (called on inactivity or newChat)
+async function _summarizeSession() {
+  if (_history.length < 4) return;
+  const key = localStorage.getItem('rize_gemini_key'); if (!key) return;
+  const model = localStorage.getItem('rize_gemini_model') || 'gemini-2.0-flash';
+  const snippet = _history.slice(-16).map(m => `${m.role==='user'?'U':'A'}: ${String(m.content).slice(0, 200)}`).join('\n');
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      {method: 'POST', headers: {'Content-Type': 'application/json'},
+       body: JSON.stringify({
+         contents: [{role: 'user', parts: [{text: `Resume en 3-5 puntos clave lo más importante de esta conversación (decisiones, datos de clientes, tareas). Máx 200 palabras. Solo el resumen, sin intro:\n\n${snippet}`}]}],
+         generationConfig: {temperature: 0.2, maxOutputTokens: 300}
+       })}
+    );
+    if (!res.ok) return;
+    const d = await res.json();
+    const summary = d.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!summary) return;
+    const sums = _getSessionSummaries();
+    sums.push({id: _SESSION_ID, ts: Date.now(), summary});
+    _saveSessionSummaries(sums);
+  } catch {}
+}
+
+// Phase 2 – reset inactivity timer on every exchange
+function _resetInactivityTimer() {
+  if (_inactivityTimer) clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(() => _summarizeSession(), _INACTIVITY_MS);
+}
+
+// Phase 4 – auto-extract facts silently every 8 messages
+async function _autoExtractFacts() {
+  const key = localStorage.getItem('rize_gemini_key'); if (!key) return;
+  const model = localStorage.getItem('rize_gemini_model') || 'gemini-2.0-flash';
+  const snippet = _history.slice(-10).map(m => `${m.role==='user'?'U':'A'}: ${String(m.content).slice(0, 300)}`).join('\n');
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      {method: 'POST', headers: {'Content-Type': 'application/json'},
+       body: JSON.stringify({
+         contents: [{role: 'user', parts: [{text: `Extrae hechos importantes de esta conversación que valga la pena recordar: preferencias del usuario, datos de clientes, decisiones de negocio. Devuelve JSON array: [{"type":"preference|client_info|business_note|general","content":"..."}]. Si no hay nada relevante devuelve []. Solo el JSON, sin markdown:\n\n${snippet}`}]}],
+         generationConfig: {temperature: 0.1, maxOutputTokens: 500}
+       })}
+    );
+    if (!res.ok) return;
+    const d = await res.json();
+    let raw = (d.candidates?.[0]?.content?.parts?.[0]?.text || '[]').trim().replace(/```json\n?/g,'').replace(/```\n?/g,'');
+    const facts = JSON.parse(raw);
+    if (!Array.isArray(facts) || !facts.length) return;
+    const mem = _getAIMem();
+    for (const f of facts) {
+      if (!f.content || mem.notes.some(n => n.content === f.content)) continue;
+      mem.notes.push({content: f.content, category: f.type || 'general', date: new Date().toISOString().slice(0, 10), auto: true});
+    }
+    if (mem.notes.length > 60) mem.notes = mem.notes.slice(-60);
+    _saveAIMem(mem);
+  } catch {}
+}
+// ── End Memory System v2 ───────────────────────────────────────────────────
+
 // ── Supabase — misma URL/key que la app principal ──────────────────────────
 const _SB_URL = 'https://stodvmbmvtxljfsdzghc.supabase.co';
 const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0b2R2bWJtdnR4bGpmc2R6Z2hjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyODMyMTYsImV4cCI6MjA3Mjg1OTIxNn0.7y3RPDV_xYFzXSTUM7oCt_WgSSRLm2HoGsCq5-5Jm5M';
@@ -548,6 +765,7 @@ function _lg_fullSync(showFeedback=false){
 (function init(){
   _lg_fullSync();       // merge cookies (best-effort fallback)
   _syncFromSupabase();  // pull from Supabase — fuente de verdad real
+  _restoreHistory();    // Phase 1: restore last conversation from IndexedDB
   const bc = _getBC();
   if (bc.name) {
     document.getElementById('header-title').textContent = bc.name;
@@ -714,7 +932,14 @@ function buildSystemPrompt() {
   const mtdApts = allApts.filter(a=>{const[y,m]=(a.date||a.fecha||'').split('-').map(Number);return y===curY&&m===curM;});
   const mtdRevenue = mtdApts.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const memBlock = (mem.notes.length>0||mem.summary)
-    ? `\nMEMORIA PERSISTENTE: ${mem.summary||''} ${mem.notes.slice(-8).map(n=>n.content).join(' | ')}\n` : '';
+    ? `\nMEMORIA PERSISTENTE: ${mem.summary||''} ${mem.notes.slice(-15).map(n=>n.content).join(' | ')}\n` : '';
+  // Session summaries from previous conversations
+  const sessionSums = _getSessionSummaries();
+  const sumsBlock = sessionSums.length > 0
+    ? '\nSESIONES ANTERIORES:\n' + sessionSums.slice(-3).map(s => `[${new Date(s.ts).toLocaleDateString('es')}] ${s.summary}`).join('\n') + '\n'
+    : '';
+  // Semantic context: most relevant past exchanges for this query
+  const semBlock = _semanticCtx ? '\nCONTEXTO RELEVANTE DE SESIONES PASADAS:\n' + _semanticCtx + '\n' : '';
   return `Eres el asistente inteligente de ${bc.name||'LivinGreen'}, empresa de limpieza en Utah, USA. Eres un AGENTE COMPLETO con conocimiento general ilimitado y acceso total a los datos del negocio. Respondes en español.
 
 NEGOCIO: ${bc.name||'LivinGreen'} | Tel: ${bc.phone||'—'} | Email: ${bc.email||'—'} | Web: ${bc.website||'—'} | IG: ${bc.instagram||'—'}
@@ -729,7 +954,7 @@ MES ACTUAL: ${mtdApts.length} citas | $${mtdRevenue.toFixed(0)} ingresos hasta h
 HOY (${todayStr}): ${hoy.length?hoy.map(fmt).join(' // '):'sin citas'}
 PRÓXIMOS 14 DÍAS (${prox14.length} citas): ${prox14.length?prox14.map(fmt).join(' // '):'ninguna'}
 DÍAS 15-60 (${prox60.length} citas): ${prox60.length?prox60.map(a=>`${a.date||a.fecha} ${a.clientName||a.cliente||a.name||'?'}`).join(' | '):'ninguna'}
-${topClientsTxt}${clientNotesSummary}${memBlock}
+${topClientsTxt}${clientNotesSummary}${memBlock}${sumsBlock}${semBlock}
 DATOS EN STORAGE:
 • appointments: [{id, date(YYYY-MM-DD), time(HH:MM), clientName, service, price, city, notes, timestamp}]
 • clientRegistry: [{id, name, phone, email, city, notes}]
@@ -1466,15 +1691,22 @@ async function sendMessage(){
   _clearInput();
   _history.push({role:'user',content:text});
   _addUserBubble(text);
+  _saveHistoryMsg('user', text); // Phase 1: persist
   _busy=true; _setInputEnabled(false); _showThinking();
   await _ensureSynced(); // garantiza que Supabase cargó antes de construir el prompt
+  _semanticCtx = await _semanticSearch(text); // Phase 3: semantic context
   try{
     const reply=await runAgent(text);
     _removeThinking();
     _history.push({role:'assistant',content:reply});
+    _saveHistoryMsg('assistant', reply); // Phase 1: persist
     await _streamBubble(reply);
     if(_history.length>20) _history=_history.slice(-20);
     _lg_fullSync(); // propagate any tool-created data back to cookies
+    _resetInactivityTimer(); // Phase 2: start inactivity countdown
+    _saveEmbedding(text, reply); // Phase 3: embed pair in background
+    const mem=_getAIMem();
+    if((mem.total_messages||0)%8===0 && (mem.total_messages||0)>0) _autoExtractFacts(); // Phase 4
   }catch(e){
     _removeThinking();
     await _streamBubble(e.message||'Error desconocido.');
@@ -1704,6 +1936,10 @@ function _startWebSpeech(){
 
 // ── New chat ───────────────────────────────────────────────────────────────
 function newChat(){
+  if (_history.length >= 4) _summarizeSession(); // Phase 2: summarize before clearing
+  _SESSION_ID = 'S' + Date.now().toString(36); // new session ID
+  _semanticCtx = '';
+  if (_inactivityTimer) { clearTimeout(_inactivityTimer); _inactivityTimer = null; }
   _history=[];
   window._artifacts=[];
   if(window._chatRecorder){ window._chatRecorder.stop(); }
