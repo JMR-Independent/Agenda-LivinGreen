@@ -4703,6 +4703,52 @@
             to   { opacity: 1; }
         }
 
+        @keyframes sheetSlideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        #job-sheet.sheet-open {
+            animation: sheetSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .job-sheet-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s ease;
+        }
+        .job-sheet-item:last-child { border-bottom: none; }
+        .job-sheet-item:active { background: rgba(255,255,255,0.06); }
+
+        .job-sheet-item .sheet-check {
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all 0.18s ease;
+        }
+        .job-sheet-item.selected .sheet-check {
+            background: #10a37f;
+            border-color: #10a37f;
+        }
+        .job-sheet-item .sheet-check svg { display: none; }
+        .job-sheet-item.selected .sheet-check svg { display: block; }
+
+        .job-sheet-item .sheet-label {
+            font-size: 15px;
+            color: rgba(255,255,255,0.85);
+            font-weight: 400;
+        }
+        .job-sheet-item.selected .sheet-label {
+            color: white;
+            font-weight: 500;
+        }
+
         @keyframes fadeInDown {
             from {
                 opacity: 0;
@@ -7154,9 +7200,7 @@
                                             <polyline points="6,9 12,15 18,9"></polyline>
                                         </svg>
                                     </div>
-                                    <div class="dropdown-list" id="job-list">
-                                        <!-- Populated dynamically by initServicesConfig() -->
-                                    </div>
+                                    <!-- job-list removed: now uses bottom sheet -->
                                 </div>
                                 <!-- Hidden select for form submission -->
                                 <select id="job" name="job" multiple style="display: none;">
@@ -7258,6 +7302,16 @@
             </div>
 
             <!-- Receipt Preview Modal (New simplified workflow) -->
+            <!-- Job Type Bottom Sheet -->
+            <div id="job-sheet-backdrop" onclick="closeJobDropdown()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:10998; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);"></div>
+            <div id="job-sheet" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:10999; background:rgba(18,26,42,0.98); border-radius:24px 24px 0 0; padding-bottom:env(safe-area-inset-bottom,16px); max-height:65vh; overflow-y:auto; box-shadow:0 -8px 40px rgba(0,0,0,0.5); border-top:1px solid rgba(255,255,255,0.10);">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; border-bottom:1px solid rgba(255,255,255,0.08); position:sticky; top:0; background:rgba(18,26,42,0.98);">
+                    <span style="font-size:15px; font-weight:600; color:rgba(255,255,255,0.95); letter-spacing:0.2px;">Tipo de Trabajo</span>
+                    <button onclick="closeJobDropdown()" style="background:rgba(255,255,255,0.10); border:none; border-radius:50%; width:28px; height:28px; color:rgba(255,255,255,0.6); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; touch-action:manipulation;">×</button>
+                </div>
+                <div id="job-sheet-list" style="padding:6px 0 10px;"></div>
+            </div>
+
             <div id="receipt-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1003; align-items: center; justify-content: center;">
                 <div style="background: var(--modal-bg); border-radius: 12px; padding: 0; max-width: 800px; width: 95%; max-height: 95vh; overflow: hidden; display: flex; flex-direction: column;">
                     <!-- Header -->
@@ -10714,63 +10768,13 @@ Incluye:
         }
 
         function setupJobCheckboxes() {
-            // Use event delegation on #job-list so listeners survive re-renders
-            const jobList = document.getElementById('job-list');
-            if (!jobList) return;
-            // Clone node to remove any previous delegated listeners
-            const fresh = jobList.cloneNode(true);
-            jobList.parentNode.replaceChild(fresh, jobList);
-            fresh.addEventListener('change', function(e) {
-                if (e.target.type === 'checkbox') { updateJobSelection(); closeJobDropdown(); }
-            });
-            fresh.addEventListener('click', function(e) {
-                const item = e.target.closest('.dropdown-item');
-                if (!item) return;
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                if (checkbox && e.target !== checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    updateJobSelection();
-                    closeJobDropdown();
-                }
-            });
-            fresh.addEventListener('touchend', function(e) {
-                const item = e.target.closest('.dropdown-item');
-                if (!item) return;
-                e.preventDefault();
-                e.stopPropagation();
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    setTimeout(() => { checkbox.checked = !checkbox.checked; updateJobSelection(); closeJobDropdown(); }, 50);
-                }
-            }, { passive: false });
-            updateJobSelection();
+            // No-op: bottom sheet handles its own events via onclick
+            updateJobSelectionFromSheet();
         }
 
-        // Single outside-click listener (registered once at startup)
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('job-dropdown');
-            if (dropdown && !dropdown.contains(event.target)) {
-                const list = document.getElementById('job-list');
-                if (list && list.classList.contains('show')) closeJobDropdown();
-            }
-        });
-
         function toggleJobDropdown() {
-            const isDevelopment = window.location.hostname === 'localhost' || window.location.protocol === 'file:';
-            
-            if (isDevelopment) {
-                console.log('📋 toggleJobDropdown called');
-            }
-            
-            const dropdown = document.getElementById('job-dropdown');
-            const header = dropdown.querySelector('.dropdown-header');
-            const list = document.getElementById('job-list');
-            
-            if (isDevelopment) {
-                console.log('Elements found:', {dropdown: !!dropdown, header: !!header, list: !!list});
-            }
-            
-            if (list.classList.contains('show')) {
+            const sheet = document.getElementById('job-sheet');
+            if (sheet && sheet.style.display !== 'none') {
                 closeJobDropdown();
             } else {
                 openJobDropdown();
@@ -10778,55 +10782,29 @@ Incluye:
         }
 
         function openJobDropdown() {
-            const dropdown = document.getElementById('job-dropdown');
-            const header = dropdown.querySelector('.dropdown-header');
-            const list = document.getElementById('job-list');
-            // Position fixed dropdown below the header
-            const rect = header.getBoundingClientRect();
-            list.style.top = (rect.bottom + 6) + 'px';
-            list.style.left = rect.left + 'px';
-            list.style.width = rect.width + 'px';
-            header.classList.add('open');
-            list.classList.add('show');
+            renderJobSheetItems();
+            const backdrop = document.getElementById('job-sheet-backdrop');
+            const sheet = document.getElementById('job-sheet');
+            if (!backdrop || !sheet) return;
+            backdrop.style.display = 'block';
+            sheet.style.display = 'block';
+            sheet.classList.remove('sheet-open');
+            void sheet.offsetWidth;
+            sheet.classList.add('sheet-open');
+            document.getElementById('job-dropdown').querySelector('.dropdown-header').classList.add('open');
         }
 
         function closeJobDropdown() {
-            const dropdown = document.getElementById('job-dropdown');
-            const header = dropdown.querySelector('.dropdown-header');
-            const list = document.getElementById('job-list');
-            header.classList.remove('open');
-            list.classList.remove('show');
+            const backdrop = document.getElementById('job-sheet-backdrop');
+            const sheet = document.getElementById('job-sheet');
+            if (backdrop) backdrop.style.display = 'none';
+            if (sheet) { sheet.style.display = 'none'; sheet.classList.remove('sheet-open'); }
+            const header = document.querySelector('#job-dropdown .dropdown-header');
+            if (header) header.classList.remove('open');
         }
 
         function updateJobSelection() {
-            const checkboxes = document.querySelectorAll('#job-list input[type="checkbox"]');
-            const hiddenSelect = document.getElementById('job');
-            const placeholder = document.getElementById('job-placeholder');
-            
-            // Get selected values
-            const selectedValues = [];
-            const selectedLabels = [];
-            
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    selectedValues.push(checkbox.value);
-                    selectedLabels.push(checkbox.nextElementSibling.textContent);
-                }
-            });
-            
-            // Update hidden select for form submission
-            Array.from(hiddenSelect.options).forEach(option => {
-                option.selected = selectedValues.includes(option.value);
-            });
-            
-            // Update placeholder text
-            if (selectedLabels.length === 0) {
-                placeholder.textContent = 'Seleccionar trabajo';
-            } else if (selectedLabels.length === 1) {
-                placeholder.textContent = selectedLabels[0];
-            } else {
-                placeholder.textContent = `${selectedLabels.length} trabajos seleccionados`;
-            }
+            updateJobSelectionFromSheet();
         }
 
         function updateDateTime() {
@@ -16003,20 +15981,58 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
         }
 
         function renderJobDropdown() {
-            const jobList = document.getElementById('job-list');
             const jobSelect = document.getElementById('job');
-            if (!jobList || !jobSelect) return;
-            jobList.innerHTML = servicesConfig.map(svc =>
-                `<div class="dropdown-item">
-                    <input type="checkbox" id="job-${svc.id}" value="${svc.id}">
-                    <label for="job-${svc.id}">${svc.name}</label>
-                </div>`
-            ).join('');
-            jobSelect.innerHTML = servicesConfig.map(svc =>
-                `<option value="${svc.id}">${svc.name}</option>`
-            ).join('');
-            // Re-attach listeners every time items are re-rendered
-            setupJobCheckboxes();
+            if (jobSelect) {
+                jobSelect.innerHTML = servicesConfig.map(svc =>
+                    `<option value="${svc.id}">${svc.name}</option>`
+                ).join('');
+            }
+            renderJobSheetItems();
+        }
+
+        function renderJobSheetItems() {
+            const container = document.getElementById('job-sheet-list');
+            if (!container) return;
+            const selected = getSelectedJobIds();
+            container.innerHTML = servicesConfig.map(svc => {
+                const isSel = selected.includes(String(svc.id));
+                return `<div class="job-sheet-item${isSel ? ' selected' : ''}" data-id="${svc.id}" onclick="toggleJobSheetItem(this)">
+                    <div class="sheet-check">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="sheet-label">${svc.name}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function getSelectedJobIds() {
+            const jobSelect = document.getElementById('job');
+            if (!jobSelect) return [];
+            return Array.from(jobSelect.selectedOptions).map(o => String(o.value));
+        }
+
+        function toggleJobSheetItem(el) {
+            const id = el.dataset.id;
+            el.classList.toggle('selected');
+            // Sync to hidden select
+            const jobSelect = document.getElementById('job');
+            if (jobSelect) {
+                Array.from(jobSelect.options).forEach(opt => {
+                    if (String(opt.value) === String(id)) opt.selected = el.classList.contains('selected');
+                });
+            }
+            updateJobSelectionFromSheet();
+        }
+
+        function updateJobSelectionFromSheet() {
+            const selected = Array.from(document.querySelectorAll('#job-sheet-list .job-sheet-item.selected'));
+            const labels = selected.map(el => el.querySelector('.sheet-label').textContent);
+            const placeholder = document.getElementById('job-placeholder');
+            if (placeholder) {
+                placeholder.textContent = labels.length ? labels.join(', ') : 'Seleccionar trabajo';
+            }
         }
 
         function renderServiceTypeSelect() {
