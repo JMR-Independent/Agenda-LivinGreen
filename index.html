@@ -837,35 +837,17 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.25s ease;
             box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
             white-space: nowrap;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             gap: 5px;
-            position: relative;
-            overflow: hidden !important;
+            animation: biz-btn-breathe 3.6s ease-in-out infinite;
         }
-        .upload-btn::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 55%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
-            pointer-events: none;
-            animation: upload-shimmer 2.8s ease-in-out 0.8s infinite;
-        }
-        @keyframes upload-shimmer {
-            0%   { left: -100%; }
-            40%  { left: 160%; }
-            100% { left: 160%; }
-        }
-        .upload-btn:hover {
-            background: rgba(59, 130, 246, 1);
-            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45);
-            transform: translateY(-1px);
+        .upload-btn:active {
+            transform: scale(0.96);
+            filter: brightness(0.9);
         }
 
         .upload-info {
@@ -2493,6 +2475,12 @@
         }
 
         /* Form section - Extended for dropdown visibility */
+        #schedule-content-area .form-section {
+            padding-top: 18px !important;
+            min-height: auto !important;
+            margin-top: 0 !important;
+        }
+
         .form-section {
             background: rgba(40, 40, 40, 0.4) !important;
             backdrop-filter: blur(20px) saturate(180%) !important;
@@ -3179,17 +3167,14 @@
         }
 
         .dropdown-list {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            right: 0;
-            background: rgba(30, 41, 59, 0.95) !important;
+            position: fixed;
+            background: rgba(30, 41, 59, 0.97) !important;
             backdrop-filter: blur(20px) saturate(180%) !important;
             -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
             border: 1px solid rgba(255, 255, 255, 0.12) !important;
             border-radius: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-            z-index: 9999 !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+            z-index: 99999 !important;
             display: none;
             max-height: 250px;
             overflow-y: auto;
@@ -6980,7 +6965,7 @@
                 </div>
             </div>
 
-            <div class="content-area" style="animation: fadeInScale 0.4s ease-out; padding-top: 4px;">
+            <div class="content-area" id="schedule-content-area" style="overflow: hidden; padding-top: 0;">
                 <!-- Upload Section — fixed at top, same row as back arrow -->
                 <div class="upload-section" id="upload-area">
                     <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -10734,6 +10719,11 @@ Incluye:
             const dropdown = document.getElementById('job-dropdown');
             const header = dropdown.querySelector('.dropdown-header');
             const list = document.getElementById('job-list');
+            // Position fixed dropdown below the header
+            const rect = header.getBoundingClientRect();
+            list.style.top = (rect.bottom + 6) + 'px';
+            list.style.left = rect.left + 'px';
+            list.style.width = rect.width + 'px';
             header.classList.add('open');
             list.classList.add('show');
         }
@@ -15187,6 +15177,18 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
 
                     // Show the selected view
                     showView(viewName);
+
+                    // Animate schedule form section on entry
+                    if (viewName === 'schedule') {
+                        const formSec = document.querySelector('#schedule-content-area .form-section');
+                        const uploadArea = document.getElementById('upload-area');
+                        [formSec, uploadArea].forEach(el => {
+                            if (!el) return;
+                            el.style.animation = 'none';
+                            void el.offsetWidth;
+                            el.style.animation = 'fadeInScale 0.35s ease-out both';
+                        });
+                    }
 
                     // Load view-specific data (only if not already loaded)
                     if (viewName === 'history' && !window._cacheLoaded?.history) {
