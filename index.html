@@ -770,7 +770,7 @@
             right: max(16px, calc(env(safe-area-inset-right) + 16px));
             height: 56px;
             z-index: 9999;
-            animation: fadeInScale 0.35s ease-out 0.05s both;
+            animation: fadeIn 0.25s ease-out both;
             background: rgba(40, 40, 40, 0.55) !important;
             backdrop-filter: blur(20px) saturate(180%) !important;
             -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
@@ -4697,6 +4697,11 @@
         .biz-action-btn:nth-child(1) { animation-delay: 0s; }
         .biz-action-btn:nth-child(2) { animation-delay: 1.2s; }
         .biz-action-btn:nth-child(3) { animation-delay: 2.4s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
 
         @keyframes fadeInDown {
             from {
@@ -15244,13 +15249,18 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional:
                     // Animate schedule form section on entry
                     if (viewName === 'schedule') {
                         const formSec = document.querySelector('#schedule-content-area .form-section');
+                        if (formSec) {
+                            formSec.style.animation = 'none';
+                            void formSec.offsetWidth;
+                            formSec.style.animation = 'fadeInScale 0.35s ease-out both';
+                        }
+                        // Reset upload bar fade (no scale — avoids jump)
                         const uploadArea = document.getElementById('upload-area');
-                        [formSec, uploadArea].forEach(el => {
-                            if (!el) return;
-                            el.style.animation = 'none';
-                            void el.offsetWidth;
-                            el.style.animation = 'fadeInScale 0.35s ease-out both';
-                        });
+                        if (uploadArea) {
+                            uploadArea.style.animation = 'none';
+                            void uploadArea.offsetWidth;
+                            uploadArea.style.animation = 'fadeIn 0.25s ease-out both';
+                        }
                     }
 
                     // Load view-specific data (only if not already loaded)
