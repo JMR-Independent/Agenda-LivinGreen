@@ -20520,19 +20520,19 @@ END:VCARD`;
 
         // Message cards sliders
         function initMessageSliders() {
-            ['msg-slides-carpet', 'msg-slides-furniture', 'msg-slides-general',
-             'msg-slides-carpet-en', 'msg-slides-furniture-en', 'msg-slides-general-en',
-             'msg-slides-auto-es', 'msg-slides-auto-en'].forEach((id, index) => {
-                const slides = document.getElementById(id);
-                if (!slides) return;
-                let isSecond = false;
-                function toggle() {
-                    isSecond = !isSecond;
-                    slides.classList.toggle('show-second', isSecond);
-                    setTimeout(toggle, Math.floor(Math.random() * 2000) + 3000 + index * 500);
-                }
-                setTimeout(toggle, 1500 + index * 800);
-            });
+            const ids = ['msg-slides-carpet', 'msg-slides-furniture', 'msg-slides-general',
+                         'msg-slides-carpet-en', 'msg-slides-furniture-en', 'msg-slides-general-en',
+                         'msg-slides-auto-es', 'msg-slides-auto-en'];
+            let isSecond = false;
+            function toggleAll() {
+                isSecond = !isSecond;
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.toggle('show-second', isSecond);
+                });
+                setTimeout(toggleAll, isSecond ? 3000 : 4000);
+            }
+            setTimeout(toggleAll, 2500);
         }
 
         // Nueva cita button slider
