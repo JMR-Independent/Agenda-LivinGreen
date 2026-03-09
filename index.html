@@ -770,6 +770,7 @@
             right: max(16px, calc(env(safe-area-inset-right) + 16px));
             height: 56px;
             z-index: 9999;
+            animation: fadeInScale 0.35s ease-out 0.05s both;
             background: rgba(40, 40, 40, 0.55) !important;
             backdrop-filter: blur(20px) saturate(180%) !important;
             -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
@@ -850,16 +851,15 @@
             content: '';
             position: absolute;
             top: 0; left: -100%;
-            width: 60%;
+            width: 55%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
             pointer-events: none;
-        }
-        .upload-btn.shimmer-active::before {
-            animation: upload-shimmer 0.5s ease forwards;
+            animation: upload-shimmer 2.8s ease-in-out 0.8s infinite;
         }
         @keyframes upload-shimmer {
             0%   { left: -100%; }
+            40%  { left: 160%; }
             100% { left: 160%; }
         }
         .upload-btn:hover {
@@ -6980,7 +6980,7 @@
                 </div>
             </div>
 
-            <div class="content-area" style="animation: fadeInScale 0.4s ease-out; padding-top: 16px;">
+            <div class="content-area" style="animation: fadeInScale 0.4s ease-out; padding-top: 4px;">
                 <!-- Upload Section — fixed at top, same row as back arrow -->
                 <div class="upload-section" id="upload-area">
                     <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
