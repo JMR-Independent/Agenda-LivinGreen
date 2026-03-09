@@ -762,28 +762,32 @@
             background: var(--brand-primary);
         }
 
-        /* Upload area - Calendar Design */
+        /* Upload area — fixed, same row as back arrow */
         .upload-section {
-            background: rgba(40, 40, 40, 0.45) !important;
+            position: fixed !important;
+            top: max(20px, calc(env(safe-area-inset-top) + 20px));
+            left: calc(max(20px, calc(env(safe-area-inset-left) + 20px)) + 56px + 10px);
+            right: max(16px, calc(env(safe-area-inset-right) + 16px));
+            height: 56px;
+            z-index: 9999;
+            background: rgba(40, 40, 40, 0.55) !important;
             backdrop-filter: blur(20px) saturate(180%) !important;
             -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
             border-radius: 18px;
-            padding: 12px 18px;
-            margin-bottom: 16px;
-            position: relative;
+            padding: 0 14px;
+            margin: 0;
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
             display: flex;
             align-items: center;
             gap: 10px;
-            text-align: left;
-            justify-content: flex-start;
         }
-        .upload-section:hover {
-            border-color: rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+        /* PWA adjustment */
+        @media (display-mode: standalone) {
+            .upload-section {
+                top: max(5px, calc(env(safe-area-inset-top) + 5px));
+            }
         }
 
         .upload-section::before {
@@ -851,7 +855,9 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
             transition: left 0.45s ease;
         }
-        .upload-btn:hover::before, .upload-btn:active::before {
+        .upload-btn:hover::before,
+        .upload-btn:active::before,
+        .upload-btn.shimmer-active::before {
             left: 160%;
         }
         .upload-btn:hover {
@@ -2524,14 +2530,13 @@
 
         .form-section h3,
         .preview-section h3 {
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #10a37f, #60efff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
             margin-bottom: 24px;
-            letter-spacing: -0.3px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
         }
 
         .form-grid {
@@ -3245,18 +3250,29 @@
         /* Loading — modern */
         .loading {
             display: none;
+            position: fixed !important;
+            top: max(20px, calc(env(safe-area-inset-top) + 20px));
+            left: calc(max(20px, calc(env(safe-area-inset-left) + 20px)) + 56px + 10px);
+            right: max(16px, calc(env(safe-area-inset-right) + 16px));
+            height: 56px;
+            z-index: 9999;
             align-items: center;
             gap: 14px;
-            padding: 12px 18px;
-            background: rgba(40, 40, 40, 0.45);
+            padding: 0 18px;
+            background: rgba(40, 40, 40, 0.55);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 18px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            margin: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
         .loading.active { display: flex; }
+        @media (display-mode: standalone) {
+            .loading {
+                top: max(5px, calc(env(safe-area-inset-top) + 5px));
+            }
+        }
 
         #loading-text {
             color: rgba(255, 255, 255, 0.75) !important;
@@ -6956,9 +6972,9 @@
                 </div>
             </div>
 
-            <div class="content-area" style="animation: fadeInScale 0.4s ease-out; padding-top: 8px;">
-                <!-- Upload Section — offset 25% left to sit next to back arrow -->
-                <div class="upload-section" id="upload-area" style="margin-left:25%;">
+            <div class="content-area" style="animation: fadeInScale 0.4s ease-out; padding-top: 76px;">
+                <!-- Upload Section — fixed at top, same row as back arrow -->
+                <div class="upload-section" id="upload-area">
                     <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17,8 12,3 7,8"/>
@@ -10591,6 +10607,14 @@ Incluye:
             setupJobCheckboxes();
             setupRegistrySearch();
             setupMobileMenuClose();
+            // Shimmer on touch for upload button
+            const uploadBtn = document.querySelector('.upload-btn');
+            if (uploadBtn) {
+                uploadBtn.addEventListener('touchstart', function() {
+                    this.classList.add('shimmer-active');
+                    setTimeout(() => this.classList.remove('shimmer-active'), 600);
+                }, { passive: true });
+            }
             
             // Focus on direct SMS with PDF attachment only
         });
