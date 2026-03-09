@@ -395,8 +395,7 @@ function _getSB() {
 
 // ── Actualizar subtítulo del header ───────────────────────────────────────
 function _updateSubtitle(text) {
-  const el = document.getElementById('header-sub');
-  if (el) el.textContent = text;
+  // subtitle stays fixed as "LivinGreen"
 }
 
 // ── Sync desde Supabase (fuente de verdad real, accesible desde cualquier contexto) ──
@@ -545,7 +544,7 @@ function _lg_fullSync(showFeedback=false){
     _cookieWrite({appointments:apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cut&&d<=fut;}),clientRegistry:cli,rize_services_config:svc,rize_business_config:biz,dayEvents:events});
     // Update header subtitle with loaded count
     const subEl=document.getElementById('header-sub');
-    if(subEl) subEl.textContent=`${apts.length} citas · ${cli.length} clientes`;
+    if(subEl) subEl.textContent='LivinGreen';
     if(showFeedback) showToast(`Sincronizado ✓ — ${apts.length} citas, ${cli.length} clientes`);
   }catch(e){console.warn('fullSync:',e);if(showFeedback) showToast('Error al sincronizar');}
 }
