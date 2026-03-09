@@ -844,7 +844,7 @@
             align-items: center;
             gap: 5px;
             position: relative;
-            overflow: hidden;
+            overflow: hidden !important;
         }
         .upload-btn::before {
             content: '';
@@ -852,13 +852,15 @@
             top: 0; left: -100%;
             width: 60%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
-            transition: left 0.45s ease;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent);
+            pointer-events: none;
         }
-        .upload-btn:hover::before,
-        .upload-btn:active::before,
         .upload-btn.shimmer-active::before {
-            left: 160%;
+            animation: upload-shimmer 0.5s ease forwards;
+        }
+        @keyframes upload-shimmer {
+            0%   { left: -100%; }
+            100% { left: 160%; }
         }
         .upload-btn:hover {
             background: rgba(59, 130, 246, 1);
