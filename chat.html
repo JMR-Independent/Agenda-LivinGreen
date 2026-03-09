@@ -1311,7 +1311,8 @@ function _addUserBubble(text){
   bub.className='bubble-user';
   bub.textContent=text;
   const userCol=document.createElement('div');
-  userCol.style.cssText='display:flex;flex-direction:column;align-items:flex-end;';
+  userCol.style.cssText='display:flex;flex-direction:column;align-items:flex-end;max-width:78%;';
+  bub.style.maxWidth='100%';
   userCol.appendChild(bub);
   userCol.appendChild(_makeCopyBar(text, true));
   row.appendChild(userCol);
@@ -1374,8 +1375,11 @@ async function _streamBubble(text){
   av.innerHTML='<img src="./images/agenda-logo.jpg">';
   const bub=document.createElement('div');
   bub.className='bubble-ai';
+  const aiCol=document.createElement('div');
+  aiCol.style.cssText='display:flex;flex-direction:column;min-width:0;max-width:82%;';
+  aiCol.appendChild(bub);
   row.appendChild(av);
-  row.appendChild(bub);
+  row.appendChild(aiCol);
   wrap.appendChild(row);
 
   const cursor=document.createElement('span');
@@ -1453,7 +1457,7 @@ async function _streamBubble(text){
   }
   wrap.scrollTop=wrap.scrollHeight;
   // Add copy bar below AI bubble
-  row.appendChild(_makeCopyBar(text, false));
+  aiCol.appendChild(_makeCopyBar(text, false));
   // Ensure keyboard stays down after streaming
   setTimeout(()=>{ const i=document.getElementById('msg-input'); if(i) i.blur(); },50);
 }
