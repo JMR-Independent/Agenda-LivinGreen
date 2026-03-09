@@ -2481,6 +2481,21 @@
         }
 
         /* Form section - Extended for dropdown visibility */
+        #schedule-content-area {
+            overflow: hidden !important;
+            -webkit-overflow-scrolling: auto !important;
+            overscroll-behavior: none !important;
+            touch-action: pan-x !important;
+        }
+
+        #schedule-content-area input,
+        #schedule-content-area select,
+        #schedule-content-area textarea,
+        #schedule-content-area .dropdown-header,
+        #schedule-content-area .dropdown-item {
+            touch-action: manipulation !important;
+        }
+
         #schedule-content-area .form-section {
             padding-top: 18px !important;
             min-height: auto !important;
