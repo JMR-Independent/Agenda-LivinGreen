@@ -5,7 +5,7 @@
 // ================================================================
 
         // Finance Functions
-        const ADVERTISING_COST_PER_WEEK = 45; // $45 por semana
+        const ADVERTISING_COST_PER_WEEK = (function() { try { const bc = JSON.parse(localStorage.getItem('rize_business_config') || '{}'); return bc.advertisingCostPerWeek || 45; } catch { return 45; } })();
 
         // Helper function to parse dates correctly (avoid timezone issues)
         function parseLocalDate(dateString) {

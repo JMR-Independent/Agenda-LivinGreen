@@ -87,7 +87,9 @@ async function _restoreHistory() {
   wrap.scrollTop = wrap.scrollHeight;
 }
 
+let _embeddingsDisabled = false;
 async function _embed(text) {
+  if (_embeddingsDisabled) return null;
   const key = localStorage.getItem('rize_gemini_key'); if (!key) return null;
   try {
     const res = await fetch(
@@ -95,7 +97,7 @@ async function _embed(text) {
       {method: 'POST', headers: {'Content-Type': 'application/json'},
        body: JSON.stringify({model: 'models/text-embedding-004', content: {parts: [{text: text.slice(0, 2000)}]}})}
     );
-    if (!res.ok) return null;
+    if (!res.ok) { _embeddingsDisabled = true; return null; }
     const d = await res.json();
     return d.embedding?.values || null;
   } catch { return null; }
@@ -402,7 +404,7 @@ function _lg_fullSync(showFeedback=false){
     _cookieWrite({appointments:apts.filter(a=>{const d=a.date||a.fecha||'';return d>=cut&&d<=fut;}),clientRegistry:cli,rize_services_config:svc,rize_business_config:biz,dayEvents:events});
     // Update header subtitle with business name from config
     const subEl=document.getElementById('header-sub');
-    if(subEl) subEl.textContent=_getCfg().agent_name||bc.name||'Asistente';
+    if(subEl) subEl.textContent=_getCfg().agent_name||_getBC().name||'Asistente';
     if(showFeedback) showToast(`Sincronizado ✓ — ${apts.length} citas, ${cli.length} clientes`);
   }catch(e){console.warn('fullSync:',e);if(showFeedback) showToast('Error al sincronizar');}
 }
@@ -638,6 +640,15 @@ function buildSystemPrompt() {
     }
   } catch {}
 
+  // ── Gastos / costos del negocio ───────────────────────────────
+  let expensesTxt = '';
+  try {
+    const gasPrice = parseFloat(localStorage.getItem('gasPrice_current') || '0');
+    const gasLastUpdate = localStorage.getItem('gasPrice_lastUpdate') || '?';
+    const advertisingCostPerWeek = bc.advertisingCostPerWeek || 45;
+    expensesTxt = `\nGASTOS FIJOS: Publicidad: $${advertisingCostPerWeek}/semana ($${(advertisingCostPerWeek*4.33).toFixed(0)}/mes aprox)${gasPrice ? ` | Gasolina actual: $${gasPrice}/galón (actualizado: ${gasLastUpdate})` : ''}\n`;
+  } catch {}
+
   const proactiveTxt = '';
 
   const memBlock = (mem.notes.length>0||mem.summary)
@@ -663,7 +674,7 @@ ${appGuideDoc ? 'GUÍA DE LA APP: ' + appGuideDoc : ''}
 
 FECHA HOY: ${todayStr} (${weekday})
 SERVICIOS: ${svcTxt}
-${topClientsTxt}${clientNotesSummary}${monthlyTxt}${jobStatsTxt}${citiesTxt}${dayEventsTxt}${clientDirTxt}${quickMsgTxt}${proactiveTxt}${memBlock}${sumsBlock}${semBlock}
+${topClientsTxt}${clientNotesSummary}${monthlyTxt}${jobStatsTxt}${citiesTxt}${dayEventsTxt}${clientDirTxt}${quickMsgTxt}${expensesTxt}${proactiveTxt}${memBlock}${sumsBlock}${semBlock}
 ⚠️ DATOS EN TIEMPO REAL: Para citas, conteos, ingresos o cualquier dato específico — SIEMPRE usa los tools. No uses datos del contexto para responder preguntas directas.
 DATOS EN STORAGE:
 • appointments: [{id, date(YYYY-MM-DD), time(HH:MM), clientName, service, price, city, notes, timestamp}]
@@ -688,6 +699,7 @@ MAPEO DE FRASES → TOOL (úsalo exactamente así):
 - "la semana pasada" → get_appointments(from: lunes pasado, to: domingo pasado) calculando desde HOY
 - "próximos 7 días" / "próxima semana" → get_appointments(from: mañana, to: hoy+7) calculando desde HOY
 - ingresos/ganancias de un período → get_stats con el mismo mapeo de períodos
+- "gastos", "cuánto gasto", "cuánto queda", "ganancia neta", "rentabilidad", "cuánto me queda después de gastos", "finanzas", "publicidad", "gasolina", "costos fijos" → get_finance(period:"month") — o el período que aplique
 
 IMPORTANTE: Para "esta semana" y variantes, SIEMPRE usa period:"week" — nunca calcules fechas manualmente para eso. El tool ya sabe que week = lunes a domingo de la semana actual.
 
@@ -744,6 +756,7 @@ const AI_TOOLS = [
   {type:'function',function:{name:'generate_report',description:'Genera análisis del negocio. type: top_clients (clientes frecuentes), retention (fidelización), peak_hours (horas pico), projection (proyección mensual), full (todo).',parameters:{type:'object',properties:{type:{type:'string',enum:['top_clients','retention','peak_hours','projection','full']}},required:['type']}}},
   {type:'function',function:{name:'analyze_data',description:'Análisis avanzado de datos del negocio. Úsalo para: día o mes con más ingresos, ticket promedio, citas sin teléfono, desglose por ciudad, cualquier cálculo estadístico sobre las citas.',parameters:{type:'object',properties:{query:{type:'string',description:'Qué quieres calcular, ej: "día con más ingresos", "mes con más ganancias", "promedio por cita", "ciudades detallado"'}},required:['query']}}},
   {type:'function',function:{name:'get_business_context',description:'Obtiene información descriptiva del negocio: qué hacen, áreas de servicio, políticas, horarios, zonas atendidas, contexto general. Úsalo cuando necesites contexto descriptivo que no está en citas o estadísticas.',parameters:{type:'object',properties:{},required:[]}}},
+  {type:'function',function:{name:'get_finance',description:'Calcula el estado financiero real del negocio: ingresos, gastos (publicidad + gasolina), ganancia neta. Úsalo para cualquier pregunta sobre gastos, ganancias, costos, rentabilidad, cuánto queda después de gastos. period: week|month|YYYY-MM|all',parameters:{type:'object',properties:{period:{type:'string',description:'week|month|YYYY-MM|all'}},required:['period']}}},
 ];
 
 // ── Tool executors ─────────────────────────────────────────────────────────
@@ -1017,6 +1030,13 @@ async function executeTool(name, args) {
         app_guide: agentCfg.app_guide_doc||'',
         currency: agentCfg.currency_symbol||'$',
         language: agentCfg.language||'es',
+        fixed_costs: {
+          advertising_per_week: bc2.advertisingCostPerWeek || 45,
+          gas_price_per_gallon: parseFloat(localStorage.getItem('gasPrice_current') || '0') || null,
+          gas_last_updated: localStorage.getItem('gasPrice_lastUpdate') || null,
+          mpg_estimate: bc2.mpgEstimate || 25,
+          avg_miles_per_appointment: bc2.avgMilesPerAppointment || 30,
+        }
       };
     }
     case 'generate_report': {
@@ -1085,6 +1105,59 @@ async function executeTool(name, args) {
         const total=apts.reduce((s,a)=>s+parseFloat(a.price||0),0);
         return {total_appointments:apts.length,total_revenue:'$'+total.toFixed(2),avg_ticket:'$'+(apts.length?total/apts.length:0).toFixed(2),best_day:bestDay?{date:bestDay[0],revenue:'$'+bestDay[1].toFixed(2)}:null,best_month:bestMonth?{month:bestMonth[0],revenue:'$'+bestMonth[1].rev.toFixed(2),appointments:bestMonth[1].count}:null};
       }catch(e){return{success:false,error:e.message};}
+    }
+    case 'get_finance': {
+      try {
+        const apts = await OfflineDB.getAppointments();
+        const now = new Date();
+        const _ld = d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const today = _ld(now);
+        const p = args.period || 'month';
+        let filtered = apts;
+        let periodLabel = p;
+        let weeksInPeriod = 4.33;
+        if (p === 'week') {
+          const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
+          const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+          filtered = apts.filter(a=>(a.date||'')>=_ld(mon)&&(a.date||'')<=_ld(sun));
+          periodLabel = `semana ${_ld(mon)} a ${_ld(sun)}`; weeksInPeriod = 1;
+        } else if (p === 'month') {
+          const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+          filtered = apts.filter(a=>(a.date||'').startsWith(ym));
+          periodLabel = ym; weeksInPeriod = 4.33;
+        } else if (p !== 'all' && p.match(/^\d{4}-\d{2}$/)) {
+          filtered = apts.filter(a=>(a.date||'').startsWith(p));
+          periodLabel = p; weeksInPeriod = 4.33;
+        } else if (p === 'all') {
+          const months = new Set(apts.map(a=>(a.date||'').slice(0,7)).filter(Boolean));
+          weeksInPeriod = months.size * 4.33;
+        }
+        const bc2 = _getBC();
+        const ADVERTISING_COST_PER_WEEK = bc2.advertisingCostPerWeek || 45;
+        const gasPrice = parseFloat(localStorage.getItem('gasPrice_current') || '0');
+        const mpg = bc2.mpgEstimate || 25;
+        const avgMiles = bc2.avgMilesPerAppointment || 30;
+        const totalIncome = filtered.reduce((s,a)=>s+(parseFloat(a.price||0)),0);
+        const advertisingCost = ADVERTISING_COST_PER_WEEK * weeksInPeriod;
+        // Gas cost: estimate based on avg miles/appointment, mpg, and current gas price
+        const gasCostEstimated = filtered.length * (avgMiles / mpg) * (gasPrice || 3.5);
+        const netIncome = totalIncome - advertisingCost - gasCostEstimated;
+        const byService = {};
+        filtered.forEach(a=>{const j=(a.job||a.service||'Sin servicio').split(',')[0].trim();if(!byService[j])byService[j]={count:0,revenue:0};byService[j].count++;byService[j].revenue+=parseFloat(a.price||0);});
+        return {
+          period: periodLabel,
+          income: { total: `$${totalIncome.toFixed(2)}`, appointments: filtered.length, avg_ticket: `$${filtered.length?((totalIncome/filtered.length).toFixed(2)):0}` },
+          expenses: {
+            advertising: `$${advertisingCost.toFixed(2)} (publicidad $${ADVERTISING_COST_PER_WEEK}/semana × ${weeksInPeriod.toFixed(1)} semanas)`,
+            gas_estimated: `$${gasCostEstimated.toFixed(2)} (estimado: ${filtered.length} citas × ${avgMiles}mi promedio, $${(gasPrice||3.5).toFixed(2)}/gal, ${mpg}mpg)`,
+            total_expenses: `$${(advertisingCost+gasCostEstimated).toFixed(2)}`
+          },
+          net_income: `$${netIncome.toFixed(2)}`,
+          margin: totalIncome > 0 ? `${((netIncome/totalIncome)*100).toFixed(1)}%` : '0%',
+          by_service: Object.entries(byService).sort((a,b)=>b[1].revenue-a[1].revenue).slice(0,8).map(([s,v])=>({service:s,appointments:v.count,revenue:`$${v.revenue.toFixed(2)}`})),
+          gas_price_current: gasPrice ? `$${gasPrice}/galón` : 'No disponible'
+        };
+      } catch(e) { return {error: e.message}; }
     }
     default: return {error:'Herramienta no disponible: '+name};
   }
