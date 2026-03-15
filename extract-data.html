@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extraer Datos - 15 Noviembre</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #0a0a0a;
+            padding: 30px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        .appointment {
+            background: #1a1a1a;
+            border-left: 4px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+        .highlight {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .label {
+            color: #00aaff;
+        }
+        .btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background: #00cc00;
+        }
+        pre {
+            background: #0a0a0a;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            overflow-x: auto;
+            color: #00ff00;
+        }
+        .error {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .success {
+            color: #00ff00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 EXTRACTOR DE DATOS - CITA DEL 15 DE NOVIEMBRE 2025</h1>
+
+        <button class="btn" onclick="extractData()">📊 EXTRAER DATOS</button>
+        <button class="btn" onclick="downloadJSON()">💾 DESCARGAR JSON</button>
+
+        <div id="output"></div>
+        <div id="json-output"></div>
+    </div>
+
+    <script>
+        let allAppointments = [];
+
+        function extractData() {
+            const output = document.getElementById('output');
+            const targetDate = '2025-11-15';
+
+            // Intentar obtener datos de localStorage
+            const storedAppointments = localStorage.getItem('appointments');
+
+            if (!storedAppointments) {
+                output.innerHTML = `
+                    <div class="appointment error">
+                        ⚠️ ERROR: No se encontraron datos en localStorage.
+                        <br><br>
+                        SOLUCIÓN: Abre primero el archivo index.html para cargar los datos.
+                    </div>
+                `;
+                return;
+            }
+
+            allAppointments = JSON.parse(storedAppointments);
+            console.log('📊 Total appointments:', allAppointments.length);
+            console.log('📋 All appointments:', allAppointments);
+
+            // Filtrar por fecha
+            const appointmentForDate = allAppointments.filter(apt => apt.date === targetDate);
+
+            let html = `
+                <div class="appointment success">
+                    ✅ DATOS CARGADOS EXITOSAMENTE
+                    <br>📊 Total de citas en sistema: <span class="highlight">${allAppointments.length}</span>
+                    <br>🎯 Citas para ${targetDate}: <span class="highlight">${appointmentForDate.length}</span>
+                </div>
+            `;
+
+            if (appointmentForDate.length === 0) {
+                html += `
+                    <div class="appointment">
+                        <span class="error">❌ NO HAY CITAS PARA EL 15 DE NOVIEMBRE 2025</span>
+                    </div>
+                `;
+
+                // Mostrar todas las fechas disponibles
+                const uniqueDates = [...new Set(allAppointments.map(a => a.date))].sort();
+                html += `
+                    <div class="appointment">
+                        <div class="label">📅 FECHAS CON CITAS DISPONIBLES:</div>
+                        <br><br>
+                        ${uniqueDates.map(date => `<div>📌 ${date}</div>`).join('')}
+                    </div>
+                `;
+
+                // Mostrar todos los clientes
+                html += `
+                    <div class="appointment">
+                        <div class="label">👥 TODOS LOS CLIENTES EN EL SISTEMA:</div>
+                        <br><br>
+                `;
+
+                allAppointments.forEach((apt, i) => {
+                    html += `
+                        <div style="margin: 15px 0; padding: 10px; border-left: 2px solid #00aaff;">
+                            <strong>${i + 1}. ${apt.clientName || 'Sin nombre'}</strong><br>
+                            📅 Fecha: <span class="highlight">${apt.date}</span><br>
+                            ⏰ Hora: ${apt.time || 'No especificada'}<br>
+                            📞 Teléfono: ${apt.phone || 'No disponible'}<br>
+                            📧 Email: ${apt.email || 'No disponible'}<br>
+                            📍 Dirección: ${apt.address || 'No disponible'}<br>
+                            🏙️ Ciudad: ${apt.city || 'No disponible'}<br>
+                            🛠️ Servicio: ${apt.service || 'No especificado'}<br>
+                            💵 Precio: $${apt.price || '0'}<br>
+                            ${apt.notes ? `📝 Notas: ${apt.notes}<br>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+
+            } else {
+                // Mostrar la cita del 15 de noviembre
+                appointmentForDate.forEach((apt, i) => {
+                    html += `
+                        <div class="appointment">
+                            <h2 class="highlight">✅ CITA ENCONTRADA #${i + 1}</h2>
+                            <br>
+                            <div class="label">👤 CLIENTE:</div> <span class="highlight">${apt.clientName || 'Sin nombre'}</span>
+                            <br><br>
+                            <div class="label">📞 TELÉFONO:</div> ${apt.phone || 'No disponible'}
+                            <br>
+                            <div class="label">📧 EMAIL:</div> ${apt.email || 'No disponible'}
+                            <br>
+                            <div class="label">📍 DIRECCIÓN:</div> ${apt.address || 'No disponible'}
+                            <br>
+                            <div class="label">🏙️ CIUDAD:</div> ${apt.city || 'No disponible'}
+                            <br>
+                            <div class="label">📅 FECHA:</div> <span class="highlight">${apt.date}</span>
+                            <br>
+                            <div class="label">⏰ HORA:</div> <span class="highlight">${apt.time || 'No especificada'}</span>
+                            <br>
+                            <div class="label">🛠️ SERVICIO:</div> ${apt.service || 'No especificado'}
+                            <br>
+                            <div class="label">💵 PRECIO:</div> <span class="highlight">$${apt.price || '0'}</span>
+                            <br>
+                            ${apt.notes ? `<div class="label">📝 NOTAS:</div> ${apt.notes}<br>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            output.innerHTML = html;
+
+            // Mostrar JSON
+            displayJSON();
+        }
+
+        function displayJSON() {
+            const jsonOutput = document.getElementById('json-output');
+            jsonOutput.innerHTML = `
+                <h2>📄 DATOS COMPLETOS (JSON):</h2>
+                <pre>${JSON.stringify(allAppointments, null, 2)}</pre>
+            `;
+        }
+
+        function downloadJSON() {
+            if (allAppointments.length === 0) {
+                alert('⚠️ Primero extrae los datos haciendo clic en "EXTRAER DATOS"');
+                return;
+            }
+
+            const dataStr = JSON.stringify(allAppointments, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'appointments-data.json';
+            link.click();
+
+            alert('✅ Archivo descargado: appointments-data.json');
+        }
+
+        // Auto-extraer al cargar
+        window.onload = function() {
+            extractData();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Iconos - SIN ESPACIO BLANCO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #e74c3c;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 3px solid #ffc107;
+        }
+        .preview {
+            display: flex;
+            gap: 25px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .icon-preview {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .icon-preview canvas {
+            border: 4px solid #e74c3c;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .icon-preview p {
+            margin: 8px 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .zoom-info {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            padding: 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #155724;
+            font-size: 14px;
+        }
+        button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        .instructions {
+            background: #e8f5e9;
+            border-left: 6px solid #4caf50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .instructions h3 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        .file-input {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        .file-input:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+            border: 3px solid #28a745;
+        }
+        #originalCanvas, #croppedCanvas {
+            display: none;
+        }
+        .crop-preview {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .crop-preview h3 {
+            color: #e74c3c;
+        }
+        .crop-preview canvas {
+            border: 3px solid #3498db;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Generador de Iconos - VERSIÓN MEJORADA</h1>
+        <p class="subtitle">🔥 ELIMINA AUTOMÁTICAMENTE TODO EL ESPACIO BLANCO 🔥</p>
+
+        <div class="instructions">
+            <h3>✨ Nueva Función: Auto-Recorte</h3>
+            <ol>
+                <li><strong>Detecta y elimina</strong> automáticamente el espacio blanco alrededor del logo</li>
+                <li><strong>Agranda</strong> el logo al máximo sin espacio desperdiciado</li>
+                <li><strong>Genera</strong> iconos optimizados para iPhone y navegadores</li>
+            </ol>
+            <p><strong>👇 Haz click abajo para cargar el logo:</strong></p>
+        </div>
+
+        <label for="logoInput" class="file-input">
+            📁 CARGAR LOGO Y AUTO-RECORTAR
+        </label>
+        <input type="file" id="logoInput" accept="image/*">
+
+        <div id="cropPreview" class="crop-preview" style="display: none;">
+            <h3>✂️ Logo Recortado (sin espacio blanco):</h3>
+            <canvas id="cropCanvas"></canvas>
+            <p style="color: #28a745; font-weight: bold;">✅ Espacio blanco eliminado</p>
+        </div>
+
+        <div class="preview" id="previewContainer"></div>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <canvas id="originalCanvas"></canvas>
+    <canvas id="croppedCanvas"></canvas>
+
+    <script>
+        const logoInput = document.getElementById('logoInput');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const originalCtx = originalCanvas.getContext('2d');
+        const croppedCanvas = document.getElementById('croppedCanvas');
+        const croppedCtx = croppedCanvas.getContext('2d');
+        const cropCanvas = document.getElementById('cropCanvas');
+        const cropCtx = cropCanvas.getContext('2d');
+        const cropPreview = document.getElementById('cropPreview');
+        const previewContainer = document.getElementById('previewContainer');
+        const status = document.getElementById('status');
+
+        let croppedImage = null;
+
+        // Icon configurations - MÁXIMO TAMAÑO
+        const iconConfigs = [
+            { name: 'apple-touch-icon.png', size: 180, zoom: 0.92, rounded: false, purpose: '🍎 iPhone' },
+            { name: 'favicon-32x32.png', size: 32, zoom: 0.88, rounded: true, radius: 6, purpose: '🌐 Favicon 32px' },
+            { name: 'favicon-64x64.png', size: 64, zoom: 0.88, rounded: true, radius: 12, purpose: '🌐 Favicon 64px' },
+            { name: 'icon-192x192.png', size: 192, zoom: 0.92, rounded: true, radius: 38, purpose: '📱 Android 192px' },
+            { name: 'icon-512x512.png', size: 512, zoom: 0.92, rounded: true, radius: 102, purpose: '📱 Android 512px' },
+        ];
+
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            console.log('🔄 Cargando logo original...');
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    console.log('✅ Logo cargado, recortando espacio blanco...');
+                    cropWhiteSpace(img);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function cropWhiteSpace(img) {
+            // Draw original image to canvas
+            originalCanvas.width = img.width;
+            originalCanvas.height = img.height;
+            originalCtx.drawImage(img, 0, 0);
+
+            const imageData = originalCtx.getImageData(0, 0, img.width, img.height);
+            const data = imageData.data;
+
+            let top = img.height, bottom = 0, left = img.width, right = 0;
+
+            // Find the bounds of non-white pixels
+            for (let y = 0; y < img.height; y++) {
+                for (let x = 0; x < img.width; x++) {
+                    const index = (y * img.width + x) * 4;
+                    const r = data[index];
+                    const g = data[index + 1];
+                    const b = data[index + 2];
+                    const a = data[index + 3];
+
+                    // Check if pixel is not white (allowing for slight variations)
+                    if (!(r > 240 && g > 240 && b > 240 && a > 200)) {
+                        if (y < top) top = y;
+                        if (y > bottom) bottom = y;
+                        if (x < left) left = x;
+                        if (x > right) right = x;
+                    }
+                }
+            }
+
+            // Add small padding
+            const padding = 5;
+            top = Math.max(0, top - padding);
+            left = Math.max(0, left - padding);
+            bottom = Math.min(img.height - 1, bottom + padding);
+            right = Math.min(img.width - 1, right + padding);
+
+            const cropWidth = right - left + 1;
+            const cropHeight = bottom - top + 1;
+
+            console.log(`📐 Original: ${img.width}x${img.height}`);
+            console.log(`✂️ Recortado: ${cropWidth}x${cropHeight}`);
+            console.log(`💾 Espacio eliminado: ${Math.round((1 - (cropWidth * cropHeight) / (img.width * img.height)) * 100)}%`);
+
+            // Create cropped canvas
+            croppedCanvas.width = cropWidth;
+            croppedCanvas.height = cropHeight;
+            croppedCtx.drawImage(
+                originalCanvas,
+                left, top, cropWidth, cropHeight,
+                0, 0, cropWidth, cropHeight
+            );
+
+            // Show crop preview
+            const maxPreviewSize = 300;
+            const scale = Math.min(maxPreviewSize / cropWidth, maxPreviewSize / cropHeight);
+            cropCanvas.width = cropWidth * scale;
+            cropCanvas.height = cropHeight * scale;
+            cropCtx.drawImage(croppedCanvas, 0, 0, cropCanvas.width, cropCanvas.height);
+            cropPreview.style.display = 'block';
+
+            // Convert cropped canvas to image
+            const croppedDataUrl = croppedCanvas.toDataURL('image/png');
+            const croppedImg = new Image();
+            croppedImg.onload = () => {
+                croppedImage = croppedImg;
+                console.log('✅ Logo recortado listo, generando iconos...');
+                generateIcons();
+            };
+            croppedImg.src = croppedDataUrl;
+        }
+
+        function generateIcons() {
+            if (!croppedImage) return;
+
+            previewContainer.innerHTML = '';
+            console.log('🎨 Generando iconos con logo recortado...');
+
+            iconConfigs.forEach(config => {
+                createIcon(config);
+            });
+
+            status.textContent = '✅ ¡ICONOS GENERADOS SIN ESPACIO BLANCO! El logo ahora ocupa TODO el espacio disponible.';
+            status.className = 'status success';
+        }
+
+        function createIcon(config) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = config.size;
+            canvas.height = config.size;
+
+            // Fill background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, config.size, config.size);
+
+            // Calculate scaled logo size
+            const logoSize = config.size * config.zoom;
+            const logoX = (config.size - logoSize) / 2;
+            const logoY = (config.size - logoSize) / 2;
+
+            // Apply rounded corners if specified
+            if (config.rounded) {
+                ctx.save();
+                roundRect(ctx, 0, 0, config.size, config.size, config.radius);
+                ctx.clip();
+            }
+
+            // Fill background again
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, config.size, config.size);
+
+            // Draw CROPPED logo (without whitespace)
+            ctx.drawImage(croppedImage, logoX, logoY, logoSize, logoSize);
+
+            if (config.rounded) {
+                ctx.restore();
+            }
+
+            // Create preview
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'icon-preview';
+
+            const previewCanvas = document.createElement('canvas');
+            const previewCtx = previewCanvas.getContext('2d');
+            const previewSize = Math.min(config.size, 140);
+            previewCanvas.width = previewSize;
+            previewCanvas.height = previewSize;
+            previewCtx.drawImage(canvas, 0, 0, config.size, config.size, 0, 0, previewSize, previewSize);
+
+            const nameP = document.createElement('p');
+            nameP.innerHTML = `<strong>${config.name}</strong>`;
+
+            const purposeP = document.createElement('p');
+            purposeP.textContent = config.purpose;
+
+            const sizeP = document.createElement('p');
+            sizeP.textContent = `${config.size}x${config.size}px`;
+
+            const zoomP = document.createElement('p');
+            zoomP.className = 'zoom-info';
+            zoomP.textContent = `✂️ Sin espacio blanco`;
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = '⬇️ Descargar';
+            downloadBtn.onclick = () => downloadCanvas(canvas, config.name);
+
+            previewDiv.appendChild(previewCanvas);
+            previewDiv.appendChild(nameP);
+            previewDiv.appendChild(purposeP);
+            previewDiv.appendChild(sizeP);
+            previewDiv.appendChild(zoomP);
+            previewDiv.appendChild(downloadBtn);
+
+            previewContainer.appendChild(previewDiv);
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function downloadCanvas(canvas, filename) {
+            console.log(`💾 Descargando ${filename}...`);
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                console.log(`✅ ${filename} descargado`);
+            }, 'image/png');
+        }
+    </script>
+</body>
+</html>

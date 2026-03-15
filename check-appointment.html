@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Cita - 15 Noviembre 2025</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .date-header {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        .appointment-card {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .client-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .detail {
+            margin: 8px 0;
+            color: #555;
+            font-size: 16px;
+        }
+        .detail strong {
+            color: #667eea;
+            display: inline-block;
+            width: 120px;
+        }
+        .no-appointments {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 18px;
+        }
+        .stats {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .btn-refresh {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn-refresh:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Citas del Sábado</h1>
+        <div class="date-header">15 de Noviembre 2025</div>
+
+        <div id="appointments-container"></div>
+
+        <button class="btn-refresh" onclick="loadAppointments()">🔄 Actualizar</button>
+    </div>
+
+    <script>
+        function loadAppointments() {
+            const targetDate = '2025-11-15';
+            const container = document.getElementById('appointments-container');
+
+            // Cargar datos de localStorage
+            const storedAppointments = localStorage.getItem('appointments');
+
+            if (!storedAppointments) {
+                container.innerHTML = `
+                    <div class="no-appointments">
+                        ⚠️ No se encontraron datos en localStorage.<br><br>
+                        Asegúrate de abrir primero la aplicación principal (index.html) para cargar los datos.
+                    </div>
+                `;
+                return;
+            }
+
+            const appointments = JSON.parse(storedAppointments);
+            console.log('Total appointments loaded:', appointments.length);
+            console.log('All appointments:', appointments);
+
+            // Filtrar citas para la fecha específica
+            const appointmentsForDate = appointments.filter(apt => {
+                return apt.date === targetDate;
+            });
+
+            console.log('Appointments for', targetDate, ':', appointmentsForDate);
+
+            if (appointmentsForDate.length === 0) {
+                container.innerHTML = `
+                    <div class="no-appointments">
+                        😴 No hay citas agendadas para el sábado 15 de noviembre 2025
+                    </div>
+                    <div class="stats">
+                        Total de citas en el sistema: ${appointments.length}
+                    </div>
+                `;
+
+                // Mostrar las fechas disponibles
+                const uniqueDates = [...new Set(appointments.map(a => a.date))].sort();
+                if (uniqueDates.length > 0) {
+                    container.innerHTML += `
+                        <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                            <strong>Fechas con citas disponibles:</strong><br><br>
+                            ${uniqueDates.map(date => `📅 ${date}`).join('<br>')}
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            // Mostrar las citas encontradas
+            let html = '';
+            appointmentsForDate.forEach((apt, index) => {
+                html += `
+                    <div class="appointment-card">
+                        <div class="client-name">${apt.clientName || 'Sin nombre'}</div>
+                        <div class="detail"><strong>📞 Teléfono:</strong> ${apt.phone || 'No disponible'}</div>
+                        <div class="detail"><strong>📧 Email:</strong> ${apt.email || 'No disponible'}</div>
+                        <div class="detail"><strong>📍 Dirección:</strong> ${apt.address || 'No disponible'}</div>
+                        <div class="detail"><strong>🏠 Ciudad:</strong> ${apt.city || 'No disponible'}</div>
+                        <div class="detail"><strong>📝 Servicio:</strong> ${apt.service || 'No especificado'}</div>
+                        <div class="detail"><strong>⏰ Hora:</strong> ${apt.time || 'No especificada'}</div>
+                        <div class="detail"><strong>💵 Precio:</strong> $${apt.price || '0'}</div>
+                        ${apt.notes ? `<div class="detail"><strong>📋 Notas:</strong> ${apt.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="stats">
+                    ✅ ${appointmentsForDate.length} cita${appointmentsForDate.length !== 1 ? 's' : ''} encontrada${appointmentsForDate.length !== 1 ? 's' : ''} para el 15/11/2025
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Cargar al iniciar
+        loadAppointments();
+    </script>
+</body>
+</html>

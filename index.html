@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="es">
+<!--
+    RIZE PROFESSIONAL CLEANING - PWA
+    ================================
+    🔒 SECURITY FIXED: API keys moved to secure backend
+    
+    TO RUN SECURELY:
+    1. npm install
+    2. Copy .env.example to .env and add your API keys  
+    3. npm start
+    4. Open http://localhost:3000
+    
+    All functionality preserved - now with enterprise security!
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LivinGreen - Agendamiento Inteligente</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="LivinGreen">
+    <meta name="description" content="LivinGreen - Plataforma de agendamiento inteligente para gestionar citas y clientes">
+    <meta name="theme-color" content="#10a37f">
+    <meta name="background-color" content="#ffffff">
+    
+    <!-- iOS Specific Meta Tags for App-like Behavior -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LivinGreen">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Apple Touch Icons -->
+    <!-- iOS App Icon (logo más grande, sin bordes redondeados) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+    <!-- Landing Page with Bento Grid -->
+    <div class="landing-view" id="landing-view">
+        <div class="bento-grid">
+            <!-- Mi Negocio - full-width, single row (para el dueño) -->
+            <div class="bento-item" style="animation-delay: 0.05s; cursor:default; grid-column: span 2;">
+                <div class="bento-item-content" style="padding:22px 16px; justify-content:center; align-items:stretch; background:rgba(255,255,255,0.03); height:100%; box-sizing:border-box; flex-direction:column; gap:12px;">
+
+                  <!-- Fila 1: Logo + nombre/tagline -->
+                  <div style="display:flex; gap:13px; align-items:center;">
+                    <!-- Logo con aro blanco -->
+                    <img class="biz-logo-dynamic" src="./images/agenda-logo.jpg"
+                         style="width:46px;height:46px;object-fit:cover;border-radius:50%;flex-shrink:0;
+                                box-shadow: 0 0 0 2px rgba(255,255,255,0.72), 0 0 0 4px rgba(255,255,255,0.12), 0 2px 10px rgba(0,0,0,0.35);">
+                    <!-- Nombre + tagline -->
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);
+                                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                           data-biz="name">LivinGreen</div>
+                      <div style="font-size:10.5px;color:rgba(255,255,255,0.42);margin-top:2px;
+                                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                           id="bento-biz-tagline" style="display:none"></div>
+                    </div>
+                  </div>
+
+                  <!-- Fila 2: 3 botones pill con icono + texto -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;">
+                    <a class="biz-action-btn" id="bento-ig-link" href="https://www.instagram.com/livingreen_life/" target="_blank"
+                       style="display:flex;align-items:center;justify-content:center;gap:5px;
+                              padding:8px 6px;border-radius:9px;text-decoration:none;
+                              background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+                              color:rgba(255,255,255,0.75);font-size:11px;font-weight:600;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                      Instagram
+                    </a>
+                    <a class="biz-action-btn" id="bento-web-link" href="https://www.livingreen.life/" target="_blank"
+                       style="display:flex;align-items:center;justify-content:center;gap:5px;
+                              padding:8px 6px;border-radius:9px;text-decoration:none;
+                              background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+                              color:rgba(255,255,255,0.75);font-size:11px;font-weight:600;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                      Sitio web
+                    </a>
+                    <button class="biz-action-btn" onclick="navigateToView('settings')"
+                       style="display:flex;align-items:center;justify-content:center;gap:5px;
+                              padding:8px 6px;border-radius:9px;cursor:pointer;
+                              background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+                              color:rgba(255,255,255,0.75);font-size:11px;font-weight:600;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                      Editar
+                    </button>
+                  </div>
+
+                  <!-- Botón compartir tarjeta (ancho completo) -->
+                  <button onclick="openBizCardModal()"
+                     style="display:flex;align-items:center;justify-content:space-between;width:100%;
+                            padding:10px 14px;border-radius:10px;box-sizing:border-box;
+                            background:rgba(59,130,246,0.18);border:1px solid rgba(59,130,246,0.45);
+                            color:rgba(255,255,255,0.95);cursor:pointer;text-align:left;">
+                    <div>
+                      <div style="font-size:12.5px;font-weight:600;">Compartir tarjeta digital</div>
+                      <div style="font-size:10px;opacity:0.48;margin-top:1px;" id="bento-biz-website">livingreen.life/card</div>
+                    </div>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  </button>
+                </div>
+            </div>
+
+            <!-- Agendar Citas - LARGE -->
+            <div class="bento-item bento-item-large" onclick="navigateToView('schedule')" style="animation-delay: 0.1s">
+                <div class="bento-item-content bento-item-image" style="padding: 24px; justify-content: flex-start; align-items: flex-start;">
+                    <h3 id="today-appointments-header" style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 16px; width: 100%; text-align: left;">Citas de hoy - Nov 27</h3>
+                    <div style="display: flex; gap: 20px; width: 100%; align-items: center;">
+                        <!-- Círculo con monto y progreso -->
+                        <div class="today-amount-circle">
+                            <svg class="progress-ring" width="140" height="140">
+                                <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                <circle id="today-progress-ring" class="progress-ring-fill" cx="70" cy="70" r="60" style="stroke-dasharray: 377; stroke-dashoffset: 377;" />
+                            </svg>
+                            <div class="circle-content">
+                                <div class="amount" id="today-total-amount">$0</div>
+                                <div class="today-label">Today</div>
+                            </div>
+                        </div>
+                        <!-- Lista de citas -->
+                        <div class="appointments-list" id="today-appointments-list">
+                            <div class="appointment-item" style="color: rgba(200, 200, 200, 0.6);">Cargando citas...</div>
+                        </div>
+                    </div>
+                    <!-- Tomorrow's locations -->
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.15); width: 100%;">
+                        <p style="line-height: 1.5;">
+                            <span style="font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.95);">Mañana trabajas en:</span>
+                            <span id="tomorrow-cities" style="display: block; margin-top: 10px; font-size: 18px; font-weight: 600; color: rgba(180, 220, 255, 0.95);">Cargando...</span>
+                        </p>
+                    </div>
+                    <!-- Tap to schedule button -->
+                    <div class="nueva-cita-btn" id="nueva-cita-btn">
+                        <div class="nueva-cita-slides" id="nueva-cita-slides">
+                            <!-- Slide 1: texto -->
+                            <div class="nueva-cita-slide" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span style="font-size: 15px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;">Nueva cita</span>
+                            </div>
+                            <!-- Slide 2: icono calendario -->
+                            <div class="nueva-cita-slide" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span style="font-size: 15px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;">Agendar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos - MEDIUM -->
+            <div class="bento-item bento-item-medium analytics-slider" onclick="navigateToView('datos')" style="animation-delay: 0.2s">
+                <div class="analytics-slides">
+                    <!-- Slide 1: Stats minimalistas -->
+                    <div class="analytics-slide">
+                        <div class="bento-item-content bento-item-text" style="padding: 24px; justify-content: space-between; align-items: flex-start; height: 100%;">
+                            <div style="width: 100%;">
+                                <h3 style="font-size: 10px; font-weight: 600; color: rgba(200, 200, 200, 0.7); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1.2px;">Dashboard</h3>
+
+                                <div style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
+                                    <!-- Total Clientes -->
+                                    <div>
+                                        <div style="font-size: 8px; color: rgba(200, 200, 200, 0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Total Clientes</div>
+                                        <div id="bento-total-clients" style="font-size: 36px; font-weight: 700; color: rgba(255, 255, 255, 0.95); line-height: 1;">0</div>
+                                    </div>
+
+                                    <!-- Citas del Mes -->
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <span style="font-size: 9px; color: rgba(200, 200, 200, 0.7); text-transform: uppercase; letter-spacing: 0.8px;">Citas este mes</span>
+                                        <span id="bento-monthly-appts" style="font-size: 22px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">0</span>
+                                    </div>
+
+                                    <!-- Ciudades -->
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <span style="font-size: 9px; color: rgba(200, 200, 200, 0.7); text-transform: uppercase; letter-spacing: 0.8px;">Ciudades activas</span>
+                                        <span id="bento-active-cities" style="font-size: 22px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Servicios - Footer -->
+                            <div style="width: 100%; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <div style="font-size: 9px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Servicios Ofrecidos</div>
+                                <div id="bento-total-services" style="font-size: 24px; font-weight: 700; color: rgba(255, 255, 255, 0.95); line-height: 1;">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Logo moderno de datos -->
+                    <div class="analytics-slide">
+                        <div class="bento-item-content" style="padding: 24px; justify-content: center; align-items: center; background: rgba(59, 130, 246, 0.15); backdrop-filter: blur(10px); height: 100%;">
+                            <!-- Logo moderno de base de datos -->
+                            <div style="position: relative; width: 110px; height: 110px;">
+                                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                    <!-- Capas de base de datos (cilindros) -->
+                                    <!-- Capa 1 (arriba) -->
+                                    <ellipse cx="50" cy="25" rx="30" ry="8" fill="none" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+                                    <path d="M 20 25 L 20 35 Q 20 40, 50 40 Q 80 40, 80 35 L 80 25"
+                                          fill="rgba(255, 255, 255, 0.15)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+
+                                    <!-- Capa 2 (medio) -->
+                                    <ellipse cx="50" cy="45" rx="30" ry="8" fill="none" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+                                    <path d="M 20 45 L 20 55 Q 20 60, 50 60 Q 80 60, 80 55 L 80 45"
+                                          fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+
+                                    <!-- Capa 3 (abajo) -->
+                                    <ellipse cx="50" cy="65" rx="30" ry="8" fill="none" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2"/>
+                                    <path d="M 20 65 L 20 75 Q 20 80, 50 80 Q 80 80, 80 75 L 80 65"
+                                          fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2"/>
+
+                                    <!-- Puntos de datos (decorativos) -->
+                                    <circle cx="50" cy="30" r="2" fill="rgba(255, 255, 255, 0.8)">
+                                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <circle cx="45" cy="50" r="2" fill="rgba(255, 255, 255, 0.8)">
+                                        <animate attributeName="opacity" values="1;0.6;1" dur="2.5s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <circle cx="55" cy="70" r="2" fill="rgba(255, 255, 255, 0.8)">
+                                        <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+                                    </circle>
+                                </svg>
+                            </div>
+                            <h2 style="font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 16px; letter-spacing: 0.5px;">Datos</h2>
+                            <p style="font-size: 9px; color: rgba(255, 255, 255, 0.7); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">Dashboard</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendario - SMALL -->
+            <div class="bento-item bento-item-small calendar-slider" onclick="navigateToView('calendar')" style="animation-delay: 0.3s">
+                <div class="calendar-slides">
+                    <!-- Slide 1: Calendar con números -->
+                    <div class="calendar-slide active">
+                        <div class="bento-item-content bento-item-accent" style="padding: 16px 16px 28px 16px; justify-content: flex-start; align-items: flex-start;">
+                            <h3 id="mini-calendar-month" style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.95); margin-bottom: 6px; width: 100%; text-align: left; letter-spacing: 0.3px;">November 2025</h3>
+                            <div class="mini-calendar">
+                                <div class="mini-calendar-days">
+                                    <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+                                </div>
+                                <div class="mini-calendar-dates" id="mini-calendar-dates">
+                                    <!-- Dates will be generated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Icono de calendario -->
+                    <div class="calendar-slide">
+                        <div class="bento-item-content" style="padding: 24px; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
+                            <svg class="calendar-icon-large" viewBox="0 0 24 24" style="width: 80px; height: 80px; fill: rgba(60, 60, 60, 0.85);">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                            </svg>
+                            <h2 style="font-size: 18px; font-weight: 600; color: rgba(60, 60, 60, 0.95); margin-top: 12px;">Calendar</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finanzas - MEDIUM -->
+            <div class="bento-item bento-item-medium" onclick="navigateToView('finance')" style="animation-delay: 0.4s">
+                <div class="bento-item-content bento-item-image" style="padding: 24px; justify-content: center; align-items: center;">
+                    <!-- Logo moderno -->
+                    <div style="position: relative; width: 100px; height: 100px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Círculo exterior -->
+                            <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(16, 163, 127, 0.2)" stroke-width="2"/>
+                            <!-- Círculo interior -->
+                            <circle cx="50" cy="50" r="40" fill="rgba(16, 163, 127, 0.15)"/>
+                            <!-- Gráfica de tendencia -->
+                            <path d="M 25 60 L 35 50 L 45 55 L 55 40 L 65 45 L 75 35"
+                                  fill="none"
+                                  stroke="rgba(16, 163, 127, 1)"
+                                  stroke-width="3"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                            <!-- Puntos en la gráfica -->
+                            <circle cx="35" cy="50" r="3" fill="rgba(16, 163, 127, 1)"/>
+                            <circle cx="55" cy="40" r="3" fill="rgba(16, 163, 127, 1)"/>
+                            <circle cx="75" cy="35" r="3" fill="rgba(16, 163, 127, 1)"/>
+                        </svg>
+                    </div>
+                    <h2 class="bento-title" style="color: rgba(16, 163, 127, 1);">Finanzas</h2>
+                    <p class="bento-description" style="color: rgba(16, 163, 127, 0.7);">Control financiero</p>
+                </div>
+            </div>
+
+            <!-- Registro - SMALL -->
+            <div class="bento-item bento-item-small registry-slider" onclick="navigateToView('history')" style="animation-delay: 0.5s">
+                <div class="registry-slides">
+                    <!-- Slide 1: Client Registry Stats -->
+                    <div class="registry-slide">
+                        <div class="bento-item-content bento-item-text" style="padding: 16px; justify-content: space-between; align-items: flex-start; height: 100%;">
+                            <div style="width: 100%;">
+                                <h3 style="font-size: 11px; font-weight: 600; color: rgba(200, 200, 200, 0.7); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Registro</h3>
+
+                                <div style="margin-bottom: 12px;">
+                                    <div style="font-size: 8px; color: rgba(200, 200, 200, 0.6); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Total Clientes</div>
+                                    <div id="registry-total-clients" style="font-size: 32px; font-weight: 700; color: rgba(255, 255, 255, 0.95); line-height: 1;">0</div>
+                                </div>
+                            </div>
+
+                            <div style="width: 100%; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                                    <span style="font-size: 8px; color: rgba(200, 200, 200, 0.7); text-transform: uppercase; letter-spacing: 0.8px;">Nuevos este mes</span>
+                                    <span id="registry-new-clients" style="font-size: 20px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Logo -->
+                    <div class="registry-slide">
+                        <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(139, 92, 246, 0.15); backdrop-filter: blur(10px); height: 100%;">
+                            <!-- Logo de registro/usuarios -->
+                            <div style="position: relative; width: 70px; height: 70px;">
+                                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                    <!-- Personas/usuarios en grupo -->
+                                    <!-- Usuario 1 (atrás izquierda) -->
+                                    <circle cx="35" cy="35" r="12" fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+                                    <path d="M 20 60 Q 20 45, 35 45 Q 50 45, 50 60" fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+
+                                    <!-- Usuario 2 (atrás derecha) -->
+                                    <circle cx="65" cy="35" r="12" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+                                    <path d="M 50 60 Q 50 45, 65 45 Q 80 45, 80 60" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2"/>
+
+                                    <!-- Usuario principal (adelante centro) -->
+                                    <circle cx="50" cy="50" r="15" fill="rgba(255, 255, 255, 0.3)" stroke="rgba(255, 255, 255, 0.8)" stroke-width="2.5"/>
+                                    <path d="M 30 85 Q 30 65, 50 65 Q 70 65, 70 85" fill="rgba(255, 255, 255, 0.3)" stroke="rgba(255, 255, 255, 0.8)" stroke-width="2.5"/>
+                                </svg>
+                            </div>
+                            <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Registro</h2>
+                            <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Clientes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensajes - SMALL -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('messages')" style="animation-delay: 0.6s">
+                <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(34, 197, 94, 0.12); backdrop-filter: blur(10px); height: 100%;">
+                    <!-- Logo de mensajes/chat -->
+                    <div style="position: relative; width: 70px; height: 70px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Burbuja principal de mensaje -->
+                            <rect x="15" y="25" width="60" height="40" rx="8" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2.5"/>
+                            <!-- Cola de la burbuja -->
+                            <path d="M 25 65 L 20 75 L 30 65" fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2.5" stroke-linejoin="round"/>
+
+                            <!-- Líneas de texto dentro del mensaje -->
+                            <line x1="25" y1="35" x2="60" y2="35" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="25" y1="45" x2="55" y2="45" stroke="rgba(255, 255, 255, 0.7)" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="25" y1="55" x2="50" y2="55" stroke="rgba(255, 255, 255, 0.6)" stroke-width="2" stroke-linecap="round"/>
+
+                            <!-- Burbuja secundaria (más pequeña, arriba derecha) -->
+                            <circle cx="70" cy="25" r="8" fill="rgba(255, 255, 255, 0.2)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+                            <circle cx="68" cy="23" r="1.5" fill="rgba(255, 255, 255, 0.8)"/>
+                            <circle cx="72" cy="23" r="1.5" fill="rgba(255, 255, 255, 0.8)"/>
+                            <path d="M 67 27 Q 70 29, 73 27" stroke="rgba(255, 255, 255, 0.8)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Mensajes</h2>
+                    <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Templates</p>
+                </div>
+            </div>
+
+            <!-- Configuración - SMALL -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('settings')" style="animation-delay: 0.7s">
+                <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(99, 102, 241, 0.12); backdrop-filter: blur(10px); height: 100%;">
+                    <!-- Logo de configuración/settings -->
+                    <div style="position: relative; width: 70px; height: 70px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Slider 1 (arriba) -->
+                            <line x1="20" y1="30" x2="80" y2="30" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="60" cy="30" r="7" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(255, 255, 255, 1)" stroke-width="2"/>
+
+                            <!-- Slider 2 (medio) -->
+                            <line x1="20" y1="50" x2="80" y2="50" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="35" cy="50" r="7" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(255, 255, 255, 1)" stroke-width="2"/>
+
+                            <!-- Slider 3 (abajo) -->
+                            <line x1="20" y1="70" x2="80" y2="70" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="55" cy="70" r="7" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(255, 255, 255, 1)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Configuración</h2>
+                    <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Ajustes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Bento Grid button (replaces mobile menu button when in a section) -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="returnToBentoGrid()">
+        <svg id="menu-icon" viewBox="0 0 24 24" fill="currentColor">
+            <!-- Back arrow icon -->
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+    </button>
+
+    <!-- Mobile overlay -->
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <div class="container" style="display:none">
+        <!-- Sidebar -->
+        <div class="sidebar" id="mobile-sidebar">
+            <div class="sidebar-header">
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                    Agendar Citas
+                </div>
+                <div class="menu-item">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2-7h-3V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                    </svg>
+                    Calendario
+                </div>
+                <div class="menu-item">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V7h10v2z"/>
+                    </svg>
+                    Registro
+                </div>
+                <div class="menu-item">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h2v2H7V7zm4 0h6v2h-6V7zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z"></path>
+                    </svg>
+                    Datos
+                </div>
+                <div class="menu-item">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    Finanzas
+                </div>
+                <div class="menu-item">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                    </svg>
+                    Mensajes
+                </div>
+                <div class="menu-item">
+                    <svg class="menu-icon" viewBox="0 0 24 24">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                    Configuración
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Agendamiento Inteligente</h1>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="current-datetime" id="datetime"></div>
+                    <div class="status-indicator sync-status" id="sync-status" title="Online">
+                        <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                        </svg>
+                        <span class="status-text">Online</span>
+                    </div>
+                    <div class="status-indicator backup-status" id="backup-status" 
+                         onclick="BackupSystem.downloadBackup()" title="Backup">
+                        <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.84V19h2v-4.16l1.59 1.59L16 15.01 12.01 11 8 15.01z"/>
+                        </svg>
+                        <span class="status-text">Never backed up</span>
+                    </div>
+                    <button class="status-indicator" onclick="_lg_fullSync(true)" title="Sincronizar con chat PWA" style="cursor:pointer;">
+                        <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                        <span class="status-text">Sync</span>
+                    </button>
+                    <button class="status-indicator dark-mode-toggle" id="dark-mode-toggle" onclick="toggleDarkMode()" title="Theme">
+                        <svg class="theme-icon light-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+                        </svg>
+                        <svg class="theme-icon dark-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                            <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-area" id="schedule-content-area" style="overflow: hidden; padding-top: 0;">
+                <!-- Upload Section — fixed at top, same row as back arrow -->
+                <div class="upload-section" id="upload-area">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17,8 12,3 7,8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <div style="flex:1; min-width:0;">
+                        <span style="color:rgba(255,255,255,0.9); font-weight:600; font-size:13px;">Sube tu imagen</span>
+                    </div>
+                    <button class="upload-btn" id="upload-btn" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-btn-slides" id="upload-btn-slides">
+                            <div class="upload-btn-slide">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                <span>Subir</span>
+                            </div>
+                            <div class="upload-btn-slide">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                                <span>Imagen</span>
+                            </div>
+                        </div>
+                    </button>
+                    <input type="file" id="file-input" accept="image/*" multiple>
+                </div>
+
+                <!-- Loading -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p id="loading-text">Analizando imagen...</p>
+                </div>
+
+                <!-- Preview Section (hidden, kept for JS refs) -->
+                <div id="preview-section" style="display:none;">
+                    <div id="images-grid"></div>
+                </div>
+
+                <!-- Form Section -->
+                <div class="form-section">
+                    <h3>Datos de la cita</h3>
+                    <form id="appointment-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name">Nombre</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="time">Hora</label>
+                                <select id="time" name="time" required>
+                                    <option value="">Seleccionar hora</option>
+                                    <option value="07:00">7:00 AM</option>
+                                    <option value="07:30">7:30 AM</option>
+                                    <option value="08:00">8:00 AM</option>
+                                    <option value="08:30">8:30 AM</option>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="09:30">9:30 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="10:30">10:30 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="11:30">11:30 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="12:30">12:30 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="13:30">1:30 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="14:30">2:30 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="15:30">3:30 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="16:30">4:30 PM</option>
+                                    <option value="17:00">5:00 PM</option>
+                                    <option value="17:30">5:30 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="18:30">6:30 PM</option>
+                                    <option value="19:00">7:00 PM</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">Ciudad</label>
+                                <select id="city" name="city" required>
+                                    <option value="">Seleccionar ciudad</option>
+                                    <option value="Alpine">Alpine</option>
+                                    <option value="American Fork">American Fork</option>
+                                    <option value="Bluffdale">Bluffdale</option>
+                                    <option value="Bountiful">Bountiful</option>
+                                    <option value="Cedar Hills">Cedar Hills</option>
+                                    <option value="Cottonwood Heights">Cottonwood Heights</option>
+                                    <option value="Draper">Draper</option>
+                                    <option value="Eagle Mountain">Eagle Mountain</option>
+                                    <option value="Elk Ridge">Elk Ridge</option>
+                                    <option value="Herriman">Herriman</option>
+                                    <option value="Highland">Highland</option>
+                                    <option value="Holladay">Holladay</option>
+                                    <option value="Kearns">Kearns</option>
+                                    <option value="Lehi">Lehi</option>
+                                    <option value="Lindon">Lindon</option>
+                                    <option value="Magna">Magna</option>
+                                    <option value="Mapleton">Mapleton</option>
+                                    <option value="Midvale">Midvale</option>
+                                    <option value="Millcreek">Millcreek</option>
+                                    <option value="Murray">Murray</option>
+                                    <option value="North Salt Lake">North Salt Lake</option>
+                                    <option value="Orem">Orem</option>
+                                    <option value="Park City">Park City</option>
+                                    <option value="Payson">Payson</option>
+                                    <option value="Pleasant Grove">Pleasant Grove</option>
+                                    <option value="Provo">Provo</option>
+                                    <option value="Riverton">Riverton</option>
+                                    <option value="Salem">Salem</option>
+                                    <option value="Salt Lake City">Salt Lake City</option>
+                                    <option value="Sandy">Sandy</option>
+                                    <option value="Santaquin">Santaquin</option>
+                                    <option value="Saratoga Springs">Saratoga Springs</option>
+                                    <option value="South Jordan">South Jordan</option>
+                                    <option value="South Salt Lake">South Salt Lake</option>
+                                    <option value="Spanish Fork">Spanish Fork</option>
+                                    <option value="Springville">Springville</option>
+                                    <option value="Taylorsville">Taylorsville</option>
+                                    <option value="West Jordan">West Jordan</option>
+                                    <option value="West Valley City">West Valley City</option>
+                                    <option value="Woodland Hills">Woodland Hills</option>
+                                    <option value="Woods Cross">Woods Cross</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Dirección</label>
+                                <input type="text" id="address" name="address" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="job-picker">Tipo de Trabajo</label>
+                                <!-- Chips de trabajos seleccionados -->
+                                <div id="job-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; min-height:0;"></div>
+                                <!-- Picker nativo — se resetea tras cada selección -->
+                                <select id="job-picker" onchange="addJobChip(this)" style="width:100%;">
+                                    <!-- Populated dynamically by initServicesConfig() -->
+                                </select>
+                                <!-- Valor real que va al form -->
+                                <input type="hidden" id="job" name="job">
+                            </div>
+                            <div class="form-group">
+                                <label for="price">Precio</label>
+                                <select id="price" name="price" required>
+                                    <option value="">Seleccionar precio</option>
+                                    <option value="50">$50</option>
+                                    <option value="60">$60</option>
+                                    <option value="70">$70</option>
+                                    <option value="80">$80</option>
+                                    <option value="90">$90</option>
+                                    <option value="100">$100</option>
+                                    <option value="110">$110</option>
+                                    <option value="120">$120</option>
+                                    <option value="130">$130</option>
+                                    <option value="140">$140</option>
+                                    <option value="150">$150</option>
+                                    <option value="160">$160</option>
+                                    <option value="170">$170</option>
+                                    <option value="180">$180</option>
+                                    <option value="190">$190</option>
+                                    <option value="200">$200</option>
+                                    <option value="250">$250</option>
+                                    <option value="300">$300</option>
+                                    <option value="350">$350</option>
+                                    <option value="400">$400</option>
+                                    <option value="450">$450</option>
+                                    <option value="500">$500</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Fecha</label>
+                                <input type="date" id="date" name="date" required>
+                            </div>
+                        </div>
+                        <!-- Notas - Full width -->
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="notes">Notas</label>
+                            <textarea id="notes" name="notes" rows="1"
+                                placeholder="Escribe notas adicionales sobre este trabajo..."
+                                onfocus="_notesOnFocus.call(this)"
+                                onblur="_notesOnBlur.call(this)"></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn" id="submit-btn">
+                            <div class="submit-btn-slides" id="submit-btn-slides">
+                                <div class="submit-btn-slide">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span>Agendar Cita</span>
+                                </div>
+                                <div class="submit-btn-slide">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    <span>Confirmar</span>
+                                </div>
+                            </div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Success Message -->
+                <div class="success-message" id="success-message">
+                    ¡Cita agendada exitosamente!
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" id="error-message">
+                    Error al procesar la solicitud. Inténtalo de nuevo.
+                </div>
+            </div>
+
+            <!-- Calendar View (Hidden by default) -->
+            <div class="content-area" id="calendar-view" style="display: none;">
+                <!-- Back to Home Button -->
+                <button id="calendar-back-to-home" onclick="returnToBentoGrid()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                </button>
+
+                <div class="gas-price-header" style="text-align: center; font-weight: 600;">
+                    Precio de Gasolina Hoy en Utah: <span style="color: var(--gas-price-value);" class="gas-price-display">$3.32</span>/<span style="color: var(--gas-price-unit);">galón</span> <span style="font-size: 12px; color: var(--gas-price-status);">(actualizando...)</span>
+                </div>
+                
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button onclick="changeWeek(-1)" class="calendar-nav-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                            </svg>
+                            Anterior
+                        </button>
+                        <span id="current-week-range" class="week-range"></span>
+                        <button onclick="changeWeek(1)" class="calendar-nav-btn">
+                            Siguiente
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9,18 15,12 9,6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="weekly-calendar-container">
+                    <div id="weekly-calendar-grid">
+                        <!-- Weekly calendar will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Preview Modal (New simplified workflow) -->
+
+            <div id="receipt-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1003; align-items: center; justify-content: center; overflow: hidden;">
+                <div style="background: var(--modal-bg); border-radius: 12px; padding: 0; max-width: 460px; width: 95%; max-height: 95vh; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box;">
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px 0 20px; flex-shrink: 0;">
+                        <h3 style="margin: 0; color: var(--text-primary);">🧾 Vista Previa del Recibo</h3>
+                        <button onclick="closeReceiptPreview()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-close-btn);">×</button>
+                    </div>
+
+                    <!-- Receipt Content Area -->
+                    <div style="flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px 20px;">
+                        <div id="receipt-preview-content" style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; box-sizing: border-box;">
+                            <!-- Receipt HTML will be generated here -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); background: var(--bg-tertiary); flex-shrink: 0;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button onclick="closeReceiptPreview()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 11px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                                ← Volver
+                            </button>
+                            <button onclick="downloadReceiptPDF()" style="background: var(--button-purple); color: white; border: none; padding: 11px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1;">
+                                📄 Descargar PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reusable Confirm Modal -->
+            <div id="confirm-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 1020; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg, #fff); border-radius: 14px; padding: 28px 24px; max-width: 360px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.22); text-align: center;">
+                    <div id="confirm-icon" style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+                    <p id="confirm-message" style="margin: 0 0 22px 0; color: var(--text-primary, #1a202c); font-size: 15px; line-height: 1.5;"></p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="confirm-cancel-btn" onclick="closeConfirmModal()" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 11px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">Cancelar</button>
+                        <button id="confirm-ok-btn" style="flex: 1; background: #ef4444; color: white; border: none; padding: 11px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Edit Modal -->
+            <div id="service-edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 1010; align-items: center; justify-content: center;">
+                <div style="background: #fff; border-radius: 12px; padding: 28px; max-width: 420px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+                    <h3 id="svc-modal-title" style="margin: 0 0 20px 0; color: #1a202c; font-size: 18px;">Agregar Servicio</h3>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div>
+                            <label style="font-size: 13px; color: #374151; font-weight: 500; display: block; margin-bottom: 5px;">Nombre del servicio *</label>
+                            <input id="svc-name" type="text" placeholder="Ej: Alfombras, Sillones..." style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; color: #374151; font-weight: 500; display: block; margin-bottom: 5px;">Precio base ($)</label>
+                            <input id="svc-price" type="number" min="0" step="1" placeholder="Ej: 30" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; color: #374151; font-weight: 500; display: block; margin-bottom: 5px;">Descripción de precio</label>
+                            <input id="svc-price-range" type="text" placeholder="Ej: $30 cada una, $45 - $55" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                            <small style="color: #9ca3af; font-size: 12px;">Se muestra en el recibo como sugerencia de precio</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 22px;">
+                        <button onclick="saveServiceModal()" style="flex: 1; background: #10a37f; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Guardar</button>
+                        <button onclick="closeServiceModal()" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment Details Modal -->
+            <div id="appointment-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg); border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--text-primary);">Detalles de la Cita</h3>
+                        <button onclick="closeAppointmentModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-close-btn);">×</button>
+                    </div>
+                    <div id="appointment-details-content">
+                        <!-- Appointment details will be loaded here -->
+                    </div>
+                    <!-- Action buttons - 2x2 layout -->
+                    <div style="margin-top: 20px;">
+                        <!-- Top row -->
+                        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                            <button onclick="editAppointment()" style="background: var(--brand-secondary); color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; flex: 1; font-size: 13px; font-weight: 500;">Editar</button>
+                            <button onclick="rescheduleAppointment()" style="background: var(--brand-primary); color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; flex: 1; font-size: 13px; font-weight: 500;">Reagendar</button>
+                        </div>
+                        <!-- Bottom row -->
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="generateReceiptModal()" style="background: var(--button-purple); color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; flex: 1; font-size: 13px; font-weight: 500;">Recibo</button>
+                            <button onclick="deleteAppointment()" style="background: var(--button-danger); color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; flex: 1; font-size: 13px; font-weight: 500;">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Generation Modal -->
+            <div id="receipt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg); border-radius: 12px; padding: 24px; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--text-primary);">📄 Generar Recibo</h3>
+                        <button onclick="closeReceiptModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-close-btn);">×</button>
+                    </div>
+
+                    <!-- Client Info Preview -->
+                    <div id="receipt-client-info" style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--button-purple);">
+                        <!-- Will be populated dynamically -->
+                    </div>
+
+                    <!-- Service Selection Section -->
+                    <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                        <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">🛠️ Servicios Realizados</h4>
+
+                        <div style="display: grid; gap: 12px; margin-bottom: 16px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Tipo de Servicio:</label>
+                                    <select id="service-type" onchange="updateServicePrice()" style="width: 100%; padding: 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-input); color: var(--text-tertiary);">
+                                        <!-- Populated dynamically by initServicesConfig() -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Cantidad:</label>
+                                    <input type="number" id="service-quantity" min="1" value="1" style="width: 100%; padding: 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-input); color: var(--text-tertiary);">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Precio Unitario:</label>
+                                    <input type="number" id="service-price" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-input); color: var(--text-tertiary);">
+                                    <small style="color: var(--text-muted); font-size: 12px;" id="price-suggestion">Ajusta el precio según el trabajo realizado</small>
+                                </div>
+                                <button onclick="addDetailedService()" style="background: var(--brand-primary); color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; white-space: nowrap;">Agregar</button>
+                            </div>
+                        </div>
+
+                        <!-- Services List -->
+                        <div style="background: var(--bg-secondary); border-radius: 6px; border: 1px solid var(--border-color); overflow: hidden;">
+                            <div style="background: var(--bg-tertiary); padding: 8px 12px; font-weight: 600; font-size: 13px; color: var(--text-tertiary); border-bottom: 1px solid var(--border-color);">
+                                Servicios Agregados
+                            </div>
+                            <div id="services-list" style="min-height: 60px; padding: 12px;">
+                                <div style="color: var(--text-muted); text-align: center; padding: 20px; font-style: italic;">
+                                    No se han agregado servicios
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generar Recibo -->
+                    <div style="background: var(--bg-secondary); border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📄 Generar Recibo</h4>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Número del cliente:</label>
+                            <input type="tel" id="phone-number" placeholder="Ej: 8015551234" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;">
+                            <small style="color: #6b7280; font-size: 12px;">Solo números, sin espacios ni guiones (formato: 8015551234)</small>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <button onclick="generateReceiptOnly()" style="background: #10b981; color: white; border: none; padding: 16px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                📄 Generar Recibo
+                            </button>
+                            <button onclick="closeReceiptModal()" style="background: var(--bg-tertiary); color: var(--text-primary); border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reschedule Modal -->
+            <div id="reschedule-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%;">
+                    <h3 style="margin: 0 0 20px 0; color: var(--text-primary);">Reagendar Cita</h3>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Nueva Fecha:</label>
+                        <input type="date" id="reschedule-date" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Nueva Hora:</label>
+                        <select id="reschedule-time" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);">
+                            <option value="">Seleccionar hora</option>
+                            <option value="07:00">7:00 AM</option>
+                            <option value="07:30">7:30 AM</option>
+                            <option value="08:00">8:00 AM</option>
+                            <option value="08:30">8:30 AM</option>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="09:30">9:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="12:30">12:30 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                            <option value="13:30">1:30 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="14:30">2:30 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="15:30">3:30 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="16:30">4:30 PM</option>
+                            <option value="17:00">5:00 PM</option>
+                            <option value="17:30">5:30 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                            <option value="18:30">6:30 PM</option>
+                            <option value="19:00">7:00 PM</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="closeRescheduleModal()" style="background: var(--bg-tertiary); color: var(--text-tertiary); border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; flex: 1;">Cancelar</button>
+                        <button onclick="confirmReschedule()" style="background: var(--brand-primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; flex: 1;">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Appointment Modal -->
+            <div id="edit-appointment-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg); border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--text-primary);">Editar Cita</h3>
+                        <button onclick="closeEditAppointmentModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">&times;</button>
+                    </div>
+
+                    <form id="edit-appointment-form">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Nombre del Cliente:</label>
+                            <input type="text" id="edit-client-name" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Teléfono:</label>
+                            <input type="tel" id="edit-client-phone" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);">
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Ciudad:</label>
+                            <input type="text" id="edit-client-city" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Dirección:</label>
+                            <input type="text" id="edit-client-address" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Fecha:</label>
+                            <input type="date" id="edit-appointment-date" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Hora:</label>
+                            <select id="edit-appointment-time" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                                <option value="">Seleccionar hora</option>
+                                <option value="07:00">7:00 AM</option>
+                                <option value="07:30">7:30 AM</option>
+                                <option value="08:00">8:00 AM</option>
+                                <option value="08:30">8:30 AM</option>
+                                <option value="09:00">9:00 AM</option>
+                                <option value="09:30">9:30 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="12:30">12:30 PM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="13:30">1:30 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                                <option value="15:30">3:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="16:30">4:30 PM</option>
+                                <option value="17:00">5:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                                <option value="18:00">6:00 PM</option>
+                                <option value="18:30">6:30 PM</option>
+                                <option value="19:00">7:00 PM</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Tipo de Trabajo:</label>
+                            <input type="text" id="edit-appointment-job" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Precio:</label>
+                            <input type="number" id="edit-appointment-price" step="0.01" min="0" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary);" required>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-tertiary);">Notas (Opcional):</label>
+                            <textarea id="edit-appointment-notes" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-input); border-radius: 6px; background: var(--bg-input); color: var(--text-tertiary); font-family: inherit; resize: vertical;" placeholder="Escribe notas adicionales sobre este trabajo..."></textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 12px;">
+                            <button type="button" onclick="closeEditAppointmentModal()" style="background: var(--bg-tertiary); color: var(--text-tertiary); border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; flex: 1;">Cancelar</button>
+                            <button type="submit" style="background: var(--brand-primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; flex: 1;">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Client Details Modal -->
+            <div id="client-details-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center;">
+                <div style="background: var(--modal-bg); border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--text-primary);">Detalles del Cliente</h3>
+                        <button onclick="closeClientDetailsModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">&times;</button>
+                    </div>
+                    <div id="client-details-content">
+                        <!-- Client details will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- History View (Hidden by default) -->
+            <!-- Registry View -->
+            <div class="content-area" id="history-view" style="display: none;">
+                <div class="registry-header">
+                    <h1 class="registry-title">Registro de Clientes</h1>
+                </div>
+
+                <div class="search-container">
+                    <div class="search-grid">
+                        <div class="search-field">
+                            <label for="search-name">Buscar Cliente</label>
+                            <input type="text" id="search-name" class="search-input" placeholder="Nombre del cliente...">
+                        </div>
+                        <div class="search-field">
+                            <label for="search-city">Ciudad</label>
+                            <select id="search-city" class="search-select">
+                                <option value="">Todas las ciudades</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label for="search-job">Tipo de Trabajo</label>
+                            <select id="search-job" class="search-select">
+                                <option value="">Todos los trabajos</option>
+                                <option value="alfombras">Alfombras</option>
+                                <option value="sillones">Sillones</option>
+                                <option value="escaleras">Escaleras</option>
+                                <option value="cuartos">Cuartos</option>
+                                <option value="sala">Sala</option>
+                                <option value="pasillo">Pasillo</option>
+                                <option value="sillas">Sillas</option>
+                                <option value="colchon">Colchón</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        <button class="search-btn" onclick="searchClients()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="M21 21l-4.35-4.35"></path>
+                            </svg>
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="clients-container">
+                    <div class="clients-grid" id="clients-grid">
+                        <!-- Client cards will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finance View -->
+            <div class="content-area" id="finance-view" style="display: none;">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">Finanzas</h1>
+                    <div class="dashboard-subtitle">
+                        <span id="current-month-label">Noviembre 2024</span>
+                    </div>
+                </div>
+
+                <!-- Finance Bento Grid -->
+                <div class="finance-bento-grid">
+                    <!-- Large Card: Net Income -->
+                    <div class="finance-bento-card finance-large finance-net-income">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Ganancia Neta</h3>
+                            <div class="finance-value" id="monthly-net-income">$0.00</div>
+                            <p class="finance-description">Ingresos - Gastos</p>
+                        </div>
+                    </div>
+
+                    <!-- Medium Card: Gross Income -->
+                    <div class="finance-bento-card finance-medium finance-income">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Ingresos Brutos</h3>
+                            <div class="finance-value" id="monthly-gross-income">$0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Small Card: Gas -->
+                    <div class="finance-bento-card finance-small finance-expense">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 22V7C3 6.46957 3.21071 5.96086 3.58579 5.58579C3.96086 5.21071 4.46957 5 5 5H13C13.5304 5 14.0391 5.21071 14.4142 5.58579C14.7893 5.96086 15 6.46957 15 7V22M3 22H15M3 22H2M15 22H16M18 10H17V22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V13C21 12.4696 20.7893 11.9609 20.4142 11.5858C20.0391 11.2107 19.5304 11 19 11L18 10ZM18 10V6C18 5.46957 17.7893 4.96086 17.4142 4.58579C17.0391 4.21071 16.5304 4 16 4L15 5M6 9H12V13H6V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Gasolina</h3>
+                            <div class="finance-value expense" id="monthly-gas-expense">-$0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Small Card: Advertising -->
+                    <div class="finance-bento-card finance-small finance-expense">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Publicidad</h3>
+                            <div class="finance-value expense" id="monthly-advertising-expense">-$0.00</div>
+                            <p class="finance-description">$45/semana</p>
+                        </div>
+                    </div>
+
+                    <!-- Medium Card: Tithe -->
+                    <div class="finance-bento-card finance-medium finance-tithe">
+                        <div class="finance-icon-wrapper">
+                            <svg class="finance-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="finance-card-content">
+                            <h3 class="finance-label">Diezmo (10%)</h3>
+                            <div class="finance-value" id="monthly-tithe">$0.00</div>
+                            <p class="finance-description">De la ganancia neta</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Summary Section -->
+                <div class="weekly-finance-section">
+                    <h2 class="section-title">Resumen Semanal</h2>
+                    <div class="weekly-grid" id="weekly-grid">
+                        <!-- Weekly cards will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Historical Net Income Section -->
+                <div class="historical-finance-section">
+                    <div class="historical-card">
+                        <div class="historical-header">
+                            <h3>Total Neto Acumulado</h3>
+                            <p class="historical-subtitle">Ganancia total desde el inicio</p>
+                        </div>
+                        <div class="historical-content">
+                            <div class="historical-amount" id="historical-net-income">$0.00</div>
+                            <p class="historical-months-count" id="historical-months-count">0 meses</p>
+                        </div>
+
+                        <!-- Carousel Controls -->
+                        <div class="carousel-header">
+                            <h4 class="carousel-title">Desglose Mensual</h4>
+                            <div class="carousel-controls">
+                                <button class="carousel-btn" id="carousel-prev" onclick="scrollHistoricalCarousel(-1)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M15 18l-6-6 6-6"/>
+                                    </svg>
+                                </button>
+                                <button class="carousel-btn" id="carousel-next" onclick="scrollHistoricalCarousel(1)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 18l6-6-6-6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Carousel Container -->
+                        <div class="historical-carousel-wrapper">
+                            <div class="historical-carousel" id="historical-carousel">
+                                <!-- Monthly cards will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos View -->
+            <div class="content-area" id="datos-view" style="display: none;">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">Dashboard de Datos</h1>
+                    <div class="dashboard-subtitle">Análisis completo de tu negocio</div>
+                </div>
+
+                <!-- Key Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="total-clients-count">0</div>
+                        <div class="metric-label">Total Clientes</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="average-ticket-amount">$0</div>
+                        <div class="metric-label">Ticket Promedio</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="total-appointments">0</div>
+                        <div class="metric-label">Citas Totales</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="total-revenue">$0</div>
+                        <div class="metric-label">Ingresos Totales</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Layout -->
+                <div class="charts-row">
+                    <!-- Cities Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Ciudades más Visitadas</h3>
+                        </div>
+                        <div class="chart-content">
+                            <canvas id="cities-chart" width="350" height="220"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Jobs Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Trabajos más Solicitados</h3>
+                        </div>
+                        <div class="chart-content">
+                            <canvas id="jobs-chart" width="350" height="220"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-row">
+                    <!-- Revenue by City -->
+                    <div class="analytics-panel">
+                        <div class="panel-header">
+                            <h3>Ingresos por Ciudad</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div id="revenue-by-city" class="revenue-bars">
+                                <!-- Revenue bars will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Trend Chart -->
+                <div class="trend-section">
+                    <div class="trend-card">
+                        <div class="trend-header">
+                            <h3>Tendencia Mensual de Citas</h3>
+                        </div>
+                        <div class="trend-content">
+                            <canvas id="monthly-trend-chart" width="700" height="160"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages View -->
+            <div class="content-area" id="messages-view" style="display: none;">
+
+                <div class="msg-header" style="padding-left: 4px;">
+                    <p class="msg-label">Plantillas</p>
+                    <h2 class="msg-title">Respuestas rápidas</h2>
+                    <p class="msg-subtitle">Toca una tarjeta para copiar al portapapeles</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px;">
+
+                    <!-- ── Separador Español ── -->
+                    <div style="grid-column: 1 / -1; padding: 2px 2px 2px;">
+                        <p style="font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin: 0;">Español</p>
+                    </div>
+
+                    <!-- Card 1: Alfombras — azul -->
+                    <div class="message-card" onclick="copyMessage('carpet')" style="background: rgba(59, 130, 246, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Alfombras</span>
+                        </div>
+                        <div id="carpet-message" style="display:none;">El costo del lavado de alfombras varía según el área que necesite limpiar:
+
+• Cuartos: $30 c/u
+• Pasillos: $10 a $30
+• Salas: $30 a $60
+• Escaleras: $45 a $55
+• Eliminación de olores: $20 por área
+• Protección de alfombra: $20 por área adicional*
+
+*La protección de alfombra es un químico especializado que se aplica después de la limpieza profunda para proteger contra líquidos, manchas y desgaste. Prolonga la vida útil de su alfombra.
+
+🔹 Pedido mínimo: $90
+🛠 Trabajamos desde Santaquin hasta Salt Lake City.</div>
+                    </div>
+
+                    <!-- Card 2: Sillones — púrpura -->
+                    <div class="message-card" onclick="copyMessage('furniture')" style="background: rgba(139, 92, 246, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sillones</span>
+                        </div>
+                        <div id="furniture-message" style="display:none;">El valor por la limpieza de sillones depende del tamaño:
+
+• Sillón de 1 puesto: $35
+• Sillón de 2 puestos o loveseat: $65
+• Sofá de 3 puestos: $85
+• Seccionales: desde $100
+• Protección de telas: $30 por sillón adicional*
+
+*La protección de telas es un tratamiento especial que crea una barrera invisible contra líquidos, manchas y suciedad. Mantiene sus muebles como nuevos por más tiempo.
+
+Incluye:
+✨ Aspirado y eliminación de polvo
+✨ Limpieza de manchas, pelos, ácaros, olores y grasa
+✨ Lavado profundo con máquinas de extracción profesionales
+✨ Lavado a vapor, ideal para eliminar bacterias, gérmenes y ácaros, dejando el tejido desinfectado
+
+💨 Secado rápido asegurado con ventiladores.</div>
+                    </div>
+
+                    <!-- Card 3: Cotización específica sillones — verde -->
+                    <div class="message-card" onclick="copyMessage('general')" style="background: rgba(16, 163, 127, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Cotización sillones</span>
+                        </div>
+                        <div id="general-message" style="display:none;">El valor por la limpieza de un sillón como ese es $
+
+Incluye:
+✨ Aspirado y eliminación de polvo
+✨ Limpieza de manchas, pelos, ácaros, olores y grasa
+✨ Lavado profundo con máquinas profesionales
+✨ Limpieza con vapor, ideal para eliminar bacterias y gérmenes
+
+💨 Secado rápido garantizado con ventiladores
+
+• Protección de telas: $30 por sillón adicional*
+
+*La protección de telas es un tratamiento especial que crea una barrera invisible contra líquidos, manchas y suciedad. Mantiene sus muebles como nuevos por más tiempo.</div>
+                    </div>
+
+                    <!-- ── Auto ES — ámbar (completa la fila de ES) ── -->
+                    <div class="message-card" onclick="copyMessage('auto-es')" style="background: rgba(245, 158, 11, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(252, 211, 77, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M21 17h-2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1"/><rect x="5" y="7" width="14" height="10" rx="2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.8);">Autos</span>
+                        </div>
+                        <div id="auto-es-message" style="display:none;">Tenemos 2 opciones de servicio:
+
+Limpieza Básica — $100
+Incluye aspirado, lavado de asientos, piso y limpieza de consola central.
+
+Limpieza Completa — $160
+Incluye aspirado, lavado y limpieza profunda de asientos, puertas, maletero, piso, techo, consola central y superficies duras.
+
+Servicios adicionales:
+• Eliminación de olores — $35
+• Lavado de motor — $60
+
+Servicio a domicilio solo para casas, no apartamentos. El servicio tarda de 1 a 4 horas. Solo necesitamos conexión eléctrica.</div>
+                    </div>
+
+                    <!-- ── Separador English ── -->
+                    <div style="grid-column: 1 / -1; padding: 6px 2px 2px; border-top: 1px solid rgba(255,255,255,0.08);">
+                        <p style="font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin: 0;">English</p>
+                    </div>
+
+                    <!-- Card EN: Carpet -->
+                    <div class="message-card" onclick="copyMessage('carpet-en')" style="background: rgba(59, 130, 246, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(147, 197, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(147, 197, 253, 0.8);">Carpets</span>
+                        </div>
+                        <div id="carpet-en-message" style="display:none;">Carpet cleaning pricing depends on the area:
+
+• Rooms: $30 each
+• Hallways: $10 to $30
+• Living rooms: $30 to $60
+• Stairs: $45 to $55
+• Odor removal: $20 per area
+• Carpet protection: $20 per additional area*
+
+*Carpet protection is a specialized product applied after deep cleaning to protect against liquids, stains, and wear. It extends the life of your carpet.
+
+🔹 Minimum order: $90
+🛠 We serve from Santaquin to Salt Lake City.</div>
+                    </div>
+
+                    <!-- Card EN: Furniture -->
+                    <div class="message-card" onclick="copyMessage('furniture-en')" style="background: rgba(139, 92, 246, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(196, 181, 253, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M6 19v2M18 19v2"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(196, 181, 253, 0.8);">Sofas</span>
+                        </div>
+                        <div id="furniture-en-message" style="display:none;">Upholstery cleaning pricing depends on size:
+
+• 1-seater chair: $35
+• 2-seater or loveseat: $65
+• 3-seater sofa: $85
+• Sectionals: starting at $100
+• Fabric protection: $30 per additional piece*
+
+*Fabric protection is a special treatment that creates an invisible barrier against liquids, stains, and dirt. Keeps your furniture looking new for longer.
+
+Includes:
+✨ Vacuuming and dust removal
+✨ Stain, pet hair, mite, odor, and grease removal
+✨ Deep cleaning with professional extraction machines
+✨ Steam cleaning to eliminate bacteria, germs, and mites
+
+💨 Fast drying guaranteed with fans.</div>
+                    </div>
+
+                    <!-- Card EN: Quote -->
+                    <div class="message-card" onclick="copyMessage('general-en')" style="background: rgba(16, 163, 127, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(110, 231, 183, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(110, 231, 183, 0.8);">Custom quote</span>
+                        </div>
+                        <div id="general-en-message" style="display:none;">The price for cleaning a sofa like that is $
+
+Includes:
+✨ Vacuuming and dust removal
+✨ Stain, pet hair, mite, odor, and grease removal
+✨ Deep cleaning with professional machines
+✨ Steam cleaning to eliminate bacteria and germs
+
+💨 Fast drying guaranteed with fans
+
+• Fabric protection: $30 per additional piece*
+
+*Fabric protection is a special treatment that creates an invisible barrier against liquids, stains, and dirt. Keeps your furniture looking new for longer.</div>
+                    </div>
+
+                    <!-- Card EN: Auto -->
+                    <div class="message-card" onclick="copyMessage('auto-en')" style="background: rgba(245, 158, 11, 0.15); cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(252, 211, 77, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M21 17h-2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1"/><rect x="5" y="7" width="14" height="10" rx="2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>
+                            </svg>
+                            <span style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(252, 211, 77, 0.8);">Car Detailing</span>
+                        </div>
+                        <div id="auto-en-message" style="display:none;">We offer 2 service options:
+
+Basic Cleaning — $100
+Includes vacuuming, seat washing, floor cleaning, and center console cleaning.
+
+Full Detail — $160
+Includes vacuuming, deep washing and cleaning of seats, doors, trunk, floor, headliner, center console, and hard surfaces.
+
+Add-on services:
+• Odor removal — $35
+• Engine cleaning — $60
+
+Mobile service for houses only, not apartments. Service takes 1 to 4 hours. We only need access to an electrical outlet.</div>
+                    </div>
+
+                </div>
+
+                <!-- Notification Toast -->
+                <div id="copy-notification" style="position: fixed; bottom: 24px; right: 24px; background: #10a37f; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; align-items: center; gap: 12px; z-index: 1000; animation: slideIn 0.3s ease;">
+                    <span style="font-size: 24px;">✅</span>
+                    <span style="font-weight: 600;">Mensaje copiado al portapapeles</span>
+                </div>
+            </div>
+
+            <!-- Settings View (Hidden by default) -->
+
+            <div class="content-area" id="settings-view" style="display: none;">
+                <!-- Settings Header -->
+                <div class="dashboard-header">
+                    <h2 class="dashboard-title">Configuración</h2>
+                    <p class="dashboard-subtitle">Configura tu negocio y sistema</p>
+                </div>
+
+                <!-- ─── BUSINESS PROFILE CARD ─── -->
+                <div class="form-section" id="business-profile-card" style="margin-bottom: 16px;">
+
+                  <!-- Logo + nombre + tagline en fila -->
+                  <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+                    <div onclick="triggerLogoUpload()" style="
+                        flex-shrink:0; width:58px; height:58px; border-radius:50%;
+                        background:rgba(16,163,127,0.15); border:2px solid rgba(16,163,127,0.5);
+                        cursor:pointer; position:relative; overflow:hidden;
+                        display:flex; align-items:center; justify-content:center;">
+                      <img id="biz-logo-img" src="./images/livingreen-icon.png" class="biz-logo-dynamic"
+                           style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);border-radius:50%;
+                                  display:flex;align-items:center;justify-content:center;
+                                  opacity:0;transition:opacity 0.2s;pointer-events:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      </div>
+                    </div>
+                    <input type="file" id="biz-logo-input" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+                    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
+                      <input id="biz-name" type="text" placeholder="Nombre del negocio"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.2);
+                                    background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.95);font-size:14px;
+                                    font-weight:700;box-sizing:border-box;outline:none;">
+                      <input id="biz-tagline" type="text" placeholder="Tagline / slogan"
+                             style="width:100%;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.15);
+                                    background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.65);font-size:11.5px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                  </div>
+
+                  <!-- Fields 2-col -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Sitio web</label>
+                      <input id="biz-website" type="text" placeholder="tudominio.com"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Instagram</label>
+                      <input id="biz-instagram" type="text" placeholder="@usuario"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Teléfono</label>
+                      <input id="biz-phone" type="tel" placeholder="+1 (000) 000-0000"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">WhatsApp</label>
+                      <input id="biz-whatsapp" type="tel" placeholder="+1 (000) 000-0000"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <div style="grid-column:span 2;">
+                      <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px;">Email</label>
+                      <input id="biz-email" type="email" placeholder="info@negocio.com"
+                             style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;">
+                    </div>
+                    <input id="biz-emoji" type="hidden" value="🌿">
+                  </div>
+
+                  <button onclick="saveBusinessConfig()"
+                          style="background:#10a37f;color:white;border:none;padding:9px 20px;
+                                 border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                    Guardar
+                  </button>
+
+                  <!-- Google Gemini API Key -->
+                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">✨ Google Gemini API Key (chat IA)</label>
+                    <div style="display:flex;gap:8px;">
+                      <input id="gemini-api-key" type="password" placeholder="AIza..."
+                             style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;font-family:monospace;">
+                      <button onclick="saveGeminiKey()"
+                              style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                     background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                     font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
+                        Guardar
+                      </button>
+                    </div>
+                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en aistudio.google.com</div>
+                  </div>
+                  <!-- Groq API Key (voz/Whisper) -->
+                  <div style="margin-top:10px;">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">🎙 Groq API Key (transcripción de voz)</label>
+                    <div style="display:flex;gap:8px;">
+                      <input id="groq-api-key" type="password" placeholder="gsk_..."
+                             style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid rgba(255,255,255,0.18);
+                                    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);font-size:12px;
+                                    box-sizing:border-box;outline:none;font-family:monospace;">
+                      <button onclick="saveGroqKey()"
+                              style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                     background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                     font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;">
+                        Guardar
+                      </button>
+                    </div>
+                    <div style="font-size:10px;opacity:0.38;margin-top:5px;">Gratis en console.groq.com — sin tarjeta</div>
+                  </div>
+
+                  <!-- Notifications -->
+                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
+                    <label style="font-size:10px;opacity:0.5;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">Notificaciones</label>
+                    <button id="notif-toggle-btn" onclick="requestNotifPermission()"
+                            style="padding:7px 14px;border-radius:7px;border:1px solid rgba(16,163,127,0.4);
+                                   background:rgba(16,163,127,0.15);color:rgba(16,163,127,0.9);
+                                   font-size:12px;cursor:pointer;font-weight:600;margin-bottom:6px;">
+                      Activar notificaciones
+                    </button>
+                    <div id="notif-status-text" style="font-size:10px;opacity:0.4;line-height:1.4;">
+                      Toca el botón para activar.
+                    </div>
+                    <div style="font-size:10px;opacity:0.30;margin-top:4px;">• 24h antes de cada cita &nbsp;• Cada 2 días: revisar Facebook</div>
+                  </div>
+                </div>
+
+                <!-- ─── BACKGROUND THEME CAROUSEL ─── -->
+                <div class="form-section" id="theme-section">
+                    <h3 style="margin:0 0 14px;font-size:14px;font-weight:600;">Tema de fondo</h3>
+                    <div style="display:flex; gap:8px;">
+
+                        <div class="bg-swatch" data-theme="bosque" onclick="applyBgTheme('bosque')"
+                             style="flex:1;height:72px;border-radius:10px;cursor:pointer;
+                                    background:linear-gradient(160deg,#0f1117 0%,#1a2332 55%,#0f1117 100%);
+                                    border:2px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;">
+                          <div class="theme-check" style="display:none;position:absolute;inset:0;
+                               align-items:center;justify-content:center;background:rgba(16,163,127,0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <div class="bg-swatch" data-theme="midnight" onclick="applyBgTheme('midnight')"
+                             style="flex:1;height:72px;border-radius:10px;cursor:pointer;
+                                    background:linear-gradient(160deg,#0a0f2e 0%,#1a237e 55%,#0a0f2e 100%);
+                                    border:2px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;">
+                          <div class="theme-check" style="display:none;position:absolute;inset:0;
+                               align-items:center;justify-content:center;background:rgba(16,163,127,0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <div class="bg-swatch" data-theme="violeta" onclick="applyBgTheme('violeta')"
+                             style="flex:1;height:72px;border-radius:10px;cursor:pointer;
+                                    background:linear-gradient(160deg,#1a0033 0%,#2d1b69 55%,#1a0033 100%);
+                                    border:2px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;">
+                          <div class="theme-check" style="display:none;position:absolute;inset:0;
+                               align-items:center;justify-content:center;background:rgba(16,163,127,0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <div class="bg-swatch" data-theme="carbon" onclick="applyBgTheme('carbon')"
+                             style="flex:1;height:72px;border-radius:10px;cursor:pointer;
+                                    background:linear-gradient(160deg,#111111 0%,#2d2d2d 55%,#111111 100%);
+                                    border:2px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;">
+                          <div class="theme-check" style="display:none;position:absolute;inset:0;
+                               align-items:center;justify-content:center;background:rgba(16,163,127,0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <div class="bg-swatch" data-theme="oceano" onclick="applyBgTheme('oceano')"
+                             style="flex:1;height:72px;border-radius:10px;cursor:pointer;
+                                    background:linear-gradient(160deg,#001f3f 0%,#0d4f5e 55%,#001f3f 100%);
+                                    border:2px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;">
+                          <div class="theme-check" style="display:none;position:absolute;inset:0;
+                               align-items:center;justify-content:center;background:rgba(16,163,127,0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                        <div class="bg-swatch" data-theme="bosque2" onclick="applyBgTheme('bosque2')"
+                             style="flex:1;height:72px;border-radius:10px;cursor:pointer;
+                                    background:linear-gradient(160deg,#0d1f1a 0%,#1a3a2a 55%,#0d1f1a 100%);
+                                    border:2px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;">
+                          <div class="theme-check" style="display:none;position:absolute;inset:0;
+                               align-items:center;justify-content:center;background:rgba(16,163,127,0.25);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Backup Management Section -->
+                <div class="form-section" style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px; color: #2d333a;">📦 Sistema de Backup</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div style="padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e5e7;">
+                            <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">Estado del Backup</h4>
+                            <div id="backup-status-detailed" style="font-size: 13px; color: #666;">
+                                Verificando...
+                            </div>
+                        </div>
+                        <div style="padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e5e7;">
+                            <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">Backup Automático</h4>
+                            <div style="font-size: 13px; color: #666;">
+                                ✅ Activo (diariamente)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button onclick="BackupSystem.downloadBackup()" 
+                                style="background: #10a37f; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                            📥 Descargar Backup Completo
+                        </button>
+                        <button onclick="forceBackupCheck()" 
+                                style="background: #3b82f6; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                            🔄 Forzar Backup Diario
+                        </button>
+                        <input type="file" id="backup-restore-input" accept=".json" style="display: none;" 
+                               onchange="handleBackupRestore(event)">
+                        <button onclick="document.getElementById('backup-restore-input').click()" 
+                                style="background: #f59e0b; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                            📤 Restaurar Backup
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px;">
+                        <div style="font-size: 13px; color: #92400e;">
+                            <strong>💡 Recomendaciones:</strong><br>
+                            • Los backups se crean automáticamente cada día<br>
+                            • Descarga backups manualmente antes de cambios importantes<br>
+                            • Los backups incluyen: citas, configuración, contadores de facturas
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Services Management Section -->
+                <div class="form-section" style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 8px; color: #2d333a;">🛠️ Mis Servicios</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 16px;">Los servicios y precios que aparecen en toda la aplicación.</p>
+                    <div id="services-list-settings" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <button onclick="openAddServiceModal()"
+                            style="background: #10a37f; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">
+                        ＋ Agregar servicio
+                    </button>
+                </div>
+
+                <!-- System Info Section -->
+                <div class="form-section">
+                    <h3 style="margin-bottom: 16px; color: #2d333a;">ℹ️ Información del Sistema</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div style="padding: 12px; background: #f9fafb; border-radius: 6px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Aplicación</div>
+                            <div id="biz-name-version" style="font-size: 14px; font-weight: 500;">LivinGreen v2.1</div>
+                        </div>
+                        <div style="padding: 12px; background: #f9fafb; border-radius: 6px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Base de Datos</div>
+                            <div style="font-size: 14px; font-weight: 500;">IndexedDB + Supabase</div>
+                        </div>
+                        <div style="padding: 12px; background: #f9fafb; border-radius: 6px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Modo Offline</div>
+                            <div id="offline-status" style="font-size: 14px; font-weight: 500;">✅ Activado</div>
+                        </div>
+                        <div style="padding: 12px; background: #f9fafb; border-radius: 6px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Última Sincronización</div>
+                            <div id="last-sync-time" style="font-size: 14px; font-weight: 500;">Verificando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    <!-- IndexedDB library for offline-first functionality -->
+    <script src="https://unpkg.com/idb@8/build/umd.js"></script>
+    <!-- Tesseract.js for free OCR in the browser -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <script src="js/app.js?v=20260312o"></script>
+
+<!-- ─── AI ASSISTANT BAR ─── -->
+<div class="ai-bar" id="ai-bar">
+  <button class="ai-center-btn" id="ai-main-btn" onclick="window.location.href='chat.html'" title="Asistente IA">
+    <div class="ai-blur-ring"></div>
+    <img src="./images/agenda-logo.jpg" style="width:130px;height:130px;object-fit:contain;">
+  </button>
+</div>
+
+<!-- ─── AI CHAT PANEL ─── -->
+<div class="ai-chat-panel" id="ai-chat-panel">
+
+  <!-- Header -->
+  <div class="ai-chat-header">
+    <button class="ai-chat-header-btn" onclick="closeAIChat()">
+      <span style="font-size:20px;color:rgba(255,255,255,0.8);line-height:1;display:flex;align-items:center;justify-content:center;">↓</span>
+    </button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <img src="./images/agenda-logo.jpg" style="width:28px;height:28px;object-fit:cover;border-radius:50%;">
+      <span id="ai-panel-title" style="font-size:16px;font-weight:600;color:#fff;">Asistente IA</span>
+    </div>
+    <button class="ai-chat-header-btn" onclick="newAIChat()" title="Nueva conversación">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:block;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:20px 16px 12px;display:flex;flex-direction:column;">
+    <div id="ai-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-bottom:70px;pointer-events:none;">
+      <img id="ai-logo-img" src="./images/agenda-logo.jpg" style="width:216px;height:216px;object-fit:contain;opacity:0.92;">
+      <p id="ai-empty-text" style="font-family:'Lora',Georgia,serif;font-size:27px;font-weight:400;color:rgba(255,255,255,0.82);text-align:center;margin:0;line-height:1.45;letter-spacing:-0.2px;">¿En qué puedo<br>ayudarte hoy?</p>
+    </div>
+  </div>
+
+  <!-- Input bar -->
+  <div class="ai-input-row">
+    <div class="ai-input-pill">
+      <button class="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Adjuntar">
+        <span style="font-size:22px;color:rgba(255,255,255,0.75);font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;">+</span>
+      </button>
+      <button class="ai-attach-btn" id="ai-mic-btn" onclick="startVoiceInput()" title="Voz">
+        <svg id="ai-mic-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:block;flex-shrink:0;">
+          <path d="M12 2C10.34 2 9 3.34 9 5v6c0 1.66 1.34 3 3 3s3-1.34 3-3V5c0-1.66-1.34-3-3-3zm-1 9V5c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1zm6 0c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21H9v2h6v-2h-2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+      </button>
+      <div id="ai-waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <textarea id="ai-input" placeholder="Mensaje…" rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';
+                         var hasText=this.value.trim().length>0;
+                         document.getElementById('ai-send-btn').classList.toggle('active',hasText);
+                         document.getElementById('ai-send-icon').style.color=hasText?'#000':'rgba(255,255,255,0.35)';"></textarea>
+      <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">
+        <span id="ai-send-icon" style="font-size:18px;color:rgba(255,255,255,0.35);line-height:1;display:flex;align-items:center;justify-content:center;">↑</span>
+      </button>
+    </div>
+  </div>
+
+  <input type="file" id="ai-file-input" accept="image/*,.pdf,.txt" style="display:none" onchange="handleAIFileUpload(event)">
+</div>
+
+<!-- ─── DIGITAL BUSINESS CARD MODAL ─── -->
+<div id="biz-card-modal" onclick="if(event.target===this)closeBizCardModal()"
+     style="display:none;position:fixed;inset:0;z-index:30000;
+            background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);
+            align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
+  <div style="background:linear-gradient(145deg,#141b2d,#1a2640);border:1px solid rgba(255,255,255,0.12);
+              border-radius:20px;max-width:520px;width:100%;overflow:hidden;
+              box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+    <!-- Header -->
+    <div style="padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between;
+                border-bottom:1px solid rgba(255,255,255,0.08);">
+      <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);">Tarjeta Digital</div>
+      <button onclick="closeBizCardModal()" style="background:none;border:none;color:rgba(255,255,255,0.5);
+              font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+    </div>
+    <!-- Canvas preview -->
+    <div style="padding:20px 20px 0;display:flex;justify-content:center;">
+      <canvas id="biz-card-canvas" width="1050" height="600"
+              style="width:100%;max-width:460px;border-radius:12px;
+                     box-shadow:0 8px 32px rgba(0,0,0,0.5);"></canvas>
+    </div>
+    <!-- Action buttons -->
+    <div style="padding:20px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="saveBizCardImage()"
+              style="flex:1;min-width:120px;padding:12px 10px;border-radius:10px;cursor:pointer;
+                     background:rgba(16,163,127,0.2);border:1px solid rgba(16,163,127,0.5);
+                     color:rgba(255,255,255,0.92);font-size:13px;font-weight:600;
+                     display:flex;align-items:center;justify-content:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Guardar imagen
+      </button>
+      <button onclick="saveBizCardVCard()"
+              style="flex:1;min-width:120px;padding:12px 10px;border-radius:10px;cursor:pointer;
+                     background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.5);
+                     color:rgba(255,255,255,0.92);font-size:13px;font-weight:600;
+                     display:flex;align-items:center;justify-content:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Guardar contacto
+      </button>
+      <button onclick="shareDigitalCard()"
+              style="flex:1;min-width:120px;padding:12px 10px;border-radius:10px;cursor:pointer;
+                     background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.5);
+                     color:rgba(255,255,255,0.92);font-size:13px;font-weight:600;
+                     display:flex;align-items:center;justify-content:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartir
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
