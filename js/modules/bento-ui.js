@@ -451,7 +451,6 @@ loadTodayTotal();
 initAnalyticsSlider();
 initRegistrySlider();
 initNuevaCitaSlider();
-initMessageSliders();
 loadBentoAnalytics();
 loadTodayTotal();
 }
