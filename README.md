@@ -48,15 +48,15 @@ npx http-server
 - ✅ Privado (corre en tu navegador)
 - ✅ Funciona offline
 
-**→ Ver [`TESSERACT-OCR-INFO.md`](TESSERACT-OCR-INFO.md)** para más detalles y tips de uso.
+**→ Ver [`docs/TESSERACT-OCR-INFO.md`](docs/TESSERACT-OCR-INFO.md)** para más detalles y tips de uso.
 
 ### 🔧 OCR con Google Vision (Opcional)
 
 Si quieres máxima precisión (99%+), puedes habilitar Google Vision como fallback:
-- Ver `INSTRUCCIONES-GOOGLE-VISION.md` para configurar
+- Ver `docs/INSTRUCCIONES-GOOGLE-VISION.md` para configurar
 - ⚠️ Requiere habilitar billing en Google Cloud (gratis hasta 1000/mes)
 
-**→ Si tienes problemas con Google Vision:** [`SOLUCION-GOOGLE-VISION-VERCEL.md`](SOLUCION-GOOGLE-VISION-VERCEL.md)
+**→ Si tienes problemas con Google Vision:** [`docs/SOLUCION-GOOGLE-VISION-VERCEL.md`](docs/SOLUCION-GOOGLE-VISION-VERCEL.md)
 
 ## Deploy en Vercel
 
@@ -106,16 +106,34 @@ Ver más detalles en: [`api/README.md`](api/README.md)
 ## Estructura del Proyecto
 
 ```
-├── index.html                          # App principal
-├── check-appointment.html              # Verificación de citas
-├── extract-data.html                   # Extracción de datos
-├── force-reload-supabase.html          # Recarga de DB
-├── google-vision-setup.html            # Setup de Vision API
-├── finance-tests.html                  # Tests financieros
-├── images/                             # Recursos visuales
-├── icon-*.svg                          # Iconos PWA
-├── livingreen-logo.png                 # Logo de la app
-└── INSTRUCCIONES-GOOGLE-VISION.md      # Docs de configuración
+├── index.html                  # App principal (PWA)
+├── chat.html                   # Asistente IA
+├── manifest.json               # PWA manifest
+├── sw.js                       # Service Worker
+├── api/                        # Serverless functions (Vercel)
+│   ├── health.js
+│   ├── openai.js
+│   ├── vision.js
+│   ├── push-subscribe.js
+│   └── send-morning-brief.js
+├── css/
+│   ├── app.css
+│   └── chat.css
+├── js/
+│   ├── app.js                  # Core + init
+│   ├── chat.js
+│   └── modules/                # 20 módulos separados
+│       ├── supabase-init.js
+│       ├── offline-db.js
+│       ├── business-config.js
+│       ├── services.js
+│       ├── calendar.js
+│       ├── receipts.js
+│       ├── analytics.js
+│       └── ...
+├── images/                     # Recursos visuales
+├── docs/                       # Documentación técnica
+└── README.md
 ```
 
 ## Uso
