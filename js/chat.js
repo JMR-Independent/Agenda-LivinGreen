@@ -1306,7 +1306,28 @@ async function _webSearch(userText,systemText){
 }
 
 // ── Agent loop ─────────────────────────────────────────────────────────────
+// ── Claude Code Bridge (opcional) ─────────────────────────────────────────
+const _CLAUDE_GIST='https://gist.githubusercontent.com/JMR-Independent/4e21e868b2becb1423d9af5543ad85b3/raw/claude_webhook.json';
+let _claudeWebhookUrl=null;
+async function _getClaudeUrl(){
+  if(_claudeWebhookUrl) return _claudeWebhookUrl;
+  try{const r=await fetch(_CLAUDE_GIST+'?t='+Date.now());const d=await r.json();_claudeWebhookUrl=d.url||null;}catch{}
+  return _claudeWebhookUrl;
+}
+async function _claudeCall(userText){
+  const url=await _getClaudeUrl();
+  if(!url) throw new Error('⚠️ Claude Bridge no disponible.');
+  const history=_history.slice(-10).map(m=>`${m.role==='user'?'Usuario':'Asistente'}: ${String(m.content).slice(0,300)}`).join('\n');
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:userText,history})});
+  if(!res.ok) throw new Error('⚠️ Error conectando con Claude Code ('+res.status+').');
+  const data=await res.json();
+  _claudeWebhookUrl=null; // refrescar URL en próxima llamada por si cambió
+  return data.reply||'Sin respuesta.';
+}
+
 async function runAgent(userText){
+  // Claude Code Bridge — activo si no hay Gemini key, o si claude_mode está forzado
+  if(!localStorage.getItem('rize_gemini_key') || localStorage.getItem('rize_claude_mode')) return await _claudeCall(userText);
   // Garantizar que agent_config esté cargado antes de construir el prompt
   await _loadAgentConfig();
   // Internet search trigger
