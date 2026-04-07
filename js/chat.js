@@ -441,8 +441,8 @@ function openApiKeyModal(){
 function saveApiKeys(){
   const gk = document.getElementById('gemini-key-input').value.trim();
   const rk = document.getElementById('groq-key-input').value.trim();
-  if (!gk) { showToast('Ingresa tu Gemini API Key'); return; }
-  localStorage.setItem('rize_gemini_key', gk);
+  if (gk) localStorage.setItem('rize_gemini_key', gk);
+  else localStorage.removeItem('rize_gemini_key');
   if (rk) localStorage.setItem('rize_groq_key', rk);
   else localStorage.removeItem('rize_groq_key');
   localStorage.removeItem('rize_gemini_model');
