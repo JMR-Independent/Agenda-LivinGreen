@@ -423,7 +423,7 @@ function _lg_fullSync(showFeedback=false){
   }
   if (bc.logo) document.getElementById('header-logo').src = bc.logo;
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  if (!localStorage.getItem('rize_gemini_key')) openApiKeyModal();
+  // API key modal removed — Claude Bridge mode is default
   // Sync when chat comes to foreground (user switches back)
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ _lg_fullSync(); _sbReady=false; _syncFromSupabase(); } });
 })();
