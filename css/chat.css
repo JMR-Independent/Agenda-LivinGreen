@@ -38,10 +38,12 @@ body{
 }
 #messages::-webkit-scrollbar{display:none;}
 
-/* Empty state */
+/* Empty state — fixed so keyboard doesn't move it */
 #empty-state{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:20px;pointer-events:none;padding-bottom:80px;
+  position:fixed;top:60px;bottom:80px;left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:20px;pointer-events:none;
+  z-index:10;
 }
 #empty-state img{width:150px;height:150px;object-fit:contain;opacity:0.9;}
 #empty-state p{
