@@ -1,4 +1,4 @@
-// api/facebook-lead.js — recibe eventos de Facebook desde n8n y manda push notification
+// api/facebook-lead.js — recibe leads de cualquier fuente y manda push notification
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
 
@@ -8,6 +8,15 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
+const SOURCE_CONFIG = {
+  'Messenger':    { emoji: '💬', label: 'Facebook Messenger' },
+  'reddit':       { emoji: '🔵', label: 'Reddit' },
+  'craigslist':   { emoji: '📋', label: 'Craigslist' },
+  'google':       { emoji: '🔍', label: 'Google Alerts' },
+  'nextdoor':     { emoji: '🏘️', label: 'Nextdoor' },
+  'facebook':     { emoji: '📣', label: 'Facebook' },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -15,13 +24,17 @@ export default async function handler(req, res) {
 
   if (!tipo) return res.status(400).json({ error: 'Missing fields' });
 
+  // Determinar fuente y emoji dinámicamente
+  const src = source || (tipo === 'Mensaje Messenger' ? 'Messenger' : 'facebook');
+  const cfg = SOURCE_CONFIG[src] || { emoji: '📣', label: src };
+  const notifTitle = `${cfg.emoji} Lead ${cfg.label} — LivinGreen`;
+
   try {
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    // Get all push subscriptions
     const { data: subs, error } = await supabase
       .from('push_subscriptions')
       .select('endpoint, p256dh, auth');
@@ -31,19 +44,16 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, sent: 0, message: 'No subscriptions found' });
     }
 
-    // Build notification payload
-    const emoji = tipo === 'Mensaje Messenger' ? '💬' : '📣';
     const payload = JSON.stringify({
-      title: `${emoji} Lead Facebook — LivinGreen`,
+      title: notifTitle,
       body: `${nombre}: ${mensaje}`,
-      tag: `fb-lead-${Date.now()}`,
+      tag: `lead-${src}-${Date.now()}`,
       url: link || 'https://www.facebook.com/LivinGreen',
       icon: 'https://agenda-livin-green.vercel.app/images/agenda-logo.jpg',
       badge: 'https://agenda-livin-green.vercel.app/images/facebook-badge.png',
-      source: 'facebook'
+      source: src
     });
 
-    // Send to all subscriptions
     const results = await Promise.allSettled(
       subs.map(sub =>
         webpush.sendNotification(
@@ -56,11 +66,11 @@ export default async function handler(req, res) {
     const sent = results.filter(r => r.status === 'fulfilled').length;
     const failed = results.filter(r => r.status === 'rejected').length;
 
-    console.log(`Push leads: ${sent} sent, ${failed} failed`);
+    console.log(`Push [${src}]: ${sent} sent, ${failed} failed`);
     return res.status(200).json({ ok: true, sent, failed });
 
   } catch (e) {
-    console.error('facebook-lead push error:', e);
+    console.error('push error:', e);
     return res.status(500).json({ error: e.message });
   }
 }
