@@ -37,7 +37,10 @@ export default async function handler(req, res) {
       title: `${emoji} Lead Facebook — LivinGreen`,
       body: `${nombre}: ${mensaje}`,
       tag: `fb-lead-${Date.now()}`,
-      url: link || 'https://www.facebook.com/LivinGreen'
+      url: link || 'https://www.facebook.com/LivinGreen',
+      icon: 'https://agenda-livin-green.vercel.app/images/agenda-logo.jpg',
+      badge: 'https://agenda-livin-green.vercel.app/images/facebook-badge.png',
+      source: 'facebook'
     });
 
     // Send to all subscriptions

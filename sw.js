@@ -11,8 +11,8 @@ self.addEventListener('push', e => {
     e.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: './images/agenda-logo.jpg',
-            badge: './images/agenda-logo.jpg',
+            icon: data.icon || './images/agenda-logo.jpg',
+            badge: data.badge || './images/agenda-logo.jpg',
             tag: data.tag || 'agenda-notif',
             vibrate: [200, 100, 200],
             requireInteraction: false,
