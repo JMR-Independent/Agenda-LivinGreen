@@ -66,15 +66,33 @@ export default async function handler(req, res) {
     const sent = results.filter(r => r.status === 'fulfilled').length;
     const failed = results.filter(r => r.status === 'rejected').length;
 
-    // Guardar lead en storage
+    // Guardar lead directamente en Supabase Storage
     try {
-      const baseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'https://agenda-livin-green.vercel.app';
-      await fetch(`${baseUrl}/api/leads`, {
+      const SUPA = process.env.SUPABASE_URL;
+      const KEY  = process.env.SUPABASE_SERVICE_KEY;
+      const BUCKET = 'leads', FILE = 'leads.json';
+      // Leer leads actuales
+      const getRes = await fetch(`${SUPA}/storage/v1/object/${BUCKET}/${FILE}`, {
+        headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
+      });
+      let leads = [];
+      if (getRes.ok) { try { leads = await getRes.json(); } catch {} }
+      // Agregar nuevo lead al inicio
+      leads.unshift({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+        source: src, title: nombre, body: mensaje || '', url: link || '',
+        read: false, created_at: new Date().toISOString()
+      });
+      if (leads.length > 500) leads.splice(500);
+      const body = JSON.stringify(leads);
+      // Borrar y resubir
+      await fetch(`${SUPA}/storage/v1/object/${BUCKET}/${FILE}`, {
+        method: 'DELETE', headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
+      });
+      await fetch(`${SUPA}/storage/v1/object/${BUCKET}/${FILE}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: src, title: nombre, body: mensaje || '', url: link || '' })
+        headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+        body
       });
     } catch (dbErr) {
       console.warn('Lead save skipped:', dbErr.message);
