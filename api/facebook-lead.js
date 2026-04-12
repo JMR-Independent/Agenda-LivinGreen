@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       // Agregar nuevo lead al inicio
       leads.unshift({
         id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-        source: src, title: nombre, body: mensaje || '', url: link || '',
+        source: src, title: mensaje || nombre, body: nombre, url: link || '',
         read: false, created_at: new Date().toISOString()
       });
       if (leads.length > 500) leads.splice(500);
