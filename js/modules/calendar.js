@@ -121,7 +121,7 @@
             // --- STEP 2: Activate menu and render view content while off-screen ---
             _hideAIBar();
             const menuItems = document.querySelectorAll('.menu-item');
-            const viewMapping = { schedule:0, calendar:1, history:2, datos:3, finance:4, messages:5, settings:6 };
+            const viewMapping = { schedule:0, calendar:1, history:2, datos:3, finance:4, messages:5, settings:6, leads:7 };
             const menuIndex = viewMapping[viewName];
             if (menuIndex !== undefined && menuItems[menuIndex]) {
                 menuItems.forEach(i => i.classList.remove('active'));
@@ -194,7 +194,7 @@
 
         async function showView(viewName) {
             // Hide all views
-            const views = ['calendar', 'history', 'datos', 'pago', 'finance', 'messages', 'settings'];
+            const views = ['calendar', 'history', 'datos', 'pago', 'finance', 'messages', 'settings', 'leads'];
             views.forEach(view => {
                 const element = document.getElementById(view + '-view');
                 if (element) {
@@ -233,6 +233,8 @@
                 if (geminiEl) geminiEl.value = localStorage.getItem('rize_gemini_key') || '';
                 const groqEl = document.getElementById('groq-api-key');
                 if (groqEl) groqEl.value = localStorage.getItem('rize_groq_key') || '';
+            } else if (viewName === 'leads') {
+                if (window._leadsModule) window._leadsModule.loadLeads();
             }
         }
 

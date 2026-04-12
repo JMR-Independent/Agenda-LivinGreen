@@ -355,6 +355,31 @@
                 </div>
             </div>
 
+            <!-- Leads - SMALL (con badge de no leídos) -->
+            <div class="bento-item bento-item-small" onclick="navigateToView('leads')" style="animation-delay: 0.55s; position:relative;">
+                <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(251, 146, 60, 0.12); backdrop-filter: blur(10px); height: 100%;">
+                    <!-- Badge de no leídos -->
+                    <div id="leads-bento-badge" style="display:none; position:absolute; top:10px; right:10px; min-width:20px; height:20px; background:rgba(16,163,127,0.9); border-radius:10px; font-size:11px; font-weight:700; color:#fff; align-items:center; justify-content:center; padding:0 5px; z-index:10; box-shadow:0 0 8px rgba(16,163,127,0.5);">0</div>
+                    <!-- Ícono radar/antena -->
+                    <div style="position: relative; width: 70px; height: 70px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Persona/target -->
+                            <circle cx="50" cy="38" r="10" fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,1)" stroke-width="2"/>
+                            <path d="M 30 72 Q 30 55, 50 55 Q 70 55, 70 72" fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,1)" stroke-width="2"/>
+                            <!-- Ondas radar -->
+                            <path d="M 18 85 Q 18 20, 50 20 Q 82 20, 82 85" fill="none" stroke="rgba(251,146,60,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4,3"/>
+                            <path d="M 28 85 Q 28 28, 50 28 Q 72 28, 72 85" fill="none" stroke="rgba(251,146,60,0.6)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4,3"/>
+                            <!-- Punto activo -->
+                            <circle cx="82" cy="52" r="4" fill="rgba(251,146,60,1)">
+                                <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                        </svg>
+                    </div>
+                    <h2 style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 1); margin-top: 12px; letter-spacing: 0.5px;">Leads</h2>
+                    <p style="font-size: 7px; color: rgba(255, 255, 255, 0.7); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Monitor Activo</p>
+                </div>
+            </div>
+
             <!-- Mensajes - SMALL -->
             <div class="bento-item bento-item-small" onclick="navigateToView('messages')" style="animation-delay: 0.6s">
                 <div class="bento-item-content" style="padding: 16px; justify-content: center; align-items: center; background: rgba(34, 197, 94, 0.12); backdrop-filter: blur(10px); height: 100%;">
@@ -1552,6 +1577,81 @@ Mobile service for houses only, not apartments. Service takes 1 to 4 hours. We o
                 </div>
             </div>
 
+            <!-- Leads View (Hidden by default) -->
+            <div class="content-area" id="leads-view" style="display: none; padding: 0;">
+
+                <!-- Header -->
+                <div style="padding: 20px 20px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 style="font-size:20px; font-weight:700; color:rgba(255,255,255,0.95); margin:0 0 4px;">
+                            Leads
+                            <span id="leads-unread-badge" style="display:none; margin-left:8px; background:rgba(16,163,127,0.9); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; vertical-align:middle;">0</span>
+                        </h2>
+                        <p style="font-size:12px; color:rgba(255,255,255,0.4); margin:0;">Reddit · Google · Facebook — Utah County → SLC</p>
+                    </div>
+                    <button onclick="window._leadsModule && window._leadsModule.markAllRead()"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:rgba(255,255,255,0.5); font-size:11px; padding:7px 12px; cursor:pointer;">
+                        Marcar todo leído
+                    </button>
+                </div>
+
+                <!-- Filtros -->
+                <div style="padding: 14px 20px 0; display:flex; gap:7px; overflow-x:auto; scrollbar-width:none;">
+                    <button class="leads-filter-btn" data-filter="all"
+                            onclick="window._leadsModule && window._leadsModule.setFilter('all')"
+                            style="flex-shrink:0; background:rgba(16,163,127,0.25); border:1px solid rgba(16,163,127,0.4); border-radius:20px; color:rgba(16,163,127,1); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer;">
+                        Todos
+                    </button>
+                    <button class="leads-filter-btn" data-filter="unread"
+                            onclick="window._leadsModule && window._leadsModule.setFilter('unread')"
+                            style="flex-shrink:0; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:20px; color:rgba(255,255,255,0.5); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer;">
+                        Sin leer
+                    </button>
+                    <button class="leads-filter-btn" data-filter="reddit"
+                            onclick="window._leadsModule && window._leadsModule.setFilter('reddit')"
+                            style="flex-shrink:0; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:20px; color:rgba(255,255,255,0.5); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer;">
+                        🔵 Reddit
+                    </button>
+                    <button class="leads-filter-btn" data-filter="google"
+                            onclick="window._leadsModule && window._leadsModule.setFilter('google')"
+                            style="flex-shrink:0; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:20px; color:rgba(255,255,255,0.5); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer;">
+                        🔍 Google
+                    </button>
+                    <button class="leads-filter-btn" data-filter="facebook"
+                            onclick="window._leadsModule && window._leadsModule.setFilter('facebook')"
+                            style="flex-shrink:0; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:20px; color:rgba(255,255,255,0.5); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer;">
+                        📣 Facebook
+                    </button>
+                </div>
+
+                <!-- Lista de leads -->
+                <div id="leads-list" style="padding: 14px 20px 20px; display:flex; flex-direction:column; gap:10px; overflow-y:auto;">
+                    <div style="text-align:center;padding:60px 20px;">
+                        <div style="font-size:36px;margin-bottom:12px;">📡</div>
+                        <div style="font-size:14px;color:rgba(255,255,255,0.4);">Monitor activo — revisando cada 30 min</div>
+                    </div>
+                </div>
+
+                <style>
+                .lead-card {
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid rgba(255,255,255,0.08);
+                    border-radius: 16px;
+                    padding: 14px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    border-left: 3px solid rgba(16,163,127,0.5);
+                }
+                .lead-card:hover {
+                    background: rgba(255,255,255,0.09);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+                }
+                .lead-card:active { transform: scale(0.98); }
+                .leads-filter-btn:hover { opacity: 0.85; }
+                </style>
+            </div>
+
             <!-- Settings View (Hidden by default) -->
 
             <div class="content-area" id="settings-view" style="display: none;">
@@ -1872,6 +1972,7 @@ Mobile service for houses only, not apartments. Service takes 1 to 4 hours. We o
     <script src="js/modules/diagnostics.js?v=1"></script>
     <script src="js/modules/notifications.js?v=1"></script>
     <script src="js/modules/bento-ui.js?v=1"></script>
+    <script src="js/modules/leads.js?v=1"></script>
 
 <!-- ─── AI ASSISTANT BAR ─── -->
 <div class="ai-bar" id="ai-bar">

@@ -66,6 +66,18 @@ export default async function handler(req, res) {
     const sent = results.filter(r => r.status === 'fulfilled').length;
     const failed = results.filter(r => r.status === 'rejected').length;
 
+    // Guardar lead en base de datos
+    try {
+      await supabase.from('leads').insert([{
+        source: src,
+        title: `${nombre}`,
+        body: mensaje || '',
+        url: link || ''
+      }]);
+    } catch (dbErr) {
+      console.warn('Lead DB save skipped:', dbErr.message);
+    }
+
     console.log(`Push [${src}]: ${sent} sent, ${failed} failed`);
     return res.status(200).json({ ok: true, sent, failed });
 
