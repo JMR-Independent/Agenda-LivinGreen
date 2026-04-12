@@ -1,33 +1,8 @@
-// api/leads.js — CRUD de leads usando Supabase Storage (sin DDL)
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const BUCKET = 'leads';
-const FILE = 'leads.json';
+// api/leads.js — CRUD de leads usando Supabase tabla
+import { createClient } from '@supabase/supabase-js';
 
-async function readLeads() {
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${FILE}`, {
-    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` }
-  });
-  if (!res.ok) return [];
-  const text = await res.text();
-  try { return JSON.parse(text); } catch { return []; }
-}
-
-async function writeLeads(leads) {
-  const body = JSON.stringify(leads);
-  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${FILE}`, {
-    method: 'DELETE',
-    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` }
-  });
-  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${FILE}`, {
-    method: 'POST',
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body
-  });
+function db() {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 }
 
 export default async function handler(req, res) {
@@ -36,46 +11,37 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // GET — listar leads
+  const supabase = db();
+
   if (req.method === 'GET') {
-    const leads = await readLeads();
-    return res.status(200).json({ leads: leads.slice(0, 200) });
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ leads: data });
   }
 
-  // POST — crear lead
   if (req.method === 'POST') {
     const { source, title, body, url } = req.body || {};
     if (!title) return res.status(400).json({ error: 'title required' });
-    const leads = await readLeads();
-    const newLead = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-      source: source || 'unknown',
-      title,
-      body: body || '',
-      url: url || '',
-      read: false,
-      created_at: new Date().toISOString()
-    };
-    leads.unshift(newLead);
-    // Mantener solo los últimos 500
-    if (leads.length > 500) leads.splice(500);
-    await writeLeads(leads);
-    return res.status(201).json({ lead: newLead });
+    const { data, error } = await supabase
+      .from('leads')
+      .insert([{ source: source || 'unknown', title, body: body || '', url: url || '' }])
+      .select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(201).json({ lead: data });
   }
 
-  // PATCH — marcar como leído
   if (req.method === 'PATCH') {
     const { id, all } = req.body || {};
-    const leads = await readLeads();
-    if (all) {
-      leads.forEach(l => { l.read = true; });
-    } else if (id) {
-      const lead = leads.find(l => l.id === id);
-      if (lead) lead.read = true;
-    } else {
-      return res.status(400).json({ error: 'id or all required' });
-    }
-    await writeLeads(leads);
+    let q = supabase.from('leads').update({ read: true });
+    if (all)      q = q.eq('read', false);
+    else if (id)  q = q.eq('id', id);
+    else return res.status(400).json({ error: 'id or all required' });
+    const { error } = await q;
+    if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ ok: true });
   }
 
